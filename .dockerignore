@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+.vscode/
+*.log
+logs/
+.env
+.env.*
+SchoolBridge_SRS_v1.0.md
+README.md
