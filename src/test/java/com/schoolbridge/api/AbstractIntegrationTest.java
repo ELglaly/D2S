@@ -5,29 +5,33 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Base class for integration tests. Spins up real Postgres, RabbitMQ, and Redis via Testcontainers
- * and wires them to Spring Boot through {@code @ServiceConnection}. Containers are static so they
- * are reused across all tests in a class.
+ * Base for integration tests. Uses the <em>singleton container</em> pattern: containers are started
+ * once per JVM in the static initializer and never stopped, so {@code @ServiceConnection} bindings
+ * stay valid across every {@code @SpringBootTest} class in the test run. Without this, the JUnit
+ * {@code @Container} extension tears containers down between classes, which invalidates the
+ * connection details Boot has already wired into cached contexts.
  */
-@Testcontainers
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
-  @Container @ServiceConnection
+  @ServiceConnection
   static final PostgreSQLContainer<?> POSTGRES =
       new PostgreSQLContainer<>(DockerImageName.parse("postgres:16"));
 
-  @Container @ServiceConnection
+  @ServiceConnection
   static final RabbitMQContainer RABBITMQ =
       new RabbitMQContainer(DockerImageName.parse("rabbitmq:3-management"));
 
-  @Container
   @ServiceConnection(name = "redis")
   static final GenericContainer<?> REDIS =
       new GenericContainer<>(DockerImageName.parse("redis:7")).withExposedPorts(6379);
+
+  static {
+    POSTGRES.start();
+    RABBITMQ.start();
+    REDIS.start();
+  }
 }

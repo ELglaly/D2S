@@ -12,3 +12,54 @@ logging:
   level:
     org.testcontainers: INFO
     com.github.dockerjava: WARN
+
+# WhatsApp config is wired but pointed at a sentinel host. The cloud adapter is replaced by a
+# FakeWhatsAppClient bean in tests (FakeWhatsAppClientConfig) so no network is actually used; the
+# WireMock-driven adapter tests override schoolbridge.whatsapp.api-base-url per-test.
+schoolbridge:
+  push:
+    fcm:
+      enabled: false
+  whatsapp:
+    api-base-url: http://localhost:0/wa-test
+    phone-number-id: 999999999999999
+    access-token: test-access-token
+    app-secret: test-app-secret-32-bytes-aaaaaaaaaa
+    verify-token: test-verify-token
+    template:
+      otp-name: parent_otp_v1
+      announcement-name: school_announcement_v1
+      attendance-absent-name: attendance_absent_v1
+      attendance-late-name: attendance_late_v1
+      attendance-excused-name: attendance_excused_v1
+  outbox:
+    relay:
+      # Relay stays off in the default test profile so polling does not interfere with assertions.
+      # Specific integration tests (the outbox→consumer flow) enable it via @DynamicPropertySource.
+      enabled: false
+  attendance:
+    sweeper:
+      # Off by default in tests — AttendanceSweeperTest constructs the bean directly with @Autowired
+      # collaborators and invokes the scheduled methods synchronously, so @Scheduled timing must not
+      # fire ambient sweeps that race the assertions.
+      enabled: false
+      deferred-release-rate: PT1M
+      missed-roster-cron: "0 */15 * * * *"
+      missed-roster-dedup-ttl: 36h
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      whatsapp:
+        # Shrink the sliding window in tests so the CB-opens-on-failure assertion runs fast.
+        slidingWindowSize: 4
+        minimumNumberOfCalls: 4
+        failureRateThreshold: 50
+        waitDurationInOpenState: 100ms
+        permittedNumberOfCallsInHalfOpenState: 2
+  retry:
+    instances:
+      whatsapp:
+        maxAttempts: 3
+        waitDuration: 1ms
+        enableExponentialBackoff: false

@@ -1,6 +1,19 @@
 spring:
   application:
     name: schoolbridge-api
+  autoconfigure:
+    # Staff/parent auth is provided by SecurityConfig + (M4) JWT/parent-token filters.
+    # Excluding the default in-memory UserDetailsService stops Spring Boot from logging a
+    # generated password and from interfering with our stateless security chain.
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  data:
+    redis:
+      repositories:
+        # We only use RedisTemplate (idempotency cache, OTP, parent tokens), not Spring Data Redis
+        # repositories; disabling the scanner silences the "strict mode" warning and prevents
+        # accidental misclassification of JPA repositories.
+        enabled: false
   profiles:
     default: local
   threads:
@@ -20,6 +33,9 @@ spring:
     basename: messages
     encoding: UTF-8
     fallback-to-system-locale: false
+  mvc:
+    problemdetails:
+      enabled: true
   servlet:
     multipart:
       max-file-size: 5MB
@@ -36,8 +52,99 @@ server:
 springdoc:
   api-docs:
     path: /v3/api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
+    enabled: true
+
+# Application-specific configuration. Dev defaults below are overridden by env vars in prod.
+schoolbridge:
+  crypto:
+    # 32-byte keys, base64-encoded. DEV ONLY defaults — always override in prod.
+    aes-key: ${AES_KEY:c2Nob29sYnJpZGdlLWRldi1hZXMta2V5LTMyYnl0ZXM=}
+    blind-index-key: ${BLIND_INDEX_KEY:c2Nob29sYnJpZGdlLWRldi1ibGluZC1pbmRleC1rZXk=}
+  jwt:
+    # PEM-encoded RSA keypair. Blank in dev → JwtService generates ephemeral keys at startup
+    # (tokens stop verifying after restart, which is fine for local development).
+    private-key: ${JWT_PRIVATE_KEY:}
+    public-key:  ${JWT_PUBLIC_KEY:}
+    access-ttl:  15m
+    refresh-ttl: 30d
+    issuer:      schoolbridge
+    kid:         dev
+  idempotency:
+    ttl: 24h
+  outbox:
+    relay:
+      enabled: false
+      poll-interval: 5s
+      batch-size: 100
+  whatsapp:
+    api-base-url: ${WHATSAPP_API_BASE_URL:https://graph.facebook.com/v20.0}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    app-secret: ${WHATSAPP_APP_SECRET:}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+    template:
+      otp-name: ${WHATSAPP_TEMPLATE_OTP_NAME:parent_otp_v1}
+      announcement-name: ${WHATSAPP_TEMPLATE_ANNOUNCEMENT_NAME:school_announcement_v1}
+      attendance-absent-name: ${WHATSAPP_TEMPLATE_ATTENDANCE_ABSENT_NAME:attendance_absent_v1}
+      attendance-late-name: ${WHATSAPP_TEMPLATE_ATTENDANCE_LATE_NAME:attendance_late_v1}
+      attendance-excused-name: ${WHATSAPP_TEMPLATE_ATTENDANCE_EXCUSED_NAME:attendance_excused_v1}
+  rabbitmq:
+    exchanges:
+      announcements: schoolbridge.announcements
+      otp: schoolbridge.otp
+      attendance: schoolbridge.attendance
+    queues:
+      announcement-created: schoolbridge.whatsapp.announcement-created
+      announcement-recalled: schoolbridge.whatsapp.announcement-recalled
+      attendance-absent-alert: schoolbridge.whatsapp.attendance-absent-alert
+      attendance-late-alert: schoolbridge.whatsapp.attendance-late-alert
+      attendance-excused-alert: schoolbridge.whatsapp.attendance-excused-alert
+  notification:
+    fallback:
+      # Number of consecutive WhatsApp failures within the window that flips a recipient to SMS.
+      whatsapp-failure-threshold: 2
+      whatsapp-failure-window: 10m
+  push:
+    fcm:
+      # Set to true in prod and supply GOOGLE_APPLICATION_CREDENTIALS or credentials-file.
+      enabled: ${PUSH_FCM_ENABLED:false}
+      credentials-file: ${GOOGLE_APPLICATION_CREDENTIALS:}
+  attendance:
+    sweeper:
+      # Two scheduled responsibilities live in AttendanceSweeper:
+      #  (1) release per-parent alert recipients held by quiet-hours (deferred-release-rate),
+      #  (2) detect classes that have not had a roster submitted by the school's rosterDueByLocalTime
+      #      and emit an attendance.roster_missed outbox event (missed-roster-cron).
+      # Disabled in the default test profile so unrelated tests don't trip @Scheduled timing.
+      enabled: true
+      deferred-release-rate: PT1M
+      missed-roster-cron: "0 */15 * * * *"
+      missed-roster-dedup-ttl: 36h
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      whatsapp:
+        registerHealthIndicator: false
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  retry:
+    instances:
+      whatsapp:
+        maxAttempts: 3
+        waitDuration: 250ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2.0
+        retryExceptions:
+          - com.schoolbridge.api.integrations.whatsapp.WhatsAppRetryableException
 
 management:
   endpoints:

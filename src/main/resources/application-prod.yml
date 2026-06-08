@@ -16,6 +16,14 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
 
+schoolbridge:
+  crypto:
+    aes-key: ${AES_KEY}
+    blind-index-key: ${BLIND_INDEX_KEY}
+  outbox:
+    relay:
+      enabled: true
+
 management:
   endpoints:
     web:
@@ -29,3 +37,9 @@ logging:
   level:
     root: INFO
     com.schoolbridge: INFO
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
