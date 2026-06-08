@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/schoolbridge
-    username: schoolbridge
-    password: schoolbridge
+    username: postgres
+    password: wasla
   data:
     redis:
       host: localhost
@@ -17,6 +17,24 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+schoolbridge:
+  whatsapp:
+    # Paste your Meta credentials here to activate real WhatsApp sends.
+    # Without access-token, the app uses LoggingWhatsAppClient (logs only, no real sends).
+    # Get these from: https://developers.facebook.com → Your App → WhatsApp → API Setup
+    access-token: ${WHATSAPP_ACCESS_TOKEN:EAAONltZC5QKwBRpnTQ3ZAw5bPJjzWR5jK3w2EeGOKxioJVaPIIYnIZBUih828qwxZBfzPs4cJcZC7AdguW0IAHFubx814xdrdjX3oJ0DVOGV627DgqGTVC9nOglhq8m5Mm0DR0ztHcIjwWkd9jt87pSAT20vzmUwUD6iI9v4THOcfxoIwY1NAkoU7yBDZAfNuk0toIWfoLa0ZABw1HNdpQUiiPZCOAnP6PW6Is86rIzNTCyVvkycXmNiv7C19ZA7P5hw0it7vL12gj6ObTMeJRgjy}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:1235221469666960}
+    app-secret: ${WHATSAPP_APP_SECRET:4bcf1a57cf218d267be4de5bb9846928}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:schoolbridge-local}
+    # For testing before /custom templates are approved, Meta provides a free "hello_world" template.
+    # Once your custom templates are approved, the defaults below are correct.
+    template:
+      otp-name: ${WHATSAPP_TEMPLATE_OTP:parent_otp_v1}
+      announcement-name: ${WHATSAPP_TEMPLATE_ANNOUNCEMENT:school_announcement_v1}
+      attendance-absent-name: ${WHATSAPP_TEMPLATE_ABSENT:attendance_absent_v1}
+      attendance-late-name: ${WHATSAPP_TEMPLATE_LATE:attendance_late_v1}
+      attendance-excused-name: ${WHATSAPP_TEMPLATE_EXCUSED:attendance_excused_v1}
 
 logging:
   level:

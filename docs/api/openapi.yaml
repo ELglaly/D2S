@@ -1,0 +1,4619 @@
+openapi: 3.0.1
+info:
+  title: SchoolBridge API
+  description: "WhatsApp-first school-parent communication platform. All 2xx responses\
+    \ (except 204) are wrapped: { \"data\": T, \"meta\": PageMeta | null }. Errors\
+    \ use RFC 7807 ProblemDetail. Tenancy is carried by the bearer token — no tenant\
+    \ header is required."
+  contact:
+    name: SchoolBridge Engineering
+  version: v1
+servers:
+- url: /
+  description: Default
+security:
+- BearerJWT: []
+tags:
+- name: Parent Portal
+  description: Parent-facing endpoints
+- name: Announcements
+  description: School-wide and class-level announcements with multi-channel delivery
+- name: Auth
+  description: Staff and platform-admin authentication (email/password + JWT refresh)
+- name: Devices
+  description: FCM push notification device token registration
+- name: Parent-Student Links
+  description: Link parents to their children
+- name: Parent Auth
+  description: Phone-based OTP authentication for parents
+- name: Classes
+  description: School class management
+- name: Students
+  description: Student roster management and bulk import
+- name: Subjects
+  description: Subject catalog management
+- name: Teacher Subject Assignments
+  description: Assign teachers to subjects within a class
+- name: Schools
+  description: Platform-admin school (tenant) management. All endpoints require SUPER_ADMIN.
+- name: School Users
+  description: Platform-admin user management within a school tenant. Requires SUPER_ADMIN.
+- name: Homework
+  description: Homework assignment and parent feed
+- name: WhatsApp Webhook
+  description: Meta Cloud API webhook for delivery receipts and status updates. No
+    bearer token is required — requests are authenticated by HMAC-SHA256 signature.
+- name: Class Subjects
+  description: Assign and manage subjects within a class
+- name: Enrollments
+  description: Student-to-class enrollment management
+- name: Grades
+  description: Grade records management and parent read access
+- name: Attendance
+  description: Daily attendance marking and parent-response flow
+paths:
+  /api/v1/schools/{id}/settings:
+    get:
+      tags:
+      - Schools
+      summary: Get school settings
+      description: "Returns configurable settings for a school (timezone, quiet hours,\
+        \ etc.)."
+      operationId: getSettings
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Settings found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "404":
+          description: School not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+    put:
+      tags:
+      - Schools
+      summary: Update school settings
+      description: Replaces the school's settings. All fields must be supplied.
+      operationId: updateSettings
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchoolSettingsRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "404":
+          description: School not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+        "200":
+          description: Settings updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolSettingsResponse"
+  /integrations/whatsapp/webhook:
+    get:
+      tags:
+      - WhatsApp Webhook
+      summary: Webhook subscription verification (Meta handshake)
+      description: Called by Meta when a webhook subscription is registered or refreshed.
+        Returns the hub.challenge value if hub.verify_token matches the configured
+        secret.
+      operationId: verifySubscribe
+      parameters:
+      - name: hub.mode
+        in: query
+        description: Must be 'subscribe'
+        required: false
+        schema:
+          type: string
+      - name: hub.verify_token
+        in: query
+        description: Must match WHATSAPP_VERIFY_TOKEN
+        required: false
+        schema:
+          type: string
+      - name: hub.challenge
+        in: query
+        description: Echoed back on success
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Verification succeeded; challenge echoed
+          content:
+            '*/*':
+              schema:
+                type: string
+        "403":
+          description: hub.mode is not 'subscribe' or verify_token mismatch
+          content:
+            '*/*':
+              schema:
+                type: string
+      security: []
+    post:
+      tags:
+      - WhatsApp Webhook
+      summary: Receive delivery status update
+      description: "Called by Meta for every message status transition (sent, delivered,\
+        \ read, failed). The raw request body is verified against the X-Hub-Signature-256\
+        \ HMAC header before processing. Duplicate events are deduplicated via Redis\
+        \ (TTL 24h)."
+      operationId: receive
+      parameters:
+      - name: X-Hub-Signature-256
+        in: header
+        description: "HMAC-SHA256 signature: 'sha256=<hex>' computed over the raw\
+          \ body using WHATSAPP_APP_SECRET"
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              format: byte
+        required: true
+      responses:
+        "200":
+          description: Event accepted (always returned to Meta to suppress retries)
+        "401":
+          description: X-Hub-Signature-256 missing or invalid
+      security: []
+  /api/v1/subjects:
+    get:
+      tags:
+      - Subjects
+      summary: List all subjects
+      operationId: list
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Paginated subject list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSubjectResponse"
+    post:
+      tags:
+      - Subjects
+      summary: Create a subject
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubjectRequest"
+        required: true
+      responses:
+        "201":
+          description: Subject created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "409":
+          description: Subject name already exists in this school
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+  /api/v1/students:
+    get:
+      tags:
+      - Students
+      summary: List students
+      description: "Returns a paginated list of all students for the school, newest\
+        \ first."
+      operationId: list_1
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Paginated student list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseStudentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseStudentResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseStudentResponse"
+    post:
+      tags:
+      - Students
+      summary: Create student
+      description: Creates a single student record for the school.
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudentRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "201":
+          description: Student created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+  /api/v1/students/:bulk-import:
+    post:
+      tags:
+      - Students
+      summary: Bulk import students from CSV
+      description: "Accepts a UTF-8 CSV file with header: externalId,fullName,dateOfBirth,className.\
+        \ Valid rows are created; invalid rows are collected and returned in the response\
+        \ body rather than aborting the whole import. HTTP 200 is returned even when\
+        \ some rows fail."
+      operationId: bulkImport
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "422":
+          description: File missing or not a valid CSV
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BulkImportResult"
+        "200":
+          description: Import completed; check body for per-row errors
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BulkImportResult"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BulkImportResult"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BulkImportResult"
+  /api/v1/schools:
+    get:
+      tags:
+      - Schools
+      summary: List schools
+      description: "Returns a paginated list of all schools on the platform, newest\
+        \ first."
+      operationId: list_2
+      parameters:
+      - name: status
+        in: query
+        description: Filter by school status; omit to return all
+        required: false
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolResponse"
+        "200":
+          description: Paginated school list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolResponse"
+    post:
+      tags:
+      - Schools
+      summary: Create school (tenant)
+      description: Provisions a new school tenant on the platform. The school is created
+        in ACTIVE status.
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSchoolRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "409":
+          description: A school with the same slug already exists
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "201":
+          description: School created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+  /api/v1/schools/{schoolId}/users:
+    get:
+      tags:
+      - School Users
+      summary: List users
+      description: "Returns a paginated list of all users in the school, newest first."
+      operationId: list_3
+      parameters:
+      - name: schoolId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseUserResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseUserResponse"
+        "200":
+          description: Paginated user list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseUserResponse"
+        "404":
+          description: School not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseUserResponse"
+    post:
+      tags:
+      - School Users
+      summary: Create user
+      description: "Creates a staff member (SCHOOL_ADMIN / TEACHER) or parent in the\
+        \ given school. Staff require email + password; parents require phone (OTP\
+        \ login, no password)."
+      operationId: create_3
+      parameters:
+      - name: schoolId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+        required: true
+      responses:
+        "409":
+          description: Email or phone already in use
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "201":
+          description: User created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: School not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+  /api/v1/schools/{id}/suspend:
+    post:
+      tags:
+      - Schools
+      summary: Suspend school
+      description: Marks a school as SUSPENDED. Suspended schools cannot authenticate
+        new tokens.
+      operationId: suspend
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Requires SUPER_ADMIN
+        "204":
+          description: School suspended
+        "401":
+          description: Not authenticated
+        "409":
+          description: School is already suspended
+        "404":
+          description: School not found
+  /api/v1/schools/{id}/reactivate:
+    post:
+      tags:
+      - Schools
+      summary: Reactivate school
+      description: Restores a SUSPENDED school to ACTIVE status.
+      operationId: reactivate
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: School is not in a suspended state
+        "403":
+          description: Requires SUPER_ADMIN
+        "204":
+          description: School reactivated
+        "401":
+          description: Not authenticated
+        "404":
+          description: School not found
+  /api/v1/parents/auth/verify-otp:
+    post:
+      tags:
+      - Parent Auth
+      summary: Verify OTP and obtain parent token
+      description: Exchanges a valid ticket + 6-digit code for a 24-hour sliding-TTL
+        bearer token. Include this token in the Authorization header for all subsequent
+        parent requests.
+      operationId: verifyOtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VerifyOtpResponse"
+        "400":
+          description: Invalid or expired ticket / wrong code
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VerifyOtpResponse"
+        "200":
+          description: OTP verified; parent token returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/VerifyOtpResponse"
+      security: []
+  /api/v1/parents/auth/request-otp:
+    post:
+      tags:
+      - Parent Auth
+      summary: Request OTP
+      description: Sends a 6-digit OTP via WhatsApp to the registered phone number.
+        Returns a ticket ID regardless of whether the phone is known (anti-enumeration).
+        Rate-limited per phone number.
+      operationId: requestOtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestOtpRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error (malformed phone number)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RequestOtpResponse"
+        "200":
+          description: OTP sent (or silently dropped — anti-enumeration)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RequestOtpResponse"
+        "429":
+          description: Rate limit exceeded for this phone number
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RequestOtpResponse"
+      security: []
+  /api/v1/parents/auth/logout:
+    post:
+      tags:
+      - Parent Auth
+      summary: Logout parent
+      description: Revokes the parent session token. Idempotent.
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentLogoutRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+        "204":
+          description: Logged out (or token was already invalid)
+      security: []
+  /api/v1/parent-links:
+    post:
+      tags:
+      - Parent-Student Links
+      summary: Create parent-student link
+      description: "Links a parent user to a student, recording their relationship\
+        \ type and whether they are the primary contact. A parent may be linked to\
+        \ multiple students; each link is a separate record."
+      operationId: create_4
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateParentLinkRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "201":
+          description: Link created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "409":
+          description: Link already exists for this parent-student pair
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "404":
+          description: Parent user or student not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ParentStudentLinkResponse"
+  /api/v1/homework:
+    get:
+      tags:
+      - Homework
+      summary: Parent homework feed
+      description: Returns the homework feed for the specified child. 404 if the parent
+        is not linked to the child (anti-enumeration).
+      operationId: staffList_1
+      parameters:
+      - name: classId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+      - name: dueDateFrom
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: dueDateTo
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      - name: childId
+        in: query
+        description: ID of the child to fetch homework for
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseHomeworkResponse"
+        "200":
+          description: Paginated feed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseHomeworkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseHomeworkResponse"
+        "404":
+          description: Child not linked to parent (anti-enumeration)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseParentHomeworkFeedEntry"
+    post:
+      tags:
+      - Homework
+      summary: Create homework item
+      description: Creates a homework item as DRAFT (default) or PUBLISHED (when publish=true).
+        PUBLISHED items immediately materialize HomeworkRecipient rows for every linked
+        parent of every enrolled student in the class.
+      operationId: create_5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHomeworkRequest"
+        required: true
+      responses:
+        "201":
+          description: Homework item created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+  /api/v1/homework/{id}/publish:
+    post:
+      tags:
+      - Homework
+      summary: Publish homework item
+      description: Transitions a DRAFT homework item to PUBLISHED and materializes
+        recipient rows. 409 if already PUBLISHED or ARCHIVED.
+      operationId: publish
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Published
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "404":
+          description: Homework item not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "409":
+          description: Already published or archived
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+  /api/v1/homework/{id}/acknowledge:
+    post:
+      tags:
+      - Homework
+      summary: Acknowledge homework item
+      description: Records a parent's acknowledgment. No-op when requiresAck=false.
+        404 if the parent has no recipient row for this item.
+      operationId: acknowledge
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Acknowledged
+        "401":
+          description: Not authenticated
+        "404":
+          description: Parent has no recipient row for this homework item
+  /api/v1/grades:
+    get:
+      tags:
+      - Grades
+      summary: List grades for a class
+      description: Returns all grade records for the given student. Parents receive
+        403 if they are not linked to the student (anti-enumeration).
+      operationId: listByStudent_1_1
+      parameters:
+      - name: studentId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: classId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Paginated grade list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GradeRecordResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GradeRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GradeRecordResponse"
+    post:
+      tags:
+      - Grades
+      summary: Create grade record
+      operationId: create_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGradeRequest"
+        required: true
+      responses:
+        "404":
+          description: Student or class not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "409":
+          description: Grade already exists for this combination
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "201":
+          description: Grade record created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+  /api/v1/devices/register:
+    post:
+      tags:
+      - Devices
+      summary: Register or refresh a device push token
+      description: Upserts the FCM token for the authenticated user's device. Call
+        this on app startup and whenever the mobile SDK rotates the token.
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterDeviceRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeviceTokenResponse"
+        "200":
+          description: Token registered or refreshed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeviceTokenResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DeviceTokenResponse"
+  /api/v1/classes:
+    get:
+      tags:
+      - Classes
+      summary: List classes
+      description: "Returns a paginated list of all classes for the school, newest\
+        \ first."
+      operationId: list_4
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Paginated class list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+    post:
+      tags:
+      - Classes
+      summary: Create class
+      description: Creates a new school class for the tenant.
+      operationId: create_7
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSchoolClassRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "201":
+          description: Class created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+  /api/v1/classes/{classId}/subjects:
+    get:
+      tags:
+      - Class Subjects
+      summary: List subjects in a class
+      operationId: listByClass_1
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseClassSubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseClassSubjectResponse"
+        "200":
+          description: Paginated list of class subjects
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseClassSubjectResponse"
+    post:
+      tags:
+      - Class Subjects
+      summary: Assign a subject to a class
+      operationId: assign
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignSubjectToClassRequest"
+        required: true
+      responses:
+        "409":
+          description: Subject already assigned to this class
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClassSubjectResponse"
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClassSubjectResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClassSubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClassSubjectResponse"
+        "404":
+          description: Class or subject not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClassSubjectResponse"
+        "201":
+          description: Subject assigned to class
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ClassSubjectResponse"
+  /api/v1/classes/{classId}/subjects/{subjectId}/teachers:
+    get:
+      tags:
+      - Teacher Subject Assignments
+      summary: List teachers assigned to a subject in a class
+      operationId: listByClassAndSubject
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: subjectId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "200":
+          description: Assignment list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+    post:
+      tags:
+      - Teacher Subject Assignments
+      summary: Assign a teacher to a subject in a class
+      operationId: assign_1
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: subjectId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignTeacherToSubjectRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "409":
+          description: Teacher already assigned to this subject in this class
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "404":
+          description: "Class, subject, or teacher not found"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "201":
+          description: Teacher assigned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+  /api/v1/classes/{classId}/enrollments:
+    get:
+      tags:
+      - Enrollments
+      summary: List enrollments for a class
+      description: Returns all active student enrollments for the class. SCHOOL_ADMIN
+        sees all classes; TEACHER sees only their assigned classes.
+      operationId: listByClass_2
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Requires SCHOOL_ADMIN or teacher assigned to the class
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentResponse"
+        "404":
+          description: Class not found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentResponse"
+        "200":
+          description: Enrollment list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentResponse"
+    post:
+      tags:
+      - Enrollments
+      summary: Enroll student in class
+      description: Creates an enrollment record linking a student to a class.
+      operationId: enroll
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollStudentRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EnrollmentResponse"
+        "404":
+          description: Class or student not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EnrollmentResponse"
+        "409":
+          description: Student is already enrolled in this class
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EnrollmentResponse"
+        "201":
+          description: Student enrolled
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EnrollmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EnrollmentResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EnrollmentResponse"
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - Auth
+      summary: Refresh access token
+      description: Rotates the refresh token and returns a new access token. The old
+        refresh token is immediately revoked (single-use).
+      operationId: refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+        required: true
+      responses:
+        "200":
+          description: New tokens returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Refresh token invalid or expired
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+      security: []
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - Auth
+      summary: Logout
+      description: Revokes the refresh token. Idempotent — unknown tokens succeed
+        silently.
+      operationId: logout_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+        "204":
+          description: Logged out (or token was already invalid)
+      security: []
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Login with email and password
+      description: Returns a short-lived JWT access token and a 30-day refresh token.
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error (missing fields)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "200":
+          description: Login successful; tokens returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid email or password
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+      security: []
+  /api/v1/attendance/{id}/parent-response:
+    post:
+      tags:
+      - Attendance
+      summary: Submit parent response to absence alert
+      description: Records a parent's explanation or acknowledgment for an absence
+        alert. The parent must be linked to the student on the attendance record;
+        unlinked parents receive 404 (anti-enumeration).
+      operationId: parentResponse
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParentResponseRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "200":
+          description: Parent response recorded
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "403":
+          description: Requires PARENT role
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "404":
+          description: Attendance record not found or parent not linked (anti-enumeration)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+  /api/v1/attendance/mark:
+    post:
+      tags:
+      - Attendance
+      summary: Mark attendance
+      description: "Records an attendance status (PRESENT, ABSENT, LATE, EXCUSED)\
+        \ for a single student on the given date. SCHOOL_ADMIN may mark any class;\
+        \ TEACHER may only mark classes they are assigned to."
+      operationId: mark
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkAttendanceRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "200":
+          description: Attendance recorded
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN or teacher assigned to the class
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+  /api/v1/attendance/mark-all-present:
+    post:
+      tags:
+      - Attendance
+      summary: Mark all students present
+      description: Bulk marks every enrolled student in the class as PRESENT for the
+        given date. Students who already have an attendance record for the date are
+        skipped.
+      operationId: markAllPresent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkAllPresentRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MarkAllPresentResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN or teacher assigned to the class
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MarkAllPresentResponse"
+        "200":
+          description: Bulk mark completed; see body for counts
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MarkAllPresentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MarkAllPresentResponse"
+  /api/v1/announcements:
+    get:
+      tags:
+      - Announcements
+      summary: List announcements
+      description: "Returns a paginated list of all announcements for the school,\
+        \ newest first. Filter by status to narrow results."
+      operationId: list_5
+      parameters:
+      - name: status
+        in: query
+        description: Filter by announcement status; omit to return all statuses
+        required: false
+        schema:
+          type: string
+          enum:
+          - DRAFT
+          - SCHEDULED
+          - SENDING
+          - SENT
+          - RECALLED
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Paginated announcement list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementResponse"
+    post:
+      tags:
+      - Announcements
+      summary: Create announcement
+      description: "Creates and fans out an announcement to matching parent recipients.\
+        \ SCHOOL_ADMIN may use any scope (SCHOOL, GRADE, CLASS, CUSTOM). TEACHER may\
+        \ only use CLASS scope for a class they are assigned to. Recipients are derived\
+        \ from linked parents of enrolled students matching the scope."
+      operationId: create_8
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnnouncementRequest"
+        required: true
+      responses:
+        "403":
+          description: Insufficient permissions or scope not allowed for role
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "201":
+          description: Announcement created and fanout queued
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "422":
+          description: Invalid scope combination or body validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+  /api/v1/announcements/{id}/recall:
+    post:
+      tags:
+      - Announcements
+      summary: Recall announcement
+      description: Marks the announcement as RECALLED. Already-delivered messages
+        are not retracted from recipients' devices.
+      operationId: recall
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "409":
+          description: Announcement is already recalled or in a non-recallable state
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "200":
+          description: Announcement recalled
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "404":
+          description: Announcement not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+  /api/v1/announcements/{id}/acknowledge:
+    post:
+      tags:
+      - Announcements
+      summary: Acknowledge announcement
+      description: Records a parent's acknowledgment for an announcement where requiresAck=true.
+        Idempotent — re-acknowledging the same announcement is a no-op.
+      operationId: acknowledge_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Parent is not a recipient of this announcement
+        "204":
+          description: Acknowledged
+        "401":
+          description: Not authenticated
+        "404":
+          description: Announcement not found
+  /api/v1/subjects/{id}:
+    get:
+      tags:
+      - Subjects
+      summary: Get a subject by ID
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Subject found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "404":
+          description: Subject not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+    delete:
+      tags:
+      - Subjects
+      summary: Delete a subject
+      operationId: delete_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Insufficient permissions
+        "404":
+          description: Subject not found
+        "401":
+          description: Not authenticated
+    patch:
+      tags:
+      - Subjects
+      summary: Update a subject
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubjectRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "200":
+          description: Updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "404":
+          description: Subject not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+        "409":
+          description: Subject name already exists in this school
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SubjectResponse"
+  /api/v1/students/{id}:
+    get:
+      tags:
+      - Students
+      summary: Get student
+      description: Returns a single student by ID.
+      operationId: get_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Student found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "404":
+          description: Student not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+    delete:
+      tags:
+      - Students
+      summary: Delete student
+      description: Deletes a student. Enrollments and parent links are cascade-deleted.
+      operationId: delete_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Student deleted
+        "404":
+          description: Student not found
+        "401":
+          description: Not authenticated
+        "403":
+          description: Requires SCHOOL_ADMIN
+    patch:
+      tags:
+      - Students
+      summary: Update student
+      description: Partially updates a student record. Only provided fields are changed.
+      operationId: update_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStudentRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "200":
+          description: Student updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "404":
+          description: Student not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentResponse"
+  /api/v1/homework/{id}:
+    get:
+      tags:
+      - Homework
+      summary: Get homework item
+      description: Returns a homework item. Parents receive 404 if their child is
+        not a recipient (anti-enumeration).
+      operationId: get_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Not found or parent not a recipient (anti-enumeration)
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "200":
+          description: Homework item found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+    delete:
+      tags:
+      - Homework
+      summary: Archive homework item
+      description: Soft-deletes by transitioning status to ARCHIVED. HomeworkRecipient
+        rows are retained for parent-feed history.
+      operationId: delete_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+        "404":
+          description: Homework item not found
+        "204":
+          description: Archived
+        "401":
+          description: Not authenticated
+    patch:
+      tags:
+      - Homework
+      summary: Update homework item
+      description: "Updates subject, description, attachmentKey, and dueDate on a\
+        \ DRAFT or PUBLISHED item. Recipients are not re-materialized. 409 if ARCHIVED."
+      operationId: update_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHomeworkRequest"
+        required: true
+      responses:
+        "409":
+          description: Item is ARCHIVED and cannot be modified
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "200":
+          description: Updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "404":
+          description: Homework item not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HomeworkResponse"
+  /api/v1/grades/{id}:
+    get:
+      tags:
+      - Grades
+      summary: Get a single grade record
+      operationId: get_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Grade record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "404":
+          description: Grade record not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+    delete:
+      tags:
+      - Grades
+      summary: Delete a grade record
+      operationId: delete_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Deleted
+        "403":
+          description: Insufficient permissions
+        "404":
+          description: Grade record not found
+        "401":
+          description: Not authenticated
+    patch:
+      tags:
+      - Grades
+      summary: Update a grade record
+      operationId: update_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGradeRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "200":
+          description: Updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "404":
+          description: Grade record not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GradeRecordResponse"
+  /api/v1/classes/{id}:
+    get:
+      tags:
+      - Classes
+      summary: Get class
+      description: Returns a single class by ID.
+      operationId: get_6
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Class found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "404":
+          description: Class not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+    delete:
+      tags:
+      - Classes
+      summary: Delete class
+      description: Deletes a class. Enrollments and teacher assignments are cascade-deleted.
+      operationId: delete_7
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "401":
+          description: Not authenticated
+        "204":
+          description: Class deleted
+        "404":
+          description: Class not found
+        "403":
+          description: Requires SCHOOL_ADMIN
+    patch:
+      tags:
+      - Classes
+      summary: Update class
+      description: Partially updates a class. Only provided fields are changed.
+      operationId: update_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSchoolClassRequest"
+        required: true
+      responses:
+        "422":
+          description: Validation error
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "200":
+          description: Class updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "404":
+          description: Class not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolClassResponse"
+  /api/v1/students/{studentId}/subjects:
+    get:
+      tags:
+      - Teacher Subject Assignments
+      summary: Get subjects available to a student
+      description: "Returns all subjects from classes the student is enrolled in,\
+        \ with assigned teacher."
+      operationId: getSubjectsForStudent
+      parameters:
+      - name: studentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentSubjectResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentSubjectResponse"
+        "200":
+          description: Subject list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentSubjectResponse"
+  /api/v1/schools/{schoolId}/users/{id}:
+    get:
+      tags:
+      - School Users
+      summary: Get user
+      description: Returns a single user by ID within the school.
+      operationId: get_2
+      parameters:
+      - name: schoolId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: User found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: User not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+  /api/v1/schools/{id}:
+    get:
+      tags:
+      - Schools
+      summary: Get school
+      description: Returns a single school by ID.
+      operationId: get_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Requires SUPER_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "404":
+          description: School not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+        "200":
+          description: School found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SchoolResponse"
+  /api/v1/parents/me/children:
+    get:
+      tags:
+      - Parent Portal
+      summary: List my children
+      description: "Returns the children linked to the authenticated parent, each\
+        \ enriched with their current class enrolments. Returns an empty list when\
+        \ no children are linked."
+      operationId: myChildren
+      responses:
+        "200":
+          description: Children list (may be empty)
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentChildResponse"
+        "403":
+          description: Requires PARENT role
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentChildResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentChildResponse"
+  /api/v1/parent-links/student/{studentId}:
+    get:
+      tags:
+      - Parent-Student Links
+      summary: List parent links for a student
+      description: Returns all parent-student links for the given student.
+      operationId: listByStudent
+      parameters:
+      - name: studentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Parent link list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "404":
+          description: Student not found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentStudentLinkResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ParentStudentLinkResponse"
+  /api/v1/homework/{id}/recipients:
+    get:
+      tags:
+      - Homework
+      summary: List homework recipients
+      description: "Returns all recipient rows for a homework item, including delivery\
+        \ status and acknowledgment timestamp. Only the item's author teacher or a\
+        \ SCHOOL_ADMIN can access this endpoint."
+      operationId: listRecipients
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HomeworkRecipientResponse"
+        "404":
+          description: Homework item not found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HomeworkRecipientResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HomeworkRecipientResponse"
+        "200":
+          description: Recipient list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HomeworkRecipientResponse"
+  /api/v1/classes/{classId}/teacher-subject-assignments:
+    get:
+      tags:
+      - Teacher Subject Assignments
+      summary: List all teacher-subject assignments for a class
+      operationId: listByClass
+      parameters:
+      - name: classId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "200":
+          description: Assignment list
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherSubjectAssignmentResponse"
+  /api/v1/classes/my-classes:
+    get:
+      tags:
+      - Classes
+      summary: List my classes
+      description: Returns all classes assigned to the authenticated teacher — both
+        as homeroom teacher and via explicit TeacherAssignment records.
+      operationId: myClasses
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: Paginated class list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "403":
+          description: Requires TEACHER role
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+  /api/v1/classes/by-teacher:
+    get:
+      tags:
+      - Classes
+      summary: List classes by teacher
+      description: Returns a paginated list of classes where the given user is the
+        homeroom teacher.
+      operationId: listByTeacher
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      - name: teacherId
+        in: query
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Paginated class list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "400":
+          description: Missing or invalid teacherId
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseSchoolClassResponse"
+  /api/v1/attendance/{id}:
+    get:
+      tags:
+      - Attendance
+      summary: Get attendance record
+      description: Returns a single attendance record by ID.
+      operationId: get_7
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Attendance record found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "404":
+          description: Record not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN or TEACHER
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttendanceRecordResponse"
+  /api/v1/attendance/roster:
+    get:
+      tags:
+      - Attendance
+      summary: Get attendance roster
+      description: Returns the attendance entry for every enrolled student in a class
+        on the given date. Students with no record yet appear with status UNKNOWN.
+      operationId: roster
+      parameters:
+      - name: classId
+        in: query
+        description: Class ID to fetch the roster for
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: date
+        in: query
+        description: Date in ISO-8601 format (yyyy-MM-dd)
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: Roster returned
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRosterEntry"
+        "403":
+          description: Requires SCHOOL_ADMIN or teacher assigned to the class
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRosterEntry"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRosterEntry"
+        "404":
+          description: Class not found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRosterEntry"
+  /api/v1/attendance/history:
+    get:
+      tags:
+      - Attendance
+      summary: Get attendance history
+      description: Returns attendance records for a student across an inclusive date
+        range. SCHOOL_ADMIN and TEACHER see all records; a PARENT must be linked to
+        the student (unlinked parents receive 404 instead of 403 to prevent enumeration).
+      operationId: history
+      parameters:
+      - name: studentId
+        in: query
+        description: Student ID
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: from
+        in: query
+        description: "Range start date (yyyy-MM-dd, inclusive)"
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        description: "Range end date (yyyy-MM-dd, inclusive)"
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "404":
+          description: Student not found or parent not linked (anti-enumeration)
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceHistoryEntry"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceHistoryEntry"
+        "200":
+          description: Attendance history
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceHistoryEntry"
+        "403":
+          description: "Requires SCHOOL_ADMIN, TEACHER, or linked PARENT"
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceHistoryEntry"
+  /api/v1/announcements/{id}:
+    get:
+      tags:
+      - Announcements
+      summary: Get announcement
+      description: Returns a single announcement by ID.
+      operationId: get_8
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Not the sender and not SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "200":
+          description: Announcement found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+        "404":
+          description: Announcement not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AnnouncementResponse"
+  /api/v1/announcements/{id}/recipients:
+    get:
+      tags:
+      - Announcements
+      summary: List recipients
+      description: "Returns the materialized recipient rows for an announcement, including\
+        \ per-recipient delivery status (QUEUED→SENT→DELIVERED→READ) and acknowledgment\
+        \ timestamp."
+      operationId: listRecipients_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementRecipientResponse"
+        "200":
+          description: Paginated recipient list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementRecipientResponse"
+        "404":
+          description: Announcement not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementRecipientResponse"
+        "403":
+          description: Requires SCHOOL_ADMIN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageResponseAnnouncementRecipientResponse"
+  /api/v1/teacher-subject-assignments/{id}:
+    delete:
+      tags:
+      - Teacher Subject Assignments
+      summary: Remove a teacher-subject assignment
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+        "404":
+          description: Assignment not found
+        "401":
+          description: Not authenticated
+        "204":
+          description: Removed
+  /api/v1/parent-links/{id}:
+    delete:
+      tags:
+      - Parent-Student Links
+      summary: Remove parent-student link
+      description: Deletes the link between a parent and a student.
+      operationId: delete_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Link removed
+        "401":
+          description: Not authenticated
+        "404":
+          description: Link not found
+        "403":
+          description: Requires SCHOOL_ADMIN
+  /api/v1/enrollments/{id}:
+    delete:
+      tags:
+      - Enrollments
+      summary: Remove enrollment
+      description: Removes a student from a class by deleting the enrollment record.
+      operationId: delete_6
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "404":
+          description: Enrollment not found
+        "204":
+          description: Enrollment removed
+        "401":
+          description: Not authenticated
+        "403":
+          description: Requires SCHOOL_ADMIN
+  /api/v1/devices/{deviceId}:
+    delete:
+      tags:
+      - Devices
+      summary: Deregister a device
+      description: Marks the device token inactive so it no longer receives push notifications.
+      operationId: deregister
+      parameters:
+      - name: deviceId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: Device not found for this user
+        "401":
+          description: Not authenticated
+        "204":
+          description: Device deregistered
+  /api/v1/class-subjects/{id}:
+    delete:
+      tags:
+      - Class Subjects
+      summary: Remove a subject from a class
+      operationId: delete_8
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "403":
+          description: Insufficient permissions
+        "409":
+          description: "Cannot remove: teacher assignments reference this class-subject"
+        "401":
+          description: Not authenticated
+        "404":
+          description: Class-subject assignment not found
+        "204":
+          description: Removed
+components:
+  schemas:
+    LocalTime:
+      type: object
+      properties:
+        hour:
+          type: integer
+          format: int32
+        minute:
+          type: integer
+          format: int32
+        second:
+          type: integer
+          format: int32
+        nano:
+          type: integer
+          format: int32
+    SchoolSettingsRequest:
+      required:
+      - defaultLanguage
+      - feeReminderOffsetDays
+      - homeworkReminderTime
+      - quietHoursEnd
+      - quietHoursStart
+      - rosterDueByLocalTime
+      type: object
+      properties:
+        defaultLanguage:
+          type: string
+          enum:
+          - AR
+          - EN
+        quietHoursStart:
+          $ref: "#/components/schemas/LocalTime"
+        quietHoursEnd:
+          $ref: "#/components/schemas/LocalTime"
+        homeworkReminderEnabled:
+          type: boolean
+        homeworkReminderTime:
+          $ref: "#/components/schemas/LocalTime"
+        feeReminderOffsetDays:
+          maxItems: 10
+          minItems: 0
+          type: array
+          items:
+            type: integer
+            format: int32
+        wabaPhoneNumberId:
+          maxLength: 64
+          minLength: 0
+          type: string
+        smsFallbackEnabled:
+          type: boolean
+        alertsRespectQuietHours:
+          type: boolean
+        rosterDueByLocalTime:
+          $ref: "#/components/schemas/LocalTime"
+    SchoolSettingsResponse:
+      type: object
+      properties:
+        defaultLanguage:
+          type: string
+          enum:
+          - AR
+          - EN
+        quietHoursStart:
+          $ref: "#/components/schemas/LocalTime"
+        quietHoursEnd:
+          $ref: "#/components/schemas/LocalTime"
+        homeworkReminderEnabled:
+          type: boolean
+        homeworkReminderTime:
+          $ref: "#/components/schemas/LocalTime"
+        feeReminderOffsetDays:
+          type: array
+          items:
+            type: integer
+            format: int32
+        wabaPhoneNumberId:
+          type: string
+        smsFallbackEnabled:
+          type: boolean
+        alertsRespectQuietHours:
+          type: boolean
+        rosterDueByLocalTime:
+          $ref: "#/components/schemas/LocalTime"
+    CreateSubjectRequest:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 0
+          type: string
+        code:
+          maxLength: 50
+          minLength: 0
+          type: string
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+    SubjectResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateStudentRequest:
+      required:
+      - fullName
+      type: object
+      properties:
+        fullName:
+          maxLength: 255
+          minLength: 0
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        externalId:
+          maxLength: 100
+          minLength: 0
+          type: string
+    StudentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        externalId:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - GRADUATED
+          - SUSPENDED
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    BulkImportResult:
+      type: object
+      properties:
+        importedCount:
+          type: integer
+          format: int32
+        rejectedCount:
+          type: integer
+          format: int32
+        rejectedRows:
+          type: array
+          items:
+            $ref: "#/components/schemas/RejectedRow"
+    RejectedRow:
+      type: object
+      properties:
+        rowNumber:
+          type: integer
+          format: int32
+        reason:
+          type: string
+    CreateSchoolRequest:
+      required:
+      - country
+      - locale
+      - name
+      - subscriptionTier
+      - timezone
+      type: object
+      properties:
+        name:
+          maxLength: 120
+          minLength: 2
+          type: string
+        country:
+          pattern: "^[A-Z]{2}$"
+          type: string
+        timezone:
+          maxLength: 64
+          minLength: 0
+          type: string
+        locale:
+          maxLength: 35
+          minLength: 0
+          type: string
+        subscriptionTier:
+          type: string
+          enum:
+          - BASIC
+          - STANDARD
+          - PREMIUM
+        settings:
+          $ref: "#/components/schemas/SchoolSettingsRequest"
+    SchoolResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        country:
+          type: string
+        timezone:
+          type: string
+        locale:
+          type: string
+        subscriptionTier:
+          type: string
+          enum:
+          - BASIC
+          - STANDARD
+          - PREMIUM
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+        settings:
+          $ref: "#/components/schemas/SchoolSettingsResponse"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateUserRequest:
+      required:
+      - name
+      - role
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - SUPER_ADMIN
+          - SCHOOL_ADMIN
+          - TEACHER
+          - PARENT
+        name:
+          maxLength: 255
+          minLength: 0
+          type: string
+        email:
+          maxLength: 255
+          minLength: 0
+          type: string
+        phone:
+          maxLength: 30
+          minLength: 0
+          type: string
+        password:
+          maxLength: 128
+          minLength: 8
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum:
+          - SUPER_ADMIN
+          - SCHOOL_ADMIN
+          - TEACHER
+          - PARENT
+        name:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    VerifyOtpRequest:
+      required:
+      - code
+      - ticketId
+      type: object
+      properties:
+        ticketId:
+          type: string
+        code:
+          pattern: "^\\d{6}$"
+          type: string
+    VerifyOtpResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        schoolId:
+          type: string
+          format: uuid
+        tokenType:
+          type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+    RequestOtpRequest:
+      required:
+      - phone
+      type: object
+      properties:
+        phone:
+          maxLength: 32
+          minLength: 0
+          pattern: "^\\+[1-9]\\d{6,14}$"
+          type: string
+    RequestOtpResponse:
+      type: object
+      properties:
+        ticketId:
+          type: string
+    ParentLogoutRequest:
+      required:
+      - token
+      type: object
+      properties:
+        token:
+          type: string
+    CreateParentLinkRequest:
+      required:
+      - parentUserId
+      - relationship
+      - studentId
+      type: object
+      properties:
+        parentUserId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        relationship:
+          type: string
+          enum:
+          - MOTHER
+          - FATHER
+          - GUARDIAN
+        primaryContact:
+          type: boolean
+    ParentStudentLinkResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        parentUserId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        relationship:
+          type: string
+          enum:
+          - MOTHER
+          - FATHER
+          - GUARDIAN
+        primaryContact:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    CreateHomeworkRequest:
+      required:
+      - classId
+      - description
+      - dueDate
+      - subject
+      type: object
+      properties:
+        classId:
+          type: string
+          format: uuid
+        subject:
+          maxLength: 200
+          minLength: 0
+          type: string
+        description:
+          maxLength: 4000
+          minLength: 0
+          type: string
+        attachmentKey:
+          maxLength: 512
+          minLength: 0
+          type: string
+        dueDate:
+          type: string
+          format: date
+        requiresAck:
+          type: boolean
+        publish:
+          type: boolean
+    HomeworkResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        teacherId:
+          type: string
+          format: uuid
+        subject:
+          type: string
+        description:
+          type: string
+        attachmentKey:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+        requiresAck:
+          type: boolean
+        recipientCount:
+          type: integer
+          format: int64
+        acknowledgedCount:
+          type: integer
+          format: int64
+        reminderSentAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateGradeRequest:
+      required:
+      - classId
+      - period
+      - studentId
+      - subject
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        subject:
+          maxLength: 200
+          minLength: 0
+          type: string
+        period:
+          maxLength: 50
+          minLength: 0
+          type: string
+        score:
+          type: number
+        gradeLabel:
+          maxLength: 10
+          minLength: 0
+          type: string
+        notes:
+          maxLength: 2000
+          minLength: 0
+          type: string
+    GradeRecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        subject:
+          type: string
+        period:
+          type: string
+        score:
+          type: number
+        gradeLabel:
+          type: string
+        gradedByUserId:
+          type: string
+          format: uuid
+        gradedAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RegisterDeviceRequest:
+      required:
+      - deviceId
+      - fcmToken
+      - platform
+      type: object
+      properties:
+        platform:
+          type: string
+          enum:
+          - ANDROID
+          - IOS
+        fcmToken:
+          maxLength: 256
+          minLength: 0
+          type: string
+        deviceId:
+          maxLength: 128
+          minLength: 0
+          type: string
+    DeviceTokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum:
+          - ANDROID
+          - IOS
+        deviceId:
+          type: string
+        active:
+          type: boolean
+    CreateSchoolClassRequest:
+      required:
+      - academicYear
+      - gradeLevel
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 0
+          type: string
+        gradeLevel:
+          maxLength: 100
+          minLength: 0
+          type: string
+        academicYear:
+          maxLength: 20
+          minLength: 0
+          type: string
+        homeroomTeacherId:
+          type: string
+          format: uuid
+    SchoolClassResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        gradeLevel:
+          type: string
+        academicYear:
+          type: string
+        homeroomTeacherId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AssignSubjectToClassRequest:
+      required:
+      - subjectId
+      type: object
+      properties:
+        subjectId:
+          type: string
+          format: uuid
+    ClassSubjectResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        subjectId:
+          type: string
+          format: uuid
+        subjectName:
+          type: string
+        subjectCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    AssignTeacherToSubjectRequest:
+      required:
+      - teacherUserId
+      type: object
+      properties:
+        teacherUserId:
+          type: string
+          format: uuid
+    TeacherSubjectAssignmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        teacherUserId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        subjectId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    EnrollStudentRequest:
+      required:
+      - studentId
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+    EnrollmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    RefreshRequest:
+      required:
+      - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        accessExpiresAt:
+          type: string
+          format: date-time
+        tokenType:
+          type: string
+    LogoutRequest:
+      required:
+      - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+    LoginRequest:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          maxLength: 255
+          minLength: 0
+          type: string
+        password:
+          maxLength: 256
+          minLength: 8
+          type: string
+    ParentResponseRequest:
+      required:
+      - response
+      type: object
+      properties:
+        response:
+          maxLength: 500
+          minLength: 0
+          type: string
+    AttendanceRecordResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - PRESENT
+          - ABSENT
+          - LATE
+          - EXCUSED
+        markedByUserId:
+          type: string
+          format: uuid
+        markedAt:
+          type: string
+          format: date-time
+        parentResponded:
+          type: boolean
+        parentRespondedAt:
+          type: string
+          format: date-time
+        alertSentAt:
+          type: string
+          format: date-time
+    MarkAttendanceRequest:
+      required:
+      - classId
+      - date
+      - status
+      - studentId
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - PRESENT
+          - ABSENT
+          - LATE
+          - EXCUSED
+    MarkAllPresentRequest:
+      required:
+      - classId
+      - date
+      type: object
+      properties:
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+    MarkAllPresentResponse:
+      type: object
+      properties:
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        transitionedCount:
+          type: integer
+          format: int32
+        skippedCount:
+          type: integer
+          format: int32
+    CreateAnnouncementRequest:
+      required:
+      - body
+      - language
+      - scopeType
+      type: object
+      properties:
+        scopeType:
+          type: string
+          enum:
+          - SCHOOL
+          - GRADE
+          - CLASS
+          - CUSTOM
+        classId:
+          type: string
+          format: uuid
+        gradeLevel:
+          maxLength: 100
+          minLength: 0
+          type: string
+        recipientStudentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        language:
+          type: string
+          enum:
+          - AR
+          - EN
+        body:
+          maxLength: 4000
+          minLength: 0
+          type: string
+        attachmentKey:
+          maxLength: 512
+          minLength: 0
+          type: string
+        requiresAck:
+          type: boolean
+        scheduledFor:
+          type: string
+          format: date-time
+    AnnouncementResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        senderId:
+          type: string
+          format: uuid
+        scopeType:
+          type: string
+          enum:
+          - SCHOOL
+          - GRADE
+          - CLASS
+          - CUSTOM
+        scopeValue:
+          type: string
+        language:
+          type: string
+          enum:
+          - AR
+          - EN
+        body:
+          type: string
+        attachmentKey:
+          type: string
+        requiresAck:
+          type: boolean
+        scheduledFor:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - SCHEDULED
+          - SENDING
+          - SENT
+          - RECALLED
+        recipientCount:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateSubjectRequest:
+      required:
+      - name
+      - status
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 0
+          type: string
+        code:
+          maxLength: 50
+          minLength: 0
+          type: string
+        description:
+          maxLength: 1024
+          minLength: 0
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+    UpdateStudentRequest:
+      required:
+      - fullName
+      - status
+      type: object
+      properties:
+        fullName:
+          maxLength: 255
+          minLength: 0
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        externalId:
+          maxLength: 100
+          minLength: 0
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - GRADUATED
+          - SUSPENDED
+    UpdateHomeworkRequest:
+      required:
+      - description
+      - dueDate
+      - subject
+      type: object
+      properties:
+        subject:
+          maxLength: 200
+          minLength: 0
+          type: string
+        description:
+          maxLength: 4000
+          minLength: 0
+          type: string
+        attachmentKey:
+          maxLength: 512
+          minLength: 0
+          type: string
+        dueDate:
+          type: string
+          format: date
+    UpdateGradeRequest:
+      type: object
+      properties:
+        score:
+          type: number
+        gradeLabel:
+          maxLength: 10
+          minLength: 0
+          type: string
+        notes:
+          maxLength: 2000
+          minLength: 0
+          type: string
+    UpdateSchoolClassRequest:
+      required:
+      - academicYear
+      - gradeLevel
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          minLength: 0
+          type: string
+        gradeLevel:
+          maxLength: 100
+          minLength: 0
+          type: string
+        academicYear:
+          maxLength: 20
+          minLength: 0
+          type: string
+        homeroomTeacherId:
+          type: string
+          format: uuid
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    PageResponseSubjectResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubjectResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseStudentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/StudentResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    StudentSubjectResponse:
+      type: object
+      properties:
+        subjectId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        classId:
+          type: string
+          format: uuid
+        teacherUserId:
+          type: string
+          format: uuid
+    PageResponseSchoolResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/SchoolResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseUserResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    ChildClassSummary:
+      type: object
+      properties:
+        classId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        gradeLevel:
+          type: string
+        academicYear:
+          type: string
+    ParentChildResponse:
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+          - GRADUATED
+          - SUSPENDED
+        relationship:
+          type: string
+          enum:
+          - MOTHER
+          - FATHER
+          - GUARDIAN
+        primaryContact:
+          type: boolean
+        classes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChildClassSummary"
+    PageResponseHomeworkResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeworkResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseParentHomeworkFeedEntry:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParentHomeworkFeedEntry"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    ParentHomeworkFeedEntry:
+      type: object
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        homeworkId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        subject:
+          type: string
+        description:
+          type: string
+        attachmentKey:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        homeworkStatus:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+        requiresAck:
+          type: boolean
+        deliveryStatus:
+          type: string
+          enum:
+          - PENDING
+          - DEFERRED
+          - SENT
+          - FAILED
+        acknowledgedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    HomeworkRecipientResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        homeworkId:
+          type: string
+          format: uuid
+        parentUserId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        deliveryStatus:
+          type: string
+          enum:
+          - PENDING
+          - DEFERRED
+          - SENT
+          - FAILED
+        messageId:
+          type: string
+        acknowledgedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    PageResponseSchoolClassResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/SchoolClassResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseClassSubjectResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClassSubjectResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    AttendanceRosterEntry:
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        studentFullName:
+          type: string
+        recordId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - PRESENT
+          - ABSENT
+          - LATE
+          - EXCUSED
+        markedAt:
+          type: string
+          format: date-time
+    AttendanceHistoryEntry:
+      type: object
+      properties:
+        recordId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - PRESENT
+          - ABSENT
+          - LATE
+          - EXCUSED
+        markedAt:
+          type: string
+          format: date-time
+        parentResponded:
+          type: boolean
+        parentRespondedAt:
+          type: string
+          format: date-time
+    PageResponseAnnouncementResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    AnnouncementRecipientResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        announcementId:
+          type: string
+          format: uuid
+        parentUserId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        deliveryStatus:
+          type: string
+          enum:
+          - QUEUED
+          - SENT
+          - DELIVERED
+          - READ
+          - FAILED
+        acknowledgedAt:
+          type: string
+          format: date-time
+        messageId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    PageResponseAnnouncementRecipientResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnnouncementRecipientResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: Unprocessable Entity
+        status:
+          type: integer
+          format: int32
+          example: 422
+        detail:
+          type: string
+          example: Validation failed on field 'body'
+        instance:
+          type: string
+          example: /api/v1/announcements
+        traceId:
+          type: string
+          example: 65f1a2b3c4d5e6f7
+      description: RFC 7807 ProblemDetail — returned for all 4xx/5xx responses
+  securitySchemes:
+    ParentToken:
+      type: http
+      description: Opaque 24-hour sliding-TTL token issued by POST /api/v1/parents/auth/verify-otp.
+      in: header
+      scheme: bearer
+    BearerJWT:
+      type: http
+      description: RS256 JWT issued by POST /api/v1/auth/login (staff/admin).
+      in: header
+      scheme: bearer
+      bearerFormat: JWT
