@@ -1,0 +1,149 @@
+package com.schoolbridge.api.assistant.tools.action;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.schoolbridge.api.assistant.confirm.PendingAction;
+import com.schoolbridge.api.assistant.dto.ActionPreview;
+import com.schoolbridge.api.assistant.tools.ActionTool;
+import com.schoolbridge.api.assistant.tools.PreviewOutcome;
+import com.schoolbridge.api.assistant.tools.ToolContext;
+import com.schoolbridge.api.assistant.tools.ToolResult;
+import com.schoolbridge.api.assistant.tools.support.Resolved;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * Skeleton for action tools. Owns the whole confirm-then-execute machinery — bulk cap, token issue,
+ * Redis store, single-use consume, user/expiry re-checks — so each concrete tool implements only:
+ *
+ * <ul>
+ *   <li>{@link #prepare} — validate scope, resolve names→ids, compute the bilingual impact (no
+ *       mutation), and
+ *   <li>{@link #doExecute} — re-guard then call the backing service with the resolved args.
+ * </ul>
+ */
+public abstract class AbstractActionTool implements ActionTool {
+
+  protected final ActionSupport actions;
+
+  protected AbstractActionTool(ActionSupport actions) {
+    this.actions = actions;
+  }
+
+  @Override
+  public final PreviewOutcome preview(JsonNode args, ToolContext ctx) {
+    JsonNode safeArgs = args == null ? actions.mapper().createObjectNode() : args;
+    PrepResult result = prepare(safeArgs, ctx);
+    if (result instanceof PrepResult.Reject reject) {
+      return new PreviewOutcome.Rejected(reject.result());
+    }
+    Preparation prep = ((PrepResult.Ready) result).preparation();
+    if (prep.impactCount() > actions.properties().getActions().getMaxBulkImpact()) {
+      return new PreviewOutcome.Rejected(
+          ToolResult.denied(actions.messages().get("assistant.action.too_large")));
+    }
+    String token = actions.tokens().generate();
+    Instant now = Instant.now();
+    Instant expiresAt = now.plus(actions.properties().getActions().getConfirmationTtl());
+    PendingAction pending =
+        new PendingAction(
+            token,
+            ctx.userId(),
+            ctx.schoolId(),
+            name(),
+            prep.resolvedArgs(),
+            prep.impact(),
+            destructive(),
+            now,
+            expiresAt);
+    actions.store().put(pending, actions.properties().getActions().getConfirmationTtl());
+    return new PreviewOutcome.Prepared(
+        new ActionPreview(
+            token, prep.summaryAr(), prep.summaryEn(), prep.impact(), destructive(), expiresAt));
+  }
+
+  @Override
+  public final ToolResult execute(String token, ToolContext ctx) {
+    Optional<PendingAction> consumed = actions.store().consume(token);
+    if (consumed.isEmpty()) {
+      return ToolResult.error(actions.messages().get("assistant.action.invalid"));
+    }
+    PendingAction action = consumed.get();
+    if (!action.userId().equals(ctx.userId()) || !name().equals(action.toolName())) {
+      return ToolResult.error(actions.messages().get("assistant.action.invalid"));
+    }
+    if (action.expiresAt().isBefore(Instant.now())) {
+      return ToolResult.error(actions.messages().get("assistant.action.expired"));
+    }
+    return doExecute(action.resolvedArgs(), ctx.withIdempotencyKey("assistant:action:" + token));
+  }
+
+  /** Validate + resolve + compute impact. NEVER mutates. */
+  protected abstract PrepResult prepare(JsonNode args, ToolContext ctx);
+
+  /** Re-guard then mutate via the existing service, reading only the resolved args. */
+  protected abstract ToolResult doExecute(JsonNode resolvedArgs, ToolContext ctx);
+
+  // --- helpers for subclasses ----------------------------------------------
+
+  protected ObjectNode newArgs() {
+    return actions.mapper().createObjectNode();
+  }
+
+  protected String msg(String key, Object... args) {
+    return actions.messages().get(key, args);
+  }
+
+  protected static java.util.UUID uuid(JsonNode node, String field) {
+    return java.util.UUID.fromString(node.get(field).asText());
+  }
+
+  protected static String text(JsonNode node, String field) {
+    JsonNode v = node.get(field);
+    return v == null || v.isNull() ? null : v.asText();
+  }
+
+  protected static java.time.LocalDate localDate(JsonNode node, String field) {
+    String v = text(node, field);
+    return v == null ? null : java.time.LocalDate.parse(v);
+  }
+
+  protected PrepResult reject(ToolResult result) {
+    return new PrepResult.Reject(result);
+  }
+
+  protected PrepResult deniedKey(String key, Object... args) {
+    return reject(ToolResult.denied(actions.messages().get(key, args)));
+  }
+
+  /** Propagate a name-resolution clarification (missing/none/ambiguous) straight to the model. */
+  protected PrepResult clarify(Resolved<?> resolved) {
+    return reject(resolved.result());
+  }
+
+  protected PrepResult ready(
+      JsonNode resolvedArgs,
+      String summaryAr,
+      String summaryEn,
+      Map<String, Object> impact,
+      int impactCount) {
+    return new PrepResult.Ready(
+        new Preparation(resolvedArgs, summaryAr, summaryEn, impact, impactCount));
+  }
+
+  // --- result types --------------------------------------------------------
+
+  protected sealed interface PrepResult {
+    record Ready(Preparation preparation) implements PrepResult {}
+
+    record Reject(ToolResult result) implements PrepResult {}
+  }
+
+  protected record Preparation(
+      JsonNode resolvedArgs,
+      String summaryAr,
+      String summaryEn,
+      Map<String, Object> impact,
+      int impactCount) {}
+}
