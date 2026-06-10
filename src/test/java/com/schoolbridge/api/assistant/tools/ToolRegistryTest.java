@@ -1,0 +1,110 @@
+package com.schoolbridge.api.assistant.tools;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.schoolbridge.api.assistant.tools.support.Schema;
+import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
+import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
+class ToolRegistryTest {
+
+  private static final Tool PARENT_READ = tool("list_my_children", ToolKind.READ, UserRole.PARENT);
+  private static final Tool TEACHER_READ =
+      tool("get_class_grades", ToolKind.READ, UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+  private static final Tool TEACHER_ACTION =
+      tool("mark_attendance", ToolKind.ACTION, UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+  private static final Tool ADMIN_ACTION =
+      tool("add_student", ToolKind.ACTION, UserRole.SCHOOL_ADMIN);
+
+  private final List<Tool> all = List.of(PARENT_READ, TEACHER_READ, TEACHER_ACTION, ADMIN_ACTION);
+
+  @Test
+  void parentSeesOnlyParentTools() {
+    ToolRegistry registry = new ToolRegistry(all, true);
+    List<Tool> tools = registry.toolsFor(ctx(UserRole.PARENT, parent()));
+    assertThat(tools).containsExactly(PARENT_READ);
+  }
+
+  @Test
+  void teacherSeesTeacherReadAndActionWhenActionsEnabled() {
+    ToolRegistry registry = new ToolRegistry(all, true);
+    List<Tool> tools = registry.toolsFor(ctx(UserRole.TEACHER, staff(UserRole.TEACHER)));
+    assertThat(tools).containsExactlyInAnyOrder(TEACHER_READ, TEACHER_ACTION);
+  }
+
+  @Test
+  void actionsKillSwitchHidesActionTools() {
+    ToolRegistry registry = new ToolRegistry(all, false);
+    List<Tool> tools = registry.toolsFor(ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN)));
+    assertThat(tools).containsExactly(TEACHER_READ);
+    assertThat(registry.all()).hasSize(4);
+  }
+
+  @Test
+  void findRespectsRoleAndKillSwitch() {
+    ToolRegistry enabled = new ToolRegistry(all, true);
+    assertThat(
+            enabled.find("add_student", ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN))))
+        .contains(ADMIN_ACTION);
+    assertThat(enabled.find("add_student", ctx(UserRole.TEACHER, staff(UserRole.TEACHER))))
+        .isEmpty();
+
+    ToolRegistry disabled = new ToolRegistry(all, false);
+    assertThat(
+            disabled.find("add_student", ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN))))
+        .isEmpty();
+  }
+
+  private static ToolContext ctx(UserRole role, Object principal) {
+    return new ToolContext(
+        UUID.randomUUID(),
+        (com.schoolbridge.api.identity.auth.principal.SchoolScopedPrincipal) principal,
+        role,
+        Locale.ENGLISH,
+        null);
+  }
+
+  private static StaffPrincipal staff(UserRole role) {
+    return new StaffPrincipal(UUID.randomUUID(), UUID.randomUUID(), role);
+  }
+
+  private static ParentPrincipal parent() {
+    return new ParentPrincipal(UUID.randomUUID(), UUID.randomUUID());
+  }
+
+  private static Tool tool(String name, ToolKind kind, UserRole... roles) {
+    return new Tool() {
+      @Override
+      public String name() {
+        return name;
+      }
+
+      @Override
+      public String description() {
+        return name;
+      }
+
+      @Override
+      public JsonNode inputSchema() {
+        return Schema.empty();
+      }
+
+      @Override
+      public ToolKind kind() {
+        return kind;
+      }
+
+      @Override
+      public Set<UserRole> roles() {
+        return Set.of(roles);
+      }
+    };
+  }
+}
