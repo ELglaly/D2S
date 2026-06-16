@@ -36,6 +36,8 @@ tags:
   description: Assign teachers to subjects within a class
 - name: Schools
   description: Platform-admin school (tenant) management. All endpoints require SUPER_ADMIN.
+- name: WhatsApp Diagnostics
+  description: WhatsApp integration status and credential check (SUPER_ADMIN only)
 - name: School Users
   description: Platform-admin user management within a school tenant. Requires SUPER_ADMIN.
 - name: Homework
@@ -2375,6 +2377,56 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/SchoolClassResponse"
+  /integrations/whatsapp/diagnostics:
+    get:
+      tags:
+      - WhatsApp Diagnostics
+      summary: WhatsApp integration status
+      description: Shows credential configuration and which client is active
+      operationId: status
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+  /integrations/whatsapp/diagnostics/test-send:
+    get:
+      tags:
+      - WhatsApp Diagnostics
+      summary: Send a test WhatsApp message
+      description: Sends the OTP template to the given E.164 phone (e.g. +201234567890).
+        Only works with live credentials and approved templates.
+      operationId: testSend
+      parameters:
+      - name: phone
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TestSendResponse"
+  /integrations/whatsapp/diagnostics/ping:
+    get:
+      tags:
+      - WhatsApp Diagnostics
+      summary: Ping Meta API
+      description: Calls Meta Graph API to verify the access token and phone number
+        ID. Returns the phone's display name on success.
+      operationId: ping
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PingResponse"
   /api/v1/students/{studentId}/subjects:
     get:
       tags:
@@ -4165,6 +4217,54 @@ components:
         homeroomTeacherId:
           type: string
           format: uuid
+    StatusResponse:
+      type: object
+      properties:
+        credentialsConfigured:
+          type: boolean
+        activeClient:
+          type: string
+        missingEnvVars:
+          type: array
+          items:
+            type: string
+        phoneNumberIdMasked:
+          type: string
+        templates:
+          $ref: "#/components/schemas/TemplateNames"
+    TemplateNames:
+      type: object
+      properties:
+        otp:
+          type: string
+        announcement:
+          type: string
+        attendanceAbsent:
+          type: string
+        attendanceLate:
+          type: string
+        attendanceExcused:
+          type: string
+    TestSendResponse:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+        channel:
+          type: string
+        messageId:
+          type: string
+        message:
+          type: string
+    PingResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        displayPhone:
+          type: string
     Pageable:
       type: object
       properties:

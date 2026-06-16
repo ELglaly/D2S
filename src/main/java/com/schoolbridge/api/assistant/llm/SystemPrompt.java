@@ -12,10 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class SystemPrompt {
 
-  private static final String TEMPLATE =
-      """
-      You are SchoolBridge's assistant, helping a {role} in a school's mobile app.
+  private static final String PERSONA_TEMPLATE =
+      "You are SchoolBridge's assistant, helping a {role} in a school's mobile app.";
 
+  private static final String GUARDRAILS_TEMPLATE =
+      """
       Rules:
       - Reply in {language}, matching the user's wording and tone.
       - Use ONLY the provided tools to read or change data. Never invent students, grades, \
@@ -32,9 +33,26 @@ public class SystemPrompt {
       - Keep answers concise and specific to what the tools returned.
       """;
 
-  public String build(ToolContext ctx) {
+  /** The built-in default persona (used when a tenant has not set a custom system prompt). */
+  public String defaultPersona(ToolContext ctx) {
+    return PERSONA_TEMPLATE.replace("{role}", roleLabel(ctx));
+  }
+
+  /**
+   * The immutable, security-critical guardrails. Always appended after the (possibly tenant-edited)
+   * persona so an edited prompt can never weaken the confirm gate or leak internal identifiers.
+   */
+  public String guardrails(ToolContext ctx) {
     String language = "ar".equals(ctx.language().getLanguage()) ? "Arabic" : "English";
-    return TEMPLATE.replace("{role}", roleLabel(ctx)).replace("{language}", language);
+    return GUARDRAILS_TEMPLATE.replace("{language}", language);
+  }
+
+  /**
+   * Composes the default persona with the guardrails — the prompt used by the one-shot {@code
+   * /ask}.
+   */
+  public String build(ToolContext ctx) {
+    return defaultPersona(ctx) + "\n\n" + guardrails(ctx);
   }
 
   private String roleLabel(ToolContext ctx) {

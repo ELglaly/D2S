@@ -20,6 +20,11 @@ schoolbridge:
   push:
     fcm:
       enabled: false
+  assistant:
+    # Default provider is deepseek (application.yml); supply a dummy key so the DeepSeek RestClient
+    # bean builds at context startup. No network is used — assistant tests inject a @Primary
+    # scripted gateway, and other tests never invoke the gateway.
+    deepseek-api-key: test-deepseek-key
   whatsapp:
     api-base-url: http://localhost:0/wa-test
     phone-number-id: 999999999999999
@@ -32,11 +37,20 @@ schoolbridge:
       attendance-absent-name: attendance_absent_v1
       attendance-late-name: attendance_late_v1
       attendance-excused-name: attendance_excused_v1
+      homework-reminder-name: homework_reminder_v1
   outbox:
     relay:
       # Relay stays off in the default test profile so polling does not interfere with assertions.
       # Specific integration tests (the outbox→consumer flow) enable it via @DynamicPropertySource.
       enabled: false
+  homework:
+    sweeper:
+      enabled: false
+      fire-cron: "0 */5 * * * *"
+      reminder-window-minutes: 15
+      reminder-horizon-days: 2
+      deferred-release-rate: PT1M
+      dedup-ttl: 36h
   attendance:
     sweeper:
       # Off by default in tests — AttendanceSweeperTest constructs the bean directly with @Autowired

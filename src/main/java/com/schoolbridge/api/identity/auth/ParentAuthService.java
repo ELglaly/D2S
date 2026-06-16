@@ -60,7 +60,7 @@ public class ParentAuthService {
     }
 
     OtpService.IssuedOtp issued = otpService.issue(parent.getId(), parent.getSchoolId());
-    log.info("code is  {}", issued.code());
+    // log.info("code is  {}", issued.code());
     dispatcher.dispatch(request.phone(), issued.code());
     return new RequestOtpResponse(issued.ticketId());
   }

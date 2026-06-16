@@ -2,11 +2,16 @@ package com.schoolbridge.api.assistant.llm;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.core.JsonValue;
+import com.anthropic.core.http.StreamResponse;
+import com.anthropic.helpers.MessageAccumulator;
 import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.ContentBlockParam;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.Model;
+import com.anthropic.models.messages.RawContentBlockDelta;
+import com.anthropic.models.messages.RawContentBlockDeltaEvent;
+import com.anthropic.models.messages.RawMessageStreamEvent;
 import com.anthropic.models.messages.TextBlockParam;
 import com.anthropic.models.messages.Tool;
 import com.anthropic.models.messages.ToolResultBlockParam;
@@ -14,18 +19,20 @@ import com.anthropic.models.messages.ToolUseBlockParam;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 /**
- * The only {@link LlmGateway} that touches the network. Translates the SDK-free {@link LlmRequest}
- * / {@link LlmResponse} model to and from the Anthropic Messages API. Loaded only when {@code
- * schoolbridge.assistant.enabled=true}; every test runs against a scripted stub instead.
+ * {@link LlmGateway} backed by the Anthropic Messages API. Loaded only when {@code
+ * schoolbridge.assistant.enabled=true} and {@code provider=anthropic} (the default).
  */
 @Component
-@ConditionalOnProperty(prefix = "schoolbridge.assistant", name = "enabled", havingValue = "true")
+@ConditionalOnExpression(
+    "'${schoolbridge.assistant.provider:anthropic}'.equals('anthropic')"
+        + " and ${schoolbridge.assistant.enabled:false}")
 public class AnthropicLlmGateway implements LlmGateway {
 
   private final AnthropicClient client;
@@ -39,6 +46,47 @@ public class AnthropicLlmGateway implements LlmGateway {
   @Override
   @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = "assistant")
   public LlmResponse converse(LlmRequest request) {
+    return toResponse(client.messages().create(buildParams(request)));
+  }
+
+  /**
+   * True token-by-token stream. Forwards each text delta to {@code listener} and, the moment {@code
+   * cancelled} reports a client disconnect, closes the {@link StreamResponse} — which aborts the
+   * underlying HTTP call to Anthropic. The final {@link LlmResponse} is reassembled from the stream
+   * via {@link MessageAccumulator} so tool-use and usage survive.
+   */
+  @Override
+  @io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker(name = "assistant")
+  public LlmResponse converseStreaming(
+      LlmRequest request,
+      LlmStreamListener listener,
+      java.util.function.BooleanSupplier cancelled) {
+    MessageAccumulator accumulator = MessageAccumulator.create();
+    boolean aborted = false;
+    try (StreamResponse<RawMessageStreamEvent> stream =
+        client.messages().createStreaming(buildParams(request))) {
+      Iterator<RawMessageStreamEvent> events = stream.stream().iterator();
+      while (events.hasNext()) {
+        if (cancelled.getAsBoolean()) {
+          aborted = true;
+          break;
+        }
+        RawMessageStreamEvent event = events.next();
+        accumulator.accumulate(event);
+        event
+            .contentBlockDelta()
+            .map(RawContentBlockDeltaEvent::delta)
+            .flatMap(RawContentBlockDelta::text)
+            .ifPresent(text -> listener.onTextDelta(text.text()));
+      }
+    }
+    if (aborted) {
+      return new LlmResponse(List.of(), "cancelled", LlmUsage.zero());
+    }
+    return toResponse(accumulator.message());
+  }
+
+  private MessageCreateParams buildParams(LlmRequest request) {
     MessageCreateParams.Builder builder =
         MessageCreateParams.builder()
             .model(Model.of(request.model()))
@@ -61,7 +109,7 @@ public class AnthropicLlmGateway implements LlmGateway {
         builder.addAssistantMessageOfBlockParams(blocks);
       }
     }
-    return toResponse(client.messages().create(builder.build()));
+    return builder.build();
   }
 
   private Tool.InputSchema toInputSchema(JsonNode schema) {

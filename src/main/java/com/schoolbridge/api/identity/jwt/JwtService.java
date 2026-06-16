@@ -33,6 +33,7 @@ public class JwtService {
 
   private static final Logger log = LoggerFactory.getLogger(JwtService.class);
   private static final int REFRESH_TOKEN_BYTES = 32;
+  private static final java.security.SecureRandom SECURE_RANDOM = new java.security.SecureRandom();
 
   private final RSAPrivateKey privateKey;
   private final RSAPublicKey publicKey;
@@ -87,7 +88,7 @@ public class JwtService {
   /** Returns a fresh base64url opaque refresh token. */
   public String newRefreshToken() {
     byte[] bytes = new byte[REFRESH_TOKEN_BYTES];
-    new java.security.SecureRandom().nextBytes(bytes);
+    SECURE_RANDOM.nextBytes(bytes);
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 

@@ -72,6 +72,7 @@ public class WhatsAppProperties {
     private String attendanceAbsentName = "attendance_absent_v1";
     private String attendanceLateName = "attendance_late_v1";
     private String attendanceExcusedName = "attendance_excused_v1";
+    private String homeworkReminderName = "homework_reminder_v1";
 
     public String getOtpName() {
       return otpName;
@@ -111,6 +112,14 @@ public class WhatsAppProperties {
 
     public void setAttendanceExcusedName(String attendanceExcusedName) {
       this.attendanceExcusedName = attendanceExcusedName;
+    }
+
+    public String getHomeworkReminderName() {
+      return homeworkReminderName;
+    }
+
+    public void setHomeworkReminderName(String homeworkReminderName) {
+      this.homeworkReminderName = homeworkReminderName;
     }
   }
 }
