@@ -2,18 +2,20 @@ package com.schoolbridge.api.assistant.llm;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Wires the Anthropic SDK client, only when the assistant is enabled. The SDK uses OkHttp (not the
- * JDK {@code HttpClient}), so the Windows-JDK abort that bites Spring's {@code RestClient} does not
- * apply here. The API key is required and validated at startup — fail fast rather than at first
- * ask.
+ * Wires the Anthropic SDK client when the assistant is enabled and provider=anthropic (default).
+ * The SDK uses OkHttp (not the JDK {@code HttpClient}), so the Windows-JDK abort that bites
+ * Spring's {@code RestClient} does not apply here. The API key is required and validated at startup
+ * — fail fast rather than at first ask.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "schoolbridge.assistant", name = "enabled", havingValue = "true")
+@ConditionalOnExpression(
+    "'${schoolbridge.assistant.provider:anthropic}'.equals('anthropic')"
+        + " and ${schoolbridge.assistant.enabled:false}")
 public class AnthropicClientConfig {
 
   @Bean

@@ -13,7 +13,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AssistantProperties {
 
   private boolean enabled = false;
+  private String provider = "anthropic";
   private String apiKey = "";
+  private String geminiApiKey = "";
+  private String deepseekApiKey = "";
+  private String deepseekBaseUrl = "https://integrate.api.nvidia.com/v1";
   private String model = "claude-haiku-4-5-20251001";
   private int maxToolIterations = 4;
   private Duration requestTimeout = Duration.ofSeconds(30);
@@ -21,6 +25,8 @@ public class AssistantProperties {
   private Duration readCacheTtl = Duration.ofHours(24);
   private int maxQuestionLength = 500;
   private int rateLimitPerMinute = 20;
+  private int maxHistoryMessages = 40;
+  private String defaultSystemPrompt = "";
 
   private final Actions actions = new Actions();
 
@@ -32,12 +38,28 @@ public class AssistantProperties {
     this.enabled = enabled;
   }
 
+  public String getProvider() {
+    return provider;
+  }
+
+  public void setProvider(String provider) {
+    this.provider = provider;
+  }
+
   public String getApiKey() {
     return apiKey;
   }
 
   public void setApiKey(String apiKey) {
     this.apiKey = apiKey;
+  }
+
+  public String getGeminiApiKey() {
+    return geminiApiKey;
+  }
+
+  public void setGeminiApiKey(String geminiApiKey) {
+    this.geminiApiKey = geminiApiKey;
   }
 
   public String getModel() {
@@ -96,8 +118,40 @@ public class AssistantProperties {
     this.rateLimitPerMinute = rateLimitPerMinute;
   }
 
+  public int getMaxHistoryMessages() {
+    return maxHistoryMessages;
+  }
+
+  public void setMaxHistoryMessages(int maxHistoryMessages) {
+    this.maxHistoryMessages = maxHistoryMessages;
+  }
+
+  public String getDefaultSystemPrompt() {
+    return defaultSystemPrompt;
+  }
+
+  public void setDefaultSystemPrompt(String defaultSystemPrompt) {
+    this.defaultSystemPrompt = defaultSystemPrompt;
+  }
+
   public Actions getActions() {
     return actions;
+  }
+
+  public String getDeepseekApiKey() {
+    return deepseekApiKey;
+  }
+
+  public void setDeepseekApiKey(String deepseekApiKey) {
+    this.deepseekApiKey = deepseekApiKey;
+  }
+
+  public String getDeepseekBaseUrl() {
+    return deepseekBaseUrl;
+  }
+
+  public void setDeepseekBaseUrl(String deepseekBaseUrl) {
+    this.deepseekBaseUrl = deepseekBaseUrl;
   }
 
   /** Action-layer (mutation) settings — a second kill-switch plus the confirmation gate knobs. */

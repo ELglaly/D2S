@@ -7,43 +7,42 @@ import com.schoolbridge.api.assistant.dto.AskRequest;
 import com.schoolbridge.api.assistant.dto.AssistantAnswer;
 import com.schoolbridge.api.assistant.dto.ConfirmActionRequest;
 import com.schoolbridge.api.assistant.dto.ConfirmResult;
-import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import com.schoolbridge.api.assistant.llm.SystemPrompt;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.common.error.RateLimitException;
 import com.schoolbridge.api.common.error.TenantSecurityException;
-import com.schoolbridge.api.common.i18n.MessageResolver;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.SchoolScopedPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * Assistant endpoints (loaded only when {@code schoolbridge.assistant.enabled=true}):
  *
  * <ul>
- *   <li>{@code POST /ask} — SSE; a read answer, a confirmation request, or an error. Frames are
- *       sent as pre-serialized JSON strings so {@code ApiResponseBodyAdvice} (Jackson-only) never
- *       wraps them.
+ *   <li>{@code POST /ask} — the answer is computed synchronously (so tenant + security
+ *       thread-locals stay valid) and the SSE frames are written straight to the response. Writing
+ *       raw frames means the Jackson-based {@code ApiResponseBodyAdvice} never wraps them.
  *   <li>{@code POST /actions/{token}/confirm} and {@code /cancel} — normal wrapped JSON.
  * </ul>
  */
@@ -52,14 +51,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @ConditionalOnProperty(prefix = "schoolbridge.assistant", name = "enabled", havingValue = "true")
 public class AssistantController {
 
-  private static final Logger log = LoggerFactory.getLogger(AssistantController.class);
-
   private final AssistantService service;
   private final AssistantActionService actionService;
   private final AssistantRateLimiter rateLimiter;
   private final AssistantAuditRecorder recorder;
-  private final AssistantProperties properties;
-  private final MessageResolver messages;
   private final ObjectMapper mapper;
   private final MeterRegistry meter;
 
@@ -68,49 +63,45 @@ public class AssistantController {
       AssistantActionService actionService,
       AssistantRateLimiter rateLimiter,
       AssistantAuditRecorder recorder,
-      AssistantProperties properties,
-      MessageResolver messages,
       ObjectMapper mapper,
       MeterRegistry meter) {
     this.service = service;
     this.actionService = actionService;
     this.rateLimiter = rateLimiter;
     this.recorder = recorder;
-    this.properties = properties;
-    this.messages = messages;
     this.mapper = mapper;
     this.meter = meter;
   }
 
   @PostMapping("/ask")
-  public SseEmitter ask(@Valid @RequestBody AskRequest request, Authentication authentication) {
+  public void ask(
+      @Valid @RequestBody AskRequest request,
+      Authentication authentication,
+      HttpServletResponse response)
+      throws IOException {
     ToolContext ctx = contextFrom(authentication, request);
     if (!rateLimiter.tryAcquire(ctx.userId())) {
       throw new RateLimitException("error.rate_limited");
     }
-    SseEmitter emitter = new SseEmitter(properties.getRequestTimeout().toMillis() + 10_000);
-    try {
-      AssistantAnswer answer = service.ask(request, ctx);
-      meter.counter("assistant.ask", "outcome", answer.outcome().name()).increment();
-      switch (answer.outcome()) {
-        case ANSWERED -> {
-          send(emitter, "delta", Map.of("text", nullSafe(answer.text())));
-          send(emitter, "done", Map.of("metadata", answer.metadata()));
-          recorder.ask(ctx, answer);
-        }
-        case CONFIRM_REQUIRED -> {
-          send(emitter, "confirmRequired", confirmChunk(answer.pendingAction()));
-          recorder.preview(ctx, answer);
-        }
-        case ERROR -> send(emitter, "error", Map.of("message", nullSafe(answer.text())));
+    AssistantAnswer answer = service.ask(request, ctx);
+    meter.counter("assistant.ask", "outcome", answer.outcome().name()).increment();
+
+    response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
+    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+    PrintWriter writer = response.getWriter();
+    switch (answer.outcome()) {
+      case ANSWERED -> {
+        frame(writer, "delta", Map.of("text", nullSafe(answer.text())));
+        frame(writer, "done", Map.of("metadata", answer.metadata()));
+        recorder.ask(ctx, answer);
       }
-      emitter.complete();
-    } catch (RuntimeException | IOException e) {
-      log.warn("Assistant /ask failed", e);
-      trySend(emitter, "error", Map.of("message", messages.get("error.internal")));
-      emitter.complete();
+      case CONFIRM_REQUIRED -> {
+        frame(writer, "confirmRequired", confirmChunk(answer.pendingAction()));
+        recorder.preview(ctx, answer);
+      }
+      case ERROR -> frame(writer, "error", Map.of("message", nullSafe(answer.text())));
     }
-    return emitter;
+    writer.flush();
   }
 
   @PostMapping("/actions/{token}/confirm")
@@ -168,19 +159,12 @@ public class AssistantController {
     return chunk;
   }
 
-  private void send(SseEmitter emitter, String type, Map<String, Object> data) throws IOException {
+  private void frame(PrintWriter writer, String type, Map<String, Object> data) throws IOException {
     Map<String, Object> chunk = new LinkedHashMap<>();
     chunk.put("type", type);
     chunk.putAll(data);
-    emitter.send(SseEmitter.event().name(type).data(mapper.writeValueAsString(chunk)));
-  }
-
-  private void trySend(SseEmitter emitter, String type, Map<String, Object> data) {
-    try {
-      send(emitter, type, data);
-    } catch (IOException ignored) {
-      // Client gone or stream closed — nothing more we can do.
-    }
+    writer.write("event: " + type + "\n");
+    writer.write("data: " + mapper.writeValueAsString(chunk) + "\n\n");
   }
 
   private static String nullSafe(String value) {

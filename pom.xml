@@ -28,6 +28,8 @@
     <logstash-encoder.version>8.0</logstash-encoder.version>
     <resilience4j.version>2.2.0</resilience4j.version>
     <wiremock.version>3.9.2</wiremock.version>
+    <anthropic.version>2.35.0</anthropic.version>
+    <google-genai.version>1.57.0</google-genai.version>
 
     <!-- Build-quality plugin versions -->
     <spotless.version>2.43.0</spotless.version>
@@ -112,6 +114,19 @@
       <groupId>org.modelmapper</groupId>
       <artifactId>modelmapper</artifactId>
       <version>${modelmapper.version}</version>
+    </dependency>
+
+    <!-- AI assistant: Anthropic Java SDK (provider=anthropic). -->
+    <dependency>
+      <groupId>com.anthropic</groupId>
+      <artifactId>anthropic-java</artifactId>
+      <version>${anthropic.version}</version>
+    </dependency>
+    <!-- AI assistant: Google GenAI Java SDK (provider=gemini). -->
+    <dependency>
+      <groupId>com.google.genai</groupId>
+      <artifactId>google-genai</artifactId>
+      <version>${google-genai.version}</version>
     </dependency>
 
     <!-- External HTTP + Resilience4j (M7: WhatsApp adapter circuit breaker + retry) -->
@@ -204,6 +219,13 @@
       <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/com.google.cloud/google-cloud-vertexai -->
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-vertexai</artifactId>
+      <version>1.52.0</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -270,6 +292,7 @@
         <configuration>
           <effort>Max</effort>
           <threshold>Medium</threshold>
+          <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
         </configuration>
         <executions>
           <execution>

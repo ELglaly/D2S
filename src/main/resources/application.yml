@@ -91,6 +91,7 @@ schoolbridge:
       attendance-absent-name: ${WHATSAPP_TEMPLATE_ATTENDANCE_ABSENT_NAME:attendance_absent_v1}
       attendance-late-name: ${WHATSAPP_TEMPLATE_ATTENDANCE_LATE_NAME:attendance_late_v1}
       attendance-excused-name: ${WHATSAPP_TEMPLATE_ATTENDANCE_EXCUSED_NAME:attendance_excused_v1}
+      homework-reminder-name: ${WHATSAPP_TEMPLATE_HOMEWORK_REMINDER_NAME:homework_reminder_v1}
   rabbitmq:
     exchanges:
       announcements: schoolbridge.announcements
@@ -112,6 +113,17 @@ schoolbridge:
       # Set to true in prod and supply GOOGLE_APPLICATION_CREDENTIALS or credentials-file.
       enabled: ${PUSH_FCM_ENABLED:false}
       credentials-file: ${GOOGLE_APPLICATION_CREDENTIALS:}
+  homework:
+    sweeper:
+      # Fires reminders for PUBLISHED items due within horizon-days when school-local time is
+      # within ±reminder-window-minutes of the school's homeworkReminderTime setting.
+      # Disabled in the default test profile — HomeworkReminderSweeperTest constructs the bean directly.
+      enabled: true
+      fire-cron: "0 */5 * * * *"
+      reminder-window-minutes: 15
+      reminder-horizon-days: 2
+      deferred-release-rate: PT1M
+      dedup-ttl: 36h
   attendance:
     sweeper:
       # Two scheduled responsibilities live in AttendanceSweeper:
@@ -123,6 +135,44 @@ schoolbridge:
       deferred-release-rate: PT1M
       missed-roster-cron: "0 */15 * * * *"
       missed-roster-dedup-ttl: 36h
+  assistant:
+    # Natural-language assistant. Ships dark: enabled=false keeps the LLM beans unloaded;
+    # actions.enabled=false keeps mutating tools off even when reads are live.
+    enabled: ${ASSISTANT_ENABLED:true}
+    # Provider selection: "anthropic" (default), "gemini", or "deepseek". Only the selected
+    # provider's beans load.
+    provider: ${ASSISTANT_PROVIDER:deepseek}
+    # Anthropic — env-only; validated at startup when provider=anthropic and enabled=true.
+    api-key: ${ANTHROPIC_API_KEY:}
+    # Gemini (Google AI Studio) — env-only; validated at startup when provider=gemini and enabled=true.
+    gemini-api-key: ${GEMINI_API_KEY:}
+    # DeepSeek via NVIDIA NIM (OpenAI-compatible) — env-only key; validated at startup when
+    # provider=deepseek and enabled=true. Set DEEPSEEK_API_KEY to the nvapi-* key. To target
+    # DeepSeek's own API instead, set DEEPSEEK_BASE_URL=https://api.deepseek.com and an sk-* key.
+    deepseek-api-key: ${DEEPSEEK_API_KEY:[REDACTED_PROVIDER_TOKEN]}
+    deepseek-base-url: ${DEEPSEEK_BASE_URL:https://integrate.api.nvidia.com/v1}
+    # Default model per provider: anthropic → claude-haiku-4-5-20251001, gemini → gemini-2.0-flash,
+    # deepseek (NVIDIA NIM) → deepseek-ai/deepseek-v4-flash (this key also serves
+    # deepseek-ai/deepseek-v4-pro). NOTE: NVIDIA returns a plain "404 page not found" for an unknown
+    # model id on /chat/completions — confirm the id via GET /v1/models, not the URL.
+    model: ${ASSISTANT_MODEL:deepseek-ai/deepseek-v4-flash}
+    max-tool-iterations: 4
+    request-timeout: 120s
+    max-tokens: 1024
+    read-cache-ttl: PT24H
+    max-question-length: 500
+    # Conversation context window: how many of the most recent stored messages are replayed to the
+    # model on each turn of POST /conversations/{id}/messages.
+    max-history-messages: 40
+    # Optional tenant-agnostic default persona. Blank → built-in persona. A per-school row in
+    # assistant_settings overrides this; the security guardrails are always appended regardless.
+    default-system-prompt: ${ASSISTANT_SYSTEM_PROMPT:}
+    actions:
+      enabled: ${ASSISTANT_ACTIONS_ENABLED:true}
+      confirmation-ttl: PT5M
+      destructive-require-typed-confirm: true
+      max-bulk-impact: 200
+
 
 resilience4j:
   circuitbreaker:
@@ -136,6 +186,20 @@ resilience4j:
         waitDurationInOpenState: 30s
         permittedNumberOfCallsInHalfOpenState: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
+      assistant:
+        registerHealthIndicator: false
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  timelimiter:
+    instances:
+      assistant:
+        timeoutDuration: 120s
+        cancelRunningFuture: true
   retry:
     instances:
       whatsapp:
