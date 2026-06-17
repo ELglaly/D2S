@@ -16,6 +16,9 @@ import com.schoolbridge.api.assistant.llm.LlmResponse;
 import com.schoolbridge.api.assistant.llm.LlmToolSpec;
 import com.schoolbridge.api.assistant.llm.LlmUsage;
 import com.schoolbridge.api.assistant.llm.SystemPrompt;
+import com.schoolbridge.api.assistant.rag.ContextAugmenter;
+import com.schoolbridge.api.assistant.rag.RagRetriever;
+import com.schoolbridge.api.assistant.rag.RetrievedChunk;
 import com.schoolbridge.api.assistant.tools.ActionTool;
 import com.schoolbridge.api.assistant.tools.PreviewOutcome;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -51,6 +54,8 @@ public class AssistantServiceImpl implements AssistantService {
   private final AssistantCache cache;
   private final MessageResolver messages;
   private final ObjectMapper mapper;
+  private final RagRetriever retriever;
+  private final ContextAugmenter augmenter;
 
   public AssistantServiceImpl(
       LlmGateway gateway,
@@ -59,7 +64,9 @@ public class AssistantServiceImpl implements AssistantService {
       AssistantProperties properties,
       AssistantCache cache,
       MessageResolver messages,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      RagRetriever retriever,
+      ContextAugmenter augmenter) {
     this.gateway = gateway;
     this.registry = registry;
     this.systemPrompt = systemPrompt;
@@ -67,6 +74,8 @@ public class AssistantServiceImpl implements AssistantService {
     this.cache = cache;
     this.messages = messages;
     this.mapper = mapper;
+    this.retriever = retriever;
+    this.augmenter = augmenter;
   }
 
   @Override
@@ -93,6 +102,13 @@ public class AssistantServiceImpl implements AssistantService {
             .toList();
     String system = systemPrompt.build(ctx);
 
+    int retrievedChunks = 0;
+    if (properties.getRag().isEnabled()) {
+      List<RetrievedChunk> chunks = retriever.retrieve(question, ctx);
+      retrievedChunks = chunks.size();
+      system = augmenter.augment(system, chunks);
+    }
+
     List<LlmMessage> history = new ArrayList<>();
     history.add(LlmMessage.user(question));
 
@@ -111,8 +127,9 @@ public class AssistantServiceImpl implements AssistantService {
       if (!response.wantsTools()) {
         String answer = response.text();
         cache.put(cacheKey, answer, properties.getReadCacheTtl());
-        return AssistantAnswer.answered(
-            answer, metadata(ctx, iterations, usage, toolsInvoked, false));
+        Map<String, Object> meta = metadata(ctx, iterations, usage, toolsInvoked, false);
+        meta.put("retrievedChunks", retrievedChunks);
+        return AssistantAnswer.answered(answer, meta);
       }
 
       history.add(LlmMessage.assistant(response.content()));

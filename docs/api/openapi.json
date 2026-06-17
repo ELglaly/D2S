@@ -210,6 +210,50 @@
         }
       }
     },
+    "/api/v1/assistant/settings" : {
+      "get" : {
+        "tags" : [ "assistant-settings-controller" ],
+        "operationId" : "get",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "assistant-settings-controller" ],
+        "operationId" : "update",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateSettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/integrations/whatsapp/webhook" : {
       "get" : {
         "tags" : [ "WhatsApp Webhook" ],
@@ -1137,7 +1181,7 @@
         "tags" : [ "Homework" ],
         "summary" : "Parent homework feed",
         "description" : "Returns the homework feed for the specified child. 404 if the parent is not linked to the child (anti-enumeration).",
-        "operationId" : "staffList_1",
+        "operationId" : "staffList",
         "parameters" : [ {
           "name" : "classId",
           "in" : "query",
@@ -1391,7 +1435,7 @@
         "tags" : [ "Grades" ],
         "summary" : "List grades for a class",
         "description" : "Returns all grade records for the given student. Parents receive 403 if they are not linked to the student (anti-enumeration).",
-        "operationId" : "listByStudent_1_1",
+        "operationId" : "listByStudent",
         "parameters" : [ {
           "name" : "studentId",
           "in" : "query",
@@ -1586,12 +1630,88 @@
         }
       }
     },
+    "/api/v1/conversations" : {
+      "get" : {
+        "tags" : [ "conversation-controller" ],
+        "operationId" : "list_4",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConversationResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "conversation-controller" ],
+        "operationId" : "create_7",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateConversationRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{id}/messages" : {
+      "post" : {
+        "tags" : [ "conversation-message-controller" ],
+        "operationId" : "send",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SendMessageRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
     "/api/v1/classes" : {
       "get" : {
         "tags" : [ "Classes" ],
         "summary" : "List classes",
         "description" : "Returns a paginated list of all classes for the school, newest first.",
-        "operationId" : "list_4",
+        "operationId" : "list_5",
         "parameters" : [ {
           "name" : "pageable",
           "in" : "query",
@@ -1637,7 +1757,7 @@
         "tags" : [ "Classes" ],
         "summary" : "Create class",
         "description" : "Creates a new school class for the tenant.",
-        "operationId" : "create_7",
+        "operationId" : "create_8",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1696,7 +1816,7 @@
       "get" : {
         "tags" : [ "Class Subjects" ],
         "summary" : "List subjects in a class",
-        "operationId" : "listByClass_1",
+        "operationId" : "listByClass",
         "parameters" : [ {
           "name" : "classId",
           "in" : "path",
@@ -1997,7 +2117,7 @@
         "tags" : [ "Enrollments" ],
         "summary" : "List enrollments for a class",
         "description" : "Returns all active student enrollments for the class. SCHOOL_ADMIN sees all classes; TEACHER sees only their assigned classes.",
-        "operationId" : "listByClass_2",
+        "operationId" : "listByClass_1",
         "parameters" : [ {
           "name" : "classId",
           "in" : "path",
@@ -2478,12 +2598,141 @@
         }
       }
     },
+    "/api/v1/assistant/knowledge" : {
+      "get" : {
+        "tags" : [ "document-admin-controller" ],
+        "operationId" : "list_6",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "document-admin-controller" ],
+        "operationId" : "ingest",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/IngestDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/ask" : {
+      "post" : {
+        "tags" : [ "assistant-controller" ],
+        "operationId" : "ask",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/actions/{token}/confirm" : {
+      "post" : {
+        "tags" : [ "assistant-controller" ],
+        "operationId" : "confirm",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmActionRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/actions/{token}/cancel" : {
+      "post" : {
+        "tags" : [ "assistant-controller" ],
+        "operationId" : "cancel",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/announcements" : {
       "get" : {
         "tags" : [ "Announcements" ],
         "summary" : "List announcements",
         "description" : "Returns a paginated list of all announcements for the school, newest first. Filter by status to narrow results.",
-        "operationId" : "list_5",
+        "operationId" : "list_7",
         "parameters" : [ {
           "name" : "status",
           "in" : "query",
@@ -2538,7 +2787,7 @@
         "tags" : [ "Announcements" ],
         "summary" : "Create announcement",
         "description" : "Creates and fans out an announcement to matching parent recipients. SCHOOL_ADMIN may use any scope (SCHOOL, GRADE, CLASS, CUSTOM). TEACHER may only use CLASS scope for a class they are assigned to. Recipients are derived from linked parents of enrolled students matching the scope.",
-        "operationId" : "create_8",
+        "operationId" : "create_9",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -2697,7 +2946,7 @@
       "get" : {
         "tags" : [ "Subjects" ],
         "summary" : "Get a subject by ID",
-        "operationId" : "get",
+        "operationId" : "get_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -2743,7 +2992,7 @@
       "delete" : {
         "tags" : [ "Subjects" ],
         "summary" : "Delete a subject",
-        "operationId" : "delete_1",
+        "operationId" : "delete",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -2771,7 +3020,7 @@
       "patch" : {
         "tags" : [ "Subjects" ],
         "summary" : "Update a subject",
-        "operationId" : "update",
+        "operationId" : "update_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -2860,7 +3109,7 @@
         "tags" : [ "Students" ],
         "summary" : "Get student",
         "description" : "Returns a single student by ID.",
-        "operationId" : "get_1",
+        "operationId" : "get_2",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -2917,7 +3166,7 @@
         "tags" : [ "Students" ],
         "summary" : "Delete student",
         "description" : "Deletes a student. Enrollments and parent links are cascade-deleted.",
-        "operationId" : "delete_2",
+        "operationId" : "delete_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -2946,7 +3195,7 @@
         "tags" : [ "Students" ],
         "summary" : "Update student",
         "description" : "Partially updates a student record. Only provided fields are changed.",
-        "operationId" : "update_1",
+        "operationId" : "update_2",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3025,7 +3274,7 @@
         "tags" : [ "Homework" ],
         "summary" : "Get homework item",
         "description" : "Returns a homework item. Parents receive 404 if their child is not a recipient (anti-enumeration).",
-        "operationId" : "get_4",
+        "operationId" : "get_3",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3072,7 +3321,7 @@
         "tags" : [ "Homework" ],
         "summary" : "Archive homework item",
         "description" : "Soft-deletes by transitioning status to ARCHIVED. HomeworkRecipient rows are retained for parent-feed history.",
-        "operationId" : "delete_4",
+        "operationId" : "delete_2",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3101,7 +3350,7 @@
         "tags" : [ "Homework" ],
         "summary" : "Update homework item",
         "description" : "Updates subject, description, attachmentKey, and dueDate on a DRAFT or PUBLISHED item. Recipients are not re-materialized. 409 if ARCHIVED.",
-        "operationId" : "update_2",
+        "operationId" : "update_3",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3179,7 +3428,7 @@
       "get" : {
         "tags" : [ "Grades" ],
         "summary" : "Get a single grade record",
-        "operationId" : "get_5",
+        "operationId" : "get_4",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3225,7 +3474,7 @@
       "delete" : {
         "tags" : [ "Grades" ],
         "summary" : "Delete a grade record",
-        "operationId" : "delete_5",
+        "operationId" : "delete_3",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3253,7 +3502,7 @@
       "patch" : {
         "tags" : [ "Grades" ],
         "summary" : "Update a grade record",
-        "operationId" : "update_3",
+        "operationId" : "update_4",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3332,7 +3581,7 @@
         "tags" : [ "Classes" ],
         "summary" : "Get class",
         "description" : "Returns a single class by ID.",
-        "operationId" : "get_6",
+        "operationId" : "get_5",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3389,7 +3638,7 @@
         "tags" : [ "Classes" ],
         "summary" : "Delete class",
         "description" : "Deletes a class. Enrollments and teacher assignments are cascade-deleted.",
-        "operationId" : "delete_7",
+        "operationId" : "delete_4",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3418,7 +3667,7 @@
         "tags" : [ "Classes" ],
         "summary" : "Update class",
         "description" : "Partially updates a class. Only provided fields are changed.",
-        "operationId" : "update_4",
+        "operationId" : "update_5",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3623,7 +3872,7 @@
         "tags" : [ "School Users" ],
         "summary" : "Get user",
         "description" : "Returns a single user by ID within the school.",
-        "operationId" : "get_2",
+        "operationId" : "get_6",
         "parameters" : [ {
           "name" : "schoolId",
           "in" : "path",
@@ -3690,7 +3939,7 @@
         "tags" : [ "Schools" ],
         "summary" : "Get school",
         "description" : "Returns a single school by ID.",
-        "operationId" : "get_3",
+        "operationId" : "get_7",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -3798,7 +4047,7 @@
         "tags" : [ "Parent-Student Links" ],
         "summary" : "List parent links for a student",
         "description" : "Returns all parent-student links for the given student.",
-        "operationId" : "listByStudent",
+        "operationId" : "listByStudent_1",
         "parameters" : [ {
           "name" : "studentId",
           "in" : "path",
@@ -3939,7 +4188,7 @@
       "get" : {
         "tags" : [ "Teacher Subject Assignments" ],
         "summary" : "List all teacher-subject assignments for a class",
-        "operationId" : "listByClass",
+        "operationId" : "listByClass_2",
         "parameters" : [ {
           "name" : "classId",
           "in" : "path",
@@ -4111,7 +4360,7 @@
         "tags" : [ "Attendance" ],
         "summary" : "Get attendance record",
         "description" : "Returns a single attendance record by ID.",
-        "operationId" : "get_7",
+        "operationId" : "get_8",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -4341,7 +4590,7 @@
         "tags" : [ "Announcements" ],
         "summary" : "Get announcement",
         "description" : "Returns a single announcement by ID.",
-        "operationId" : "get_8",
+        "operationId" : "get_9",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -4465,7 +4714,7 @@
       "delete" : {
         "tags" : [ "Teacher Subject Assignments" ],
         "summary" : "Remove a teacher-subject assignment",
-        "operationId" : "delete",
+        "operationId" : "delete_5",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -4496,7 +4745,7 @@
         "tags" : [ "Parent-Student Links" ],
         "summary" : "Remove parent-student link",
         "description" : "Deletes the link between a parent and a student.",
-        "operationId" : "delete_3",
+        "operationId" : "delete_6",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -4527,7 +4776,7 @@
         "tags" : [ "Enrollments" ],
         "summary" : "Remove enrollment",
         "description" : "Removes a student from a class by deleting the enrollment record.",
-        "operationId" : "delete_6",
+        "operationId" : "delete_7",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -4580,11 +4829,31 @@
         }
       }
     },
+    "/api/v1/conversations/{id}" : {
+      "delete" : {
+        "tags" : [ "conversation-controller" ],
+        "operationId" : "delete_8",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
     "/api/v1/class-subjects/{id}" : {
       "delete" : {
         "tags" : [ "Class Subjects" ],
         "summary" : "Remove a subject from a class",
-        "operationId" : "delete_8",
+        "operationId" : "delete_9",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -4609,6 +4878,26 @@
           },
           "204" : {
             "description" : "Removed"
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/knowledge/{id}" : {
+      "delete" : {
+        "tags" : [ "document-admin-controller" ],
+        "operationId" : "delete_10",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
           }
         }
       }
@@ -4662,6 +4951,8 @@
             "minItems" : 0,
             "type" : "array",
             "items" : {
+              "maximum" : 30,
+              "minimum" : -30,
               "type" : "integer",
               "format" : "int32"
             }
@@ -4719,6 +5010,27 @@
           },
           "rosterDueByLocalTime" : {
             "$ref" : "#/components/schemas/LocalTime"
+          }
+        }
+      },
+      "UpdateSettingsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "systemPrompt" : {
+            "maxLength" : 8000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "AssistantSettingsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "systemPrompt" : {
+            "type" : "string"
+          },
+          "usingDefault" : {
+            "type" : "boolean"
           }
         }
       },
@@ -5338,6 +5650,47 @@
           }
         }
       },
+      "CreateConversationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "title" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "ConversationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "lastMessageAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "SendMessageRequest" : {
+        "required" : [ "content" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "maxLength" : 4000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
       "CreateSchoolClassRequest" : {
         "required" : [ "academicYear", "gradeLevel", "name" ],
         "type" : "object",
@@ -5677,6 +6030,102 @@
           "skippedCount" : {
             "type" : "integer",
             "format" : "int32"
+          }
+        }
+      },
+      "IngestDocumentRequest" : {
+        "required" : [ "content", "title", "type" ],
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "enum" : [ "KB", "FAQ", "TOOL_DOC", "GUIDE", "BUSINESS_RULE", "UPLOAD" ]
+          },
+          "title" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "lang" : {
+            "maxLength" : 8,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "content" : {
+            "maxLength" : 200000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "KnowledgeDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "KB", "FAQ", "TOOL_DOC", "GUIDE", "BUSINESS_RULE", "UPLOAD" ]
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "lang" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "INDEXED", "FAILED" ]
+          },
+          "chunkCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "AskRequest" : {
+        "required" : [ "question" ],
+        "type" : "object",
+        "properties" : {
+          "question" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "language" : {
+            "maxLength" : 8,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "ConfirmActionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "confirmation" : {
+            "maxLength" : 50,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "ConfirmResult" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "data" : {
+            "type" : "object"
           }
         }
       },

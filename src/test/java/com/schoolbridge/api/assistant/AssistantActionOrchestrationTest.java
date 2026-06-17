@@ -15,6 +15,8 @@ import com.schoolbridge.api.assistant.llm.LlmGateway;
 import com.schoolbridge.api.assistant.llm.LlmResponse;
 import com.schoolbridge.api.assistant.llm.LlmUsage;
 import com.schoolbridge.api.assistant.llm.SystemPrompt;
+import com.schoolbridge.api.assistant.rag.ContextAugmenter;
+import com.schoolbridge.api.assistant.rag.RagRetriever;
 import com.schoolbridge.api.assistant.tools.ActionTool;
 import com.schoolbridge.api.assistant.tools.PreviewOutcome;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -65,15 +67,18 @@ class AssistantActionOrchestrationTest {
     when(cache.key(ctx.userId(), "mark all present in 5a")).thenReturn("k");
     when(cache.get("k")).thenReturn(Optional.empty());
 
+    AssistantProperties properties = new AssistantProperties();
     AssistantServiceImpl service =
         new AssistantServiceImpl(
             gateway,
             registry,
             new SystemPrompt(),
-            new AssistantProperties(),
+            properties,
             cache,
             messages,
-            JSON);
+            JSON,
+            new RagRetriever(null, properties, null),
+            new ContextAugmenter(properties));
 
     AssistantAnswer answer = service.ask(new AskRequest("mark all present in 5a", null), ctx);
 

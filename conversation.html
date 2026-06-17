@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistant Streaming Test</title>
+  <style>
+    /* Simple, clean styling */
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .card {
+      max-width: 720px;
+      width: 100%;
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+      transition: all 0.2s;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 0.25rem;
+      color: #111827;
+    }
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.75rem;
+    }
+    .field {
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #374151;
+      margin-bottom: 0.3rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.75rem;
+      font-size: 0.95rem;
+      background: white;
+      transition: border 0.15s;
+      box-sizing: border-box;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .row .field {
+      flex: 1;
+      min-width: 160px;
+      margin-bottom: 0;
+    }
+    button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 0.65rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    button:hover:not(:disabled) {
+      background: #4f46e5;
+    }
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .token-input {
+      margin-top: 0.75rem;
+    }
+    .token-input input {
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .response-area {
+      margin-top: 1.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      background: #fafbfc;
+      padding: 1rem 1.2rem;
+      min-height: 120px;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: system-ui, sans-serif;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      color: #1f2937;
+      transition: border 0.2s;
+    }
+    .response-area.streaming {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
+    .response-area .placeholder {
+      color: #9ca3af;
+      user-select: none;
+    }
+    .status {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status .error {
+      color: #dc2626;
+    }
+    .status .success {
+      color: #16a34a;
+    }
+    .status .info {
+      color: #2563eb;
+    }
+    .badge {
+      background: #f3f4f6;
+      padding: 0.2rem 0.7rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      color: #4b5563;
+    }
+    .cancel-btn {
+      background: #ef4444;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+    }
+    .cancel-btn:hover:not(:disabled) {
+      background: #dc2626;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .footer {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 1.2rem;
+    }
+    .flex-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🧪 Assistant Streaming Test</h1>
+  <div class="subtitle">POST /api/v1/conversations/{id}/messages &nbsp;·&nbsp; SSE stream</div>
+
+  <!-- Base URL -->
+  <div class="field" style="margin-bottom:0.5rem">
+    <label for="baseUrl">Base URL</label>
+    <input type="text" id="baseUrl" value="http://localhost:8080" placeholder="http://localhost:8080" />
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="convId">Conversation ID (UUID)</label>
+      <input type="text" id="convId" placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" value="123e4567-e89b-12d3-a456-426614174000" />
+    </div>
+    <div class="field" style="flex:2">
+      <label for="tokenInput">Bearer Token (optional)</label>
+      <input type="text" id="tokenInput" placeholder="JWT token (skip if unauthenticated)" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="messageInput">Your message</label>
+    <textarea id="messageInput" placeholder="Type your question here…">What is the capital of France?</textarea>
+  </div>
+
+  <div class="flex-row">
+    <button id="sendBtn">▶ Send &amp; Stream</button>
+    <button id="cancelBtn" class="cancel-btn" disabled>⏹ Cancel</button>
+    <button id="clearBtn" style="background:#e5e7eb; color:#1f2937;">Clear response</button>
+  </div>
+
+  <div class="response-area" id="responseArea">
+    <span class="placeholder">Response will appear here as it streams…</span>
+  </div>
+
+  <div class="status" id="statusBar">
+    <span id="statusText">Ready</span>
+    <span id="statusMeta" class="badge">⏳ idle</span>
+  </div>
+
+  <hr />
+  <div class="footer">
+    ⚡ Streamed via <code>fetch</code> + <code>ReadableStream</code> &nbsp;·&nbsp; Events: <code>data: {...}</code>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // DOM refs
+    const baseUrlInput = document.getElementById('baseUrl');
+    const convIdInput = document.getElementById('convId');
+    const tokenInput = document.getElementById('tokenInput');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const responseArea = document.getElementById('responseArea');
+    const statusText = document.getElementById('statusText');
+    const statusMeta = document.getElementById('statusMeta');
+
+    let abortController = null;
+    let isStreaming = false;
+
+    // Helper to update status
+    function setStatus(msg, type = 'info') {
+      statusText.textContent = msg;
+      statusText.className = type; // 'error', 'success', 'info'
+    }
+
+    function setMeta(msg) {
+      statusMeta.textContent = msg;
+    }
+
+    // Append text to response area (streaming)
+    function appendResponse(text) {
+      // Remove placeholder if present
+      const placeholder = responseArea.querySelector('.placeholder');
+      if (placeholder) placeholder.remove();
+      responseArea.textContent += text;
+      // Auto-scroll to bottom
+      responseArea.scrollTop = responseArea.scrollHeight;
+    }
+
+    // Dispatch one Anthropic-style SSE frame from SseChatStream.
+    function handleEvent(name, data) {
+      switch (name) {
+        case 'message_start':
+          setMeta('📡 ' + (data.message_id || 'receiving'));
+          break;
+        case 'retrieval_started':
+          setStatus('Retrieving references…', 'info');
+          break;
+        case 'retrieval_completed':
+          setStatus(`Retrieved ${data.matches} reference chunk(s)`, 'info');
+          break;
+        case 'content_block_start':
+          // New text block; separate from any previous block.
+          if (responseArea.textContent && !responseArea.querySelector('.placeholder')) {
+            // no-op: deltas append inline
+          }
+          break;
+        case 'content_block_delta':
+          // delta is an object: { type: "text_delta", text: "..." }
+          if (data.delta && typeof data.delta.text === 'string') {
+            appendResponse(data.delta.text);
+          }
+          break;
+        case 'content_block_stop':
+          break;
+        case 'message_stop':
+          if (data.stop_reason === 'confirmation_required' && data.pending_action_token) {
+            setStatus('Confirmation required — reply "yes" to confirm or "no" to cancel', 'info');
+            setMeta('⚠ awaiting confirm');
+            appendResponse(`\n\n[pending_action_token] ${data.pending_action_token}`);
+          } else {
+            setStatus(`Stream completed (${data.stop_reason || 'end_turn'})`, 'success');
+            setMeta('✅ done');
+          }
+          break;
+        case 'error':
+          setStatus(`Server error: ${data.message || 'unknown'}`, 'error');
+          setMeta('❌ error');
+          appendResponse(`\n\n[Error] ${data.message || 'unknown'}`);
+          break;
+        default:
+          // Unknown event type: show raw for debugging.
+          appendResponse(`\n[${name}] ${JSON.stringify(data)}`);
+      }
+    }
+
+    // Clear response
+    function clearResponse() {
+      responseArea.innerHTML = '<span class="placeholder">Response will appear here as it streams…</span>';
+      responseArea.classList.remove('streaming');
+    }
+
+    // Reset UI after stream ends
+    function resetUI() {
+      isStreaming = false;
+      abortController = null;
+      sendBtn.disabled = false;
+      cancelBtn.disabled = true;
+      responseArea.classList.remove('streaming');
+      setMeta('idle');
+    }
+
+    // Main send function
+    async function sendMessage() {
+      // Validate input
+      const baseUrl = baseUrlInput.value.trim();
+      const convId = convIdInput.value.trim();
+      const message = messageInput.value.trim();
+      const token = tokenInput.value.trim();
+
+      if (!baseUrl) {
+        setStatus('Please enter a base URL', 'error');
+        return;
+      }
+      if (!convId) {
+        setStatus('Please enter a conversation ID (UUID)', 'error');
+        return;
+      }
+      if (!message) {
+        setStatus('Please enter a message', 'error');
+        return;
+      }
+
+      // Validate UUID format (basic)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(convId)) {
+        setStatus('Conversation ID must be a valid UUID', 'error');
+        return;
+      }
+
+      // Prepare request
+      const url = `${baseUrl.replace(/\/+$/, '')}/api/v1/conversations/${convId}/messages`;
+      const payload = { content: message };
+
+      // Clear previous response and set streaming state
+      clearResponse();
+      responseArea.classList.add('streaming');
+      sendBtn.disabled = true;
+      cancelBtn.disabled = false;
+      isStreaming = true;
+      abortController = new AbortController();
+      setStatus('Streaming…', 'info');
+      setMeta('⏳ connecting');
+
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(payload),
+          signal: abortController.signal,
+        });
+
+        // Check for error responses (non-200)
+        if (!response.ok) {
+          let errorMsg = `HTTP ${response.status}`;
+          try {
+            const errorJson = await response.json();
+            if (errorJson.message) errorMsg += `: ${errorJson.message}`;
+            else if (errorJson.error) errorMsg += `: ${errorJson.error}`;
+            else errorMsg += `: ${JSON.stringify(errorJson)}`;
+          } catch (_) {
+            // If not JSON, try text
+            const text = await response.text();
+            if (text) errorMsg += `: ${text}`;
+          }
+          throw new Error(errorMsg);
+        }
+
+        // Stream response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        setMeta('📡 receiving');
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          // Decode chunk
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete SSE messages (separated by \n\n)
+          const events = buffer.split(/\n\n/);
+          buffer = events.pop() || ''; // keep incomplete last part
+
+          for (const event of events) {
+            if (!event.trim()) continue;
+            // Each SSE frame has two lines: "event: <name>" and "data: <json>".
+            let eventName = 'message';
+            let dataLine = null;
+            for (const line of event.split('\n')) {
+              if (line.startsWith('event: ')) {
+                eventName = line.slice(7).trim();
+              } else if (line.startsWith('data: ')) {
+                dataLine = line.slice(6);
+              }
+            }
+            if (dataLine === null) continue;
+
+            let parsed;
+            try {
+              parsed = JSON.parse(dataLine);
+            } catch (e) {
+              appendResponse(dataLine); // non-JSON payload: show raw
+              continue;
+            }
+            handleEvent(eventName, parsed);
+          }
+        }
+
+        // Terminal status already set by the message_stop / error event handler.
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          setStatus('Stream cancelled by user', 'info');
+          setMeta('⏹ cancelled');
+        } else {
+          setStatus(`Error: ${error.message}`, 'error');
+          setMeta('❌ failed');
+          // Show error in response area
+          appendResponse(`\n\n[Error] ${error.message}`);
+        }
+      } finally {
+        resetUI();
+      }
+    }
+
+    // Cancel stream
+    function cancelStream() {
+      if (abortController) {
+        abortController.abort();
+        abortController = null;
+        cancelBtn.disabled = true;
+        setStatus('Cancelling…', 'info');
+        setMeta('⏹ cancelling');
+      }
+    }
+
+    // Event listeners
+    sendBtn.addEventListener('click', sendMessage);
+    cancelBtn.addEventListener('click', cancelStream);
+    clearBtn.addEventListener('click', clearResponse);
+
+    // Allow Enter in textarea to send (Ctrl+Enter)
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        sendBtn.click();
+      }
+    });
+
+    // Initial state
+    resetUI();
+    clearResponse();
+    setStatus('Ready', 'info');
+    setMeta('idle');
+  })();
+</script>
+
+</body>
+</html>

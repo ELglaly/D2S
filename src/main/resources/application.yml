@@ -7,6 +7,44 @@ spring:
     # generated password and from interfering with our stateless security chain.
     exclude:
       - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  ai:
+    # Spring AI migration — Phase 0. The spring-ai-* starters are on the classpath but their model
+    # auto-configurations are active-by-default (matchIfMissing=true) and instantiate a provider API
+    # eagerly, which fails the context when no key is present ("simpleApiKey cannot be null"). Disable
+    # every model auto-config here so the app keeps using the existing native LlmGateway. Phase 1's
+    # SpringAiModelConfig flips the selected provider back on only when engine=springai.
+    model:
+      # engine=springai routes chat through this Spring AI model. Default "openai" = NVIDIA NIM /
+      # DeepSeek (OpenAI-compatible) via spring.ai.openai below. Set SPRING_AI_CHAT=none to fully
+      # disable Spring AI chat (e.g. when reverting to engine=native). Embedding stays "none" so RAG
+      # uses the in-process placeholder embedder (dim 768) until real Vertex embeddings are wired at
+      # deploy time (see docs/PLAN_SPRING_AI_RAG.md §16).
+      chat: ${SPRING_AI_CHAT:openai}
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    # OpenAI-compatible chat model. Defaults point at NVIDIA NIM (DeepSeek), reusing the same nvapi
+    # key + host as the native deepseek gateway, so engine=springai works out of the box. NOTE: the
+    # Spring AI OpenAI client appends "/v1/chat/completions", so base-url must NOT include "/v1".
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://integrate.api.nvidia.com}
+      api-key: ${OPENAI_API_KEY:${DEEPSEEK_API_KEY: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}}
+      chat:
+        options:
+          model: ${ASSISTANT_MODEL:deepseek-ai/deepseek-v4-flash}
+    # Phase 2 — PGVector store for assistant RAG. Liquibase owns the schema (changelog 013), so
+    # initialize-schema MUST stay false. dimensions match the assistant_vector_store vector(768)
+    # column and the embedding model (Vertex text-multilingual-embedding-002 / Phase-2 placeholder).
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        table-name: assistant_vector_store
+        dimensions: 768
   data:
     redis:
       repositories:
@@ -139,6 +177,10 @@ schoolbridge:
     # Natural-language assistant. Ships dark: enabled=false keeps the LLM beans unloaded;
     # actions.enabled=false keeps mutating tools off even when reads are live.
     enabled: ${ASSISTANT_ENABLED:true}
+    # LLM engine: "native" (the hand-written Anthropic/Gemini/DeepSeek gateways, default) or
+    # "springai" (the Spring AI ChatModel gateway). When springai, also set spring.ai.model.chat to
+    # the provider (e.g. anthropic) and its api-key; the native gateways stay off.
+    engine: ${ASSISTANT_ENGINE:springai}
     # Provider selection: "anthropic" (default), "gemini", or "deepseek". Only the selected
     # provider's beans load.
     provider: ${ASSISTANT_PROVIDER:deepseek}
@@ -172,7 +214,17 @@ schoolbridge:
       confirmation-ttl: PT5M
       destructive-require-typed-confirm: true
       max-bulk-impact: 200
-
+    # Retrieval-Augmented Generation (Phase 2 infra). Ships dark: enabled=false keeps retrieval out of
+    # the chat flow (wired in Phase 3). Ingestion + the vector store load regardless so documents can
+    # be indexed ahead of go-live. embedding-dim must equal the vector(768) column.
+    rag:
+      enabled: ${ASSISTANT_RAG_ENABLED:true}
+      top-k: 5
+      min-score: 0.65
+      max-context-chars: 6000
+      embedding-dim: 768
+      chunk-size-tokens: 600
+      chunk-overlap-tokens: 80
 
 resilience4j:
   circuitbreaker:

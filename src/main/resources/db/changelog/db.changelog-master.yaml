@@ -35,3 +35,9 @@ databaseChangeLog:
   - include:
       file: 012-assistant-conversations.sql
       relativeToChangelogFile: true
+  - include:
+      file: 013-assistant-rag.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 014-assistant-vector-rls.sql
+      relativeToChangelogFile: true

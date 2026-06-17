@@ -17,7 +17,8 @@ import org.springframework.web.client.RestClient;
 @Configuration
 @ConditionalOnExpression(
     "'${schoolbridge.assistant.provider:anthropic}'.equals('deepseek')"
-        + " and ${schoolbridge.assistant.enabled:false}")
+        + " and ${schoolbridge.assistant.enabled:false}"
+        + " and '${schoolbridge.assistant.engine:native}'.equals('native')")
 public class DeepSeekClientConfig {
 
   @Bean

@@ -56,7 +56,7 @@ public class SecurityConfig {
   private boolean swaggerEnabled;
 
   @Value(
-      "${schoolbridge.cors.allowed-origins:http://localhost:5173,http://localhost:8080,http://10.0.2.2:8080}")
+      "${schoolbridge.cors.allowed-origins:http://localhost:5173,http://localhost:8080,http://10.0.2.2:8080,http://localhost:63342}")
   private List<String> allowedOrigins;
 
   public SecurityConfig(

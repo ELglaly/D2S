@@ -2,13 +2,15 @@ name: schoolbridge
 
 services:
   postgres:
-    image: postgres:16
+    # pgvector image (postgres:16 + 'vector' extension) — required by assistant RAG (changelog 013).
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: schoolbridge
-      POSTGRES_USER: schoolbridge
-      POSTGRES_PASSWORD: schoolbridge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: wasla
     ports:
-      - "5432:5432"
+      # Host 5433 -> container 5432: native PG17 already holds host 5432 on this machine.
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:

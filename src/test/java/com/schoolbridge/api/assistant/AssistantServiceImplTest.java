@@ -16,6 +16,9 @@ import com.schoolbridge.api.assistant.llm.LlmRequest;
 import com.schoolbridge.api.assistant.llm.LlmResponse;
 import com.schoolbridge.api.assistant.llm.LlmUsage;
 import com.schoolbridge.api.assistant.llm.SystemPrompt;
+import com.schoolbridge.api.assistant.rag.ContextAugmenter;
+import com.schoolbridge.api.assistant.rag.RagRetriever;
+import com.schoolbridge.api.assistant.rag.RetrievedChunk;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.Tool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -125,6 +128,43 @@ class AssistantServiceImplTest {
     verifyNoInteractions(cache);
   }
 
+  @Test
+  void ragContextIsAppendedToSystemPromptWhenEnabled() {
+    AssistantProperties props = new AssistantProperties();
+    props.getRag().setEnabled(true);
+    ScriptedGateway gateway = new ScriptedGateway(text("Absence answer."));
+    when(cache.key(ctx.userId(), "what is the absence policy")).thenReturn("k");
+    when(cache.get("k")).thenReturn(Optional.empty());
+    RagRetriever retriever =
+        new RagRetriever(null, props, null) {
+          @Override
+          public List<RetrievedChunk> retrieve(String query, ToolContext context) {
+            return List.of(
+                new RetrievedChunk("Absences need a written note.", "FAQ", "Attendance"));
+          }
+        };
+
+    AssistantServiceImpl service =
+        new AssistantServiceImpl(
+            gateway,
+            registry(),
+            new SystemPrompt(),
+            props,
+            cache,
+            messages,
+            JSON,
+            retriever,
+            new ContextAugmenter(props));
+
+    AssistantAnswer answer = service.ask(ask("what is the absence policy"), ctx);
+
+    assertThat(answer.outcome()).isEqualTo(AssistantAnswer.Outcome.ANSWERED);
+    assertThat(answer.metadata().get("retrievedChunks")).isEqualTo(1);
+    String system = gateway.requests.get(0).system();
+    assertThat(system).contains("Absences need a written note.");
+    assertThat(system).contains("Reference context");
+  }
+
   // --- helpers --------------------------------------------------------------
 
   private AssistantServiceImpl service(LlmGateway gateway, ToolRegistry registry) {
@@ -134,7 +174,15 @@ class AssistantServiceImplTest {
   private AssistantServiceImpl service(
       LlmGateway gateway, ToolRegistry registry, AssistantProperties props) {
     return new AssistantServiceImpl(
-        gateway, registry, new SystemPrompt(), props, cache, messages, JSON);
+        gateway,
+        registry,
+        new SystemPrompt(),
+        props,
+        cache,
+        messages,
+        JSON,
+        new RagRetriever(null, props, null),
+        new ContextAugmenter(props));
   }
 
   private ToolRegistry registry(Tool... tools) {
