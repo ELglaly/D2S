@@ -1,6 +1,8 @@
 package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -51,6 +53,7 @@ public class HomeworkController {
   }
 
   @PostMapping
+  @RequirePermission(Permission.HOMEWORK_CREATE)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')"
           + " or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
@@ -76,6 +79,7 @@ public class HomeworkController {
   }
 
   @PostMapping("/{id}/publish")
+  @RequirePermission(Permission.HOMEWORK_PUBLISH)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
   @Operation(
@@ -95,6 +99,7 @@ public class HomeworkController {
   }
 
   @GetMapping
+  @RequirePermission(Permission.HOMEWORK_READ)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')"
           + " or (hasRole('TEACHER') and (#classId == null or @perms.teacherTeaches(#classId)))")
@@ -145,7 +150,7 @@ public class HomeworkController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')" + " or hasRole('TEACHER')" + " or hasRole('PARENT')")
+  @RequirePermission(Permission.HOMEWORK_READ)
   @Operation(
       summary = "Get homework item",
       description =
@@ -167,6 +172,7 @@ public class HomeworkController {
   }
 
   @GetMapping("/{id}/recipients")
+  @RequirePermission(Permission.HOMEWORK_READ)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
   @Operation(
@@ -186,6 +192,7 @@ public class HomeworkController {
   }
 
   @PatchMapping("/{id}")
+  @RequirePermission(Permission.HOMEWORK_UPDATE)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
   @Operation(
@@ -206,6 +213,7 @@ public class HomeworkController {
   }
 
   @DeleteMapping("/{id}")
+  @RequirePermission(Permission.HOMEWORK_DELETE)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
   @Operation(

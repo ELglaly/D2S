@@ -5,6 +5,8 @@ import com.schoolbridge.api.classes.dto.CreateStudentRequest;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.dto.UpdateStudentRequest;
 import com.schoolbridge.api.classes.service.StudentService;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -21,7 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,7 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/students")
 @Tag(name = "Students", description = "Student roster management and bulk import")
-@PreAuthorize("hasRole('SCHOOL_ADMIN')")
+@RequirePermission(Permission.STUDENT_MANAGE)
 public class StudentController {
 
   private final StudentService service;

@@ -209,4 +209,15 @@ class SchoolClassControllerTest extends AbstractIntegrationTest {
         .then()
         .statusCode(404);
   }
+
+  @Test
+  void list_withTeacherToken_returns403() {
+    // Class listing is an admin-management read (CLASS_MANAGE); teachers use /my-classes instead.
+    given()
+        .header("Authorization", "Bearer " + teacherToken)
+        .when()
+        .get("/api/v1/classes")
+        .then()
+        .statusCode(403);
+  }
 }

@@ -1,5 +1,7 @@
 package com.schoolbridge.api.subjects;
 
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.subjects.dto.AssignTeacherToSubjectRequest;
 import com.schoolbridge.api.subjects.dto.StudentSubjectResponse;
@@ -37,7 +39,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @PostMapping("/classes/{classId}/subjects/{subjectId}/teachers")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Assign a teacher to a subject in a class")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Teacher assigned"),
@@ -60,7 +62,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @GetMapping("/classes/{classId}/subjects/{subjectId}/teachers")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "List teachers assigned to a subject in a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Assignment list"),
@@ -73,7 +75,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @GetMapping("/classes/{classId}/teacher-subject-assignments")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "List all teacher-subject assignments for a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Assignment list"),
@@ -86,7 +88,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @DeleteMapping("/teacher-subject-assignments/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Remove a teacher-subject assignment")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Removed"),

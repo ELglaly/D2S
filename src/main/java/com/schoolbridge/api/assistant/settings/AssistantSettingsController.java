@@ -4,11 +4,12 @@ import com.schoolbridge.api.assistant.AssistantContextFactory;
 import com.schoolbridge.api.assistant.settings.dto.AssistantSettingsResponse;
 import com.schoolbridge.api.assistant.settings.dto.UpdateSettingsRequest;
 import com.schoolbridge.api.assistant.tools.ToolContext;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,7 +36,7 @@ public class AssistantSettingsController {
   }
 
   @GetMapping
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ASSISTANT_SETTINGS_MANAGE)
   public AssistantSettingsResponse get(Authentication authentication) {
     ToolContext ctx =
         contextFactory.fromAuthentication(authentication, LocaleContextHolder.getLocale());
@@ -44,7 +45,7 @@ public class AssistantSettingsController {
   }
 
   @PutMapping
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ASSISTANT_SETTINGS_MANAGE)
   public AssistantSettingsResponse update(
       @Valid @RequestBody UpdateSettingsRequest request, Authentication authentication) {
     ToolContext ctx =

@@ -8,6 +8,8 @@ import com.schoolbridge.api.attendance.dto.MarkAllPresentResponse;
 import com.schoolbridge.api.attendance.dto.MarkAttendanceRequest;
 import com.schoolbridge.api.attendance.dto.ParentResponseRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
@@ -48,7 +50,7 @@ public class AttendanceController {
   // OkHttp) URL-encode the colon to %3A, which makes Spring's path matcher route the request to
   // the static-resource fallback.
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN') or hasRole('TEACHER')")
+  @RequirePermission(Permission.ATTENDANCE_READ)
   @Operation(
       summary = "Get attendance record",
       description = "Returns a single attendance record by ID.")
@@ -63,6 +65,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/mark")
+  @RequirePermission(Permission.ATTENDANCE_RECORD)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
   @Operation(
@@ -86,6 +89,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/mark-all-present")
+  @RequirePermission(Permission.ATTENDANCE_RECORD)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
   @Operation(
@@ -108,6 +112,7 @@ public class AttendanceController {
   }
 
   @GetMapping("/roster")
+  @RequirePermission(Permission.ATTENDANCE_READ)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
   @Operation(

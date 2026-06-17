@@ -6,6 +6,8 @@ import com.schoolbridge.api.announcements.dto.CreateAnnouncementRequest;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -47,6 +49,7 @@ public class AnnouncementController {
   }
 
   @PostMapping
+  @RequirePermission(Permission.ANNOUNCEMENT_SEND)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')"
           + " or (hasRole('TEACHER')"
@@ -80,6 +83,7 @@ public class AnnouncementController {
   }
 
   @GetMapping
+  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
   @Operation(
       summary = "List announcements",
       description =
@@ -100,7 +104,8 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}")
-  // @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.isAnnouncementSender(#id)")
+  @RequirePermission(Permission.ANNOUNCEMENT_READ)
+  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.isAnnouncementSender(#id)")
   @Operation(summary = "Get announcement", description = "Returns a single announcement by ID.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Announcement found"),
@@ -113,7 +118,7 @@ public class AnnouncementController {
   }
 
   @PostMapping("/{id}/recall")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
   @Operation(
       summary = "Recall announcement",
       description =
@@ -133,7 +138,7 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}/recipients")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
   @Operation(
       summary = "List recipients",
       description =

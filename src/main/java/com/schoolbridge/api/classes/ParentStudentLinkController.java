@@ -3,6 +3,8 @@ package com.schoolbridge.api.classes;
 import com.schoolbridge.api.classes.dto.CreateParentLinkRequest;
 import com.schoolbridge.api.classes.dto.ParentStudentLinkResponse;
 import com.schoolbridge.api.classes.service.ParentStudentLinkService;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +16,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/parent-links")
 @Tag(name = "Parent-Student Links", description = "Link parents to their children")
-@PreAuthorize("hasRole('SCHOOL_ADMIN')")
+@RequirePermission(Permission.PARENT_LINK_MANAGE)
 public class ParentStudentLinkController {
 
   private final ParentStudentLinkService service;
