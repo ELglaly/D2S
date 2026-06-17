@@ -4,6 +4,8 @@ import com.schoolbridge.api.assistant.AssistantContextFactory;
 import com.schoolbridge.api.assistant.rag.dto.IngestDocumentRequest;
 import com.schoolbridge.api.assistant.rag.dto.KnowledgeDocumentResponse;
 import com.schoolbridge.api.assistant.tools.ToolContext;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -12,7 +14,6 @@ import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +44,7 @@ public class DocumentAdminController {
   }
 
   @PostMapping
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.DOCUMENT_MANAGE)
   public ResponseEntity<KnowledgeDocumentResponse> ingest(
       @Valid @RequestBody IngestDocumentRequest request, Authentication authentication) {
     ToolContext ctx = contextFactory.fromAuthentication(authentication, locale());
@@ -54,14 +55,14 @@ public class DocumentAdminController {
   }
 
   @GetMapping
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.DOCUMENT_MANAGE)
   public List<KnowledgeDocumentResponse> list(Authentication authentication) {
     ToolContext ctx = contextFactory.fromAuthentication(authentication, locale());
     return ingestion.list(ctx);
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.DOCUMENT_MANAGE)
   public ResponseEntity<Void> delete(@PathVariable UUID id, Authentication authentication) {
     ToolContext ctx = contextFactory.fromAuthentication(authentication, locale());
     ingestion.delete(id, ctx);

@@ -1,6 +1,8 @@
 package com.schoolbridge.api.integrations.whatsapp;
 
 import com.schoolbridge.api.announcements.enums.Language;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.integrations.DispatchRequest;
 import com.schoolbridge.api.integrations.DispatchResult;
 import com.schoolbridge.api.integrations.NotificationDispatcher;
@@ -11,7 +13,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +25,7 @@ import org.springframework.web.client.RestClient;
  */
 @RestController
 @RequestMapping("/integrations/whatsapp/diagnostics")
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequirePermission(Permission.WHATSAPP_DIAGNOSTICS)
 @Tag(
     name = "WhatsApp Diagnostics",
     description = "WhatsApp integration status and credential check (SUPER_ADMIN only)")

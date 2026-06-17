@@ -1,6 +1,8 @@
 package com.schoolbridge.api.grades;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -44,9 +46,8 @@ public class GradesController {
   }
 
   @PostMapping
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')"
-          + " or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
+  @RequirePermission(Permission.GRADE_CREATE)
+  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#request.classId())")
   @Operation(summary = "Create grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Grade record created"),
@@ -66,9 +67,8 @@ public class GradesController {
   }
 
   @GetMapping(params = "studentId")
-  @PreAuthorize(
-      "hasAnyRole('SCHOOL_ADMIN', 'TEACHER')"
-          + " or (hasRole('PARENT') and @perms.parentLinkedTo(#studentId))")
+  @RequirePermission(Permission.GRADE_READ)
+  @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'TEACHER') or @perms.parentLinkedTo(#studentId)")
   @Operation(
       summary = "List grades for a student",
       description =
@@ -84,8 +84,8 @@ public class GradesController {
   }
 
   @GetMapping(params = "classId")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
+  @RequirePermission(Permission.GRADE_READ)
+  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#classId)")
   @Operation(summary = "List grades for a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated grade list"),
@@ -100,7 +100,7 @@ public class GradesController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'TEACHER', 'PARENT')")
+  @RequirePermission(Permission.GRADE_READ)
   @Operation(summary = "Get a single grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Grade record found"),
@@ -112,7 +112,7 @@ public class GradesController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN') or hasRole('TEACHER')")
+  @RequirePermission(Permission.GRADE_UPDATE)
   @Operation(summary = "Update a grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Updated"),
@@ -130,7 +130,7 @@ public class GradesController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.GRADE_DELETE)
   @Operation(summary = "Delete a grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Deleted"),

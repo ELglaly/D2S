@@ -1,5 +1,7 @@
 package com.schoolbridge.api.subjects;
 
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.subjects.dto.AssignSubjectToClassRequest;
@@ -37,7 +39,7 @@ public class ClassSubjectController {
   }
 
   @PostMapping("/classes/{classId}/subjects")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Assign a subject to a class")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Subject assigned to class"),
@@ -56,6 +58,7 @@ public class ClassSubjectController {
   }
 
   @GetMapping("/classes/{classId}/subjects")
+  @RequirePermission(Permission.SUBJECT_READ)
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
   @Operation(summary = "List subjects in a class")
@@ -72,7 +75,7 @@ public class ClassSubjectController {
   }
 
   @DeleteMapping("/class-subjects/{id}")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Remove a subject from a class")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Removed"),

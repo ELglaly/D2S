@@ -1,5 +1,7 @@
 package com.schoolbridge.api.tenant;
 
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.tenant.dto.CreateSchoolRequest;
 import com.schoolbridge.api.tenant.dto.SchoolResponse;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/schools")
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequirePermission(Permission.SCHOOL_MANAGE)
 @Tag(
     name = "Schools",
     description = "Platform-admin school (tenant) management. All endpoints require SUPER_ADMIN.")

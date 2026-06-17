@@ -5,6 +5,8 @@ import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.dto.UpdateSchoolClassRequest;
 import com.schoolbridge.api.classes.service.SchoolClassService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -35,7 +37,7 @@ public class SchoolClassController {
     this.service = service;
   }
 
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.CLASS_MANAGE)
   @PostMapping
   @Operation(summary = "Create class", description = "Creates a new school class for the tenant.")
   @ApiResponses({
@@ -53,6 +55,7 @@ public class SchoolClassController {
   }
 
   @GetMapping
+  @RequirePermission(Permission.CLASS_MANAGE)
   @Operation(
       summary = "List classes",
       description = "Returns a paginated list of all classes for the school, newest first.")
@@ -69,6 +72,7 @@ public class SchoolClassController {
   }
 
   @GetMapping("/by-teacher")
+  @RequirePermission(Permission.CLASS_MANAGE)
   @Operation(
       summary = "List classes by teacher",
       description =
@@ -109,6 +113,7 @@ public class SchoolClassController {
   }
 
   @GetMapping("/{id}")
+  @RequirePermission(Permission.CLASS_MANAGE)
   @Operation(summary = "Get class", description = "Returns a single class by ID.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Class found"),
@@ -120,7 +125,7 @@ public class SchoolClassController {
     return ResponseEntity.ok(service.findById(id));
   }
 
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.CLASS_MANAGE)
   @PatchMapping("/{id}")
   @Operation(
       summary = "Update class",
@@ -137,7 +142,7 @@ public class SchoolClassController {
     return ResponseEntity.ok(service.update(id, request));
   }
 
-  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
+  @RequirePermission(Permission.CLASS_MANAGE)
   @DeleteMapping("/{id}")
   @Operation(
       summary = "Delete class",
