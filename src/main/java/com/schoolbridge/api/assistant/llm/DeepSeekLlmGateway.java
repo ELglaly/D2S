@@ -30,7 +30,8 @@ import org.springframework.web.client.RestClientResponseException;
 @Component
 @ConditionalOnExpression(
     "'${schoolbridge.assistant.provider:anthropic}'.equals('deepseek')"
-        + " and ${schoolbridge.assistant.enabled:false}")
+        + " and ${schoolbridge.assistant.enabled:false}"
+        + " and '${schoolbridge.assistant.engine:native}'.equals('native')")
 public class DeepSeekLlmGateway implements LlmGateway {
 
   private static final String COMPLETIONS_PATH = "/chat/completions";

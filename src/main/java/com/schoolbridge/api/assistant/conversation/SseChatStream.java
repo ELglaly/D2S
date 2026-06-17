@@ -37,6 +37,18 @@ final class SseChatStream implements ChatStream {
   }
 
   @Override
+  public void retrievalStarted() {
+    emit("retrieval_started", new LinkedHashMap<>());
+  }
+
+  @Override
+  public void retrievalCompleted(int matches) {
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("matches", matches);
+    emit("retrieval_completed", data);
+  }
+
+  @Override
   public void contentBlockStart(int index) {
     Map<String, Object> block = new LinkedHashMap<>();
     block.put("type", "text");

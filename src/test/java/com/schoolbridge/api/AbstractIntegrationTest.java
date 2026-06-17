@@ -17,9 +17,13 @@ import org.testcontainers.utility.DockerImageName;
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
+  // pgvector image (postgres:16 + the 'vector' extension) so Liquibase changeset
+  // 013-pgvector-extension can run CREATE EXTENSION vector at context startup. Declared compatible
+  // with the postgres image so @ServiceConnection / PostgreSQLContainer still bind normally.
   @ServiceConnection
   static final PostgreSQLContainer<?> POSTGRES =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres:16"));
+      new PostgreSQLContainer<>(
+          DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
   @ServiceConnection
   static final RabbitMQContainer RABBITMQ =

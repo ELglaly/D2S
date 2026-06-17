@@ -15,7 +15,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnExpression(
     "'${schoolbridge.assistant.provider:anthropic}'.equals('anthropic')"
-        + " and ${schoolbridge.assistant.enabled:false}")
+        + " and ${schoolbridge.assistant.enabled:false}"
+        + " and '${schoolbridge.assistant.engine:native}'.equals('native')")
 public class AnthropicClientConfig {
 
   @Bean

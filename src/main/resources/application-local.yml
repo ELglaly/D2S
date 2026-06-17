@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/schoolbridge
+    url: jdbc:postgresql://localhost:5433/schoolbridge
     username: postgres
     password: wasla
   data:

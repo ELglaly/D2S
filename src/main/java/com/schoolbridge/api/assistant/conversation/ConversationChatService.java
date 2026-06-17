@@ -18,6 +18,9 @@ import com.schoolbridge.api.assistant.llm.LlmStreamListener;
 import com.schoolbridge.api.assistant.llm.LlmToolSpec;
 import com.schoolbridge.api.assistant.llm.LlmUsage;
 import com.schoolbridge.api.assistant.llm.StreamText;
+import com.schoolbridge.api.assistant.rag.ContextAugmenter;
+import com.schoolbridge.api.assistant.rag.RagRetriever;
+import com.schoolbridge.api.assistant.rag.RetrievedChunk;
 import com.schoolbridge.api.assistant.settings.AssistantSettingsService;
 import com.schoolbridge.api.assistant.tools.ActionTool;
 import com.schoolbridge.api.assistant.tools.PreviewOutcome;
@@ -59,6 +62,8 @@ public class ConversationChatService {
   private final AssistantActionService actionService;
   private final MessageResolver messages;
   private final ObjectMapper mapper;
+  private final RagRetriever retriever;
+  private final ContextAugmenter augmenter;
 
   public ConversationChatService(
       ConversationService conversations,
@@ -69,7 +74,9 @@ public class ConversationChatService {
       AssistantProperties properties,
       AssistantActionService actionService,
       MessageResolver messages,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      RagRetriever retriever,
+      ContextAugmenter augmenter) {
     this.conversations = conversations;
     this.store = store;
     this.gateway = gateway;
@@ -79,6 +86,8 @@ public class ConversationChatService {
     this.actionService = actionService;
     this.messages = messages;
     this.mapper = mapper;
+    this.retriever = retriever;
+    this.augmenter = augmenter;
   }
 
   /** Entry point: validates, routes CONFIRM/CANCEL, otherwise streams a fresh agentic reply. */
@@ -103,7 +112,7 @@ public class ConversationChatService {
 
     store.appendUser(ctx.schoolId(), conversationId, trimmed);
     try {
-      streamAnswer(ctx, conversation, sink);
+      streamAnswer(ctx, conversation, trimmed, sink);
     } catch (RuntimeException e) {
       log.warn("Assistant stream failed for conversation {}", conversationId, e);
       sink.error(messages.get("assistant.error.stream_failed"));
@@ -129,7 +138,8 @@ public class ConversationChatService {
   }
 
   /** The streaming read/action loop. Final assistant turn is persisted only on clean completion. */
-  private void streamAnswer(ToolContext ctx, Conversation conversation, ChatStream sink) {
+  private void streamAnswer(
+      ToolContext ctx, Conversation conversation, String query, ChatStream sink) {
     List<LlmToolSpec> tools =
         registry.toolsFor(ctx).stream()
             .map(t -> new LlmToolSpec(t.name(), t.description(), t.inputSchema()))
@@ -139,6 +149,14 @@ public class ConversationChatService {
         store.loadHistory(conversation.getId(), properties.getMaxHistoryMessages());
 
     sink.messageStart(newMessageId());
+
+    if (properties.getRag().isEnabled()) {
+      sink.retrievalStarted();
+      List<RetrievedChunk> chunks = retriever.retrieve(query, ctx);
+      sink.retrievalCompleted(chunks.size());
+      system = augmenter.augment(system, chunks);
+    }
+
     LlmUsage usage = LlmUsage.zero();
     int blockIndex = 0;
     int iterations = 0;

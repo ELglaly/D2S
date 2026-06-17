@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.3.5</version>
+    <version>3.4.5</version>
     <relativePath/>
   </parent>
 
@@ -22,7 +22,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Versions not managed by the Spring Boot BOM -->
-    <springdoc.version>2.6.0</springdoc.version>
+    <springdoc.version>2.7.0</springdoc.version>
     <firebase-admin.version>9.3.0</firebase-admin.version>
     <modelmapper.version>3.2.0</modelmapper.version>
     <logstash-encoder.version>8.0</logstash-encoder.version>
@@ -31,12 +31,28 @@
     <anthropic.version>2.35.0</anthropic.version>
     <google-genai.version>1.57.0</google-genai.version>
 
+    <!-- Spring AI (BOM-managed). GA baselines on Spring Boot 3.4.x. -->
+    <spring-ai.version>1.0.1</spring-ai.version>
+
     <!-- Build-quality plugin versions -->
     <spotless.version>2.43.0</spotless.version>
     <google-java-format.version>1.23.0</google-java-format.version>
     <spotbugs.plugin.version>4.8.6.4</spotbugs.plugin.version>
     <jacoco.version>0.8.12</jacoco.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Spring AI BOM: aligns spring-ai-* starter + core versions. -->
+      <dependency>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-bom</artifactId>
+        <version>${spring-ai.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Web / API -->
@@ -127,6 +143,42 @@
       <groupId>com.google.genai</groupId>
       <artifactId>google-genai</artifactId>
       <version>${google-genai.version}</version>
+    </dependency>
+
+    <!--
+      Spring AI migration (Phase 0): chat-provider starters, version-managed by spring-ai-bom.
+      Their model auto-config is active-by-default and instantiates a provider API eagerly, so it is
+      globally disabled via spring.ai.model.*=none in application.yml; the app keeps using the native
+      LlmGateway until Phase 1's SpringAiModelConfig flips the selected provider on (engine=springai).
+      Deferred on purpose:
+        * spring-ai-starter-model-vertex-ai-gemini — Phase 2. Pulls a heavy native stack (gRPC,
+          netty-tcnative, protobuf, google-cloud) that destabilises the single reused Surefire fork on
+          JDK 23/Windows (0xC0000005). It lands with the embeddings/PGVector work that actually needs it.
+        * spring-ai-starter-vector-store-pgvector — Phase 2. Its PgVectorStore auto-config requires an
+          EmbeddingModel bean, which fails the context where no embedding creds exist.
+        * spring-ai-starter-model-azure-openai — dropped until a tenant needs it.
+      See docs/PLAN_SPRING_AI_RAG.md.
+    -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-model-anthropic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-model-openai</artifactId>
+    </dependency>
+
+    <!--
+      Spring AI migration (Phase 2): PGVector vector store for assistant RAG. Lightweight (JDBC only,
+      no gRPC/netty), so it does not reintroduce the Surefire fork instability that the vertex-ai
+      starter caused. The PgVectorStore is auto-configured from spring.ai.vectorstore.pgvector.* and
+      an EmbeddingModel bean. In Phase 2 that EmbeddingModel is a deterministic 768-dim placeholder
+      (AssistantRagConfig); Phase 3 swaps in the real Vertex text-multilingual-embedding-002 model and
+      handles the heavier classpath then. Liquibase owns the schema (initialize-schema=false).
+    -->
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
     </dependency>
 
     <!-- External HTTP + Resilience4j (M7: WhatsApp adapter circuit breaker + retry) -->

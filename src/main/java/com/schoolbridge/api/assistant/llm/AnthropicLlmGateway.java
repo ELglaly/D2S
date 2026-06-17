@@ -32,7 +32,8 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnExpression(
     "'${schoolbridge.assistant.provider:anthropic}'.equals('anthropic')"
-        + " and ${schoolbridge.assistant.enabled:false}")
+        + " and ${schoolbridge.assistant.enabled:false}"
+        + " and '${schoolbridge.assistant.engine:native}'.equals('native')")
 public class AnthropicLlmGateway implements LlmGateway {
 
   private final AnthropicClient client;

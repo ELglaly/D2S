@@ -12,6 +12,15 @@ public interface ChatStream {
 
   void messageStart(String messageId);
 
+  /**
+   * Signals that tenant-scoped RAG retrieval is starting for this turn. Additive event — existing
+   * consumers ignore unknown SSE event types, so the default no-op keeps non-HTTP sinks unchanged.
+   */
+  default void retrievalStarted() {}
+
+  /** Signals retrieval finished, reporting how many reference chunks were found. Additive. */
+  default void retrievalCompleted(int matches) {}
+
   void contentBlockStart(int index);
 
   void contentBlockDelta(int index, String text);

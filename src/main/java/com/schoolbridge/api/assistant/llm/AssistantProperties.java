@@ -13,6 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AssistantProperties {
 
   private boolean enabled = false;
+  private String engine = "native";
   private String provider = "anthropic";
   private String apiKey = "";
   private String geminiApiKey = "";
@@ -29,6 +30,7 @@ public class AssistantProperties {
   private String defaultSystemPrompt = "";
 
   private final Actions actions = new Actions();
+  private final Rag rag = new Rag();
 
   public boolean isEnabled() {
     return enabled;
@@ -36,6 +38,14 @@ public class AssistantProperties {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public String getEngine() {
+    return engine;
+  }
+
+  public void setEngine(String engine) {
+    this.engine = engine;
   }
 
   public String getProvider() {
@@ -138,6 +148,10 @@ public class AssistantProperties {
     return actions;
   }
 
+  public Rag getRag() {
+    return rag;
+  }
+
   public String getDeepseekApiKey() {
     return deepseekApiKey;
   }
@@ -192,6 +206,79 @@ public class AssistantProperties {
 
     public void setMaxBulkImpact(int maxBulkImpact) {
       this.maxBulkImpact = maxBulkImpact;
+    }
+  }
+
+  /**
+   * Retrieval-Augmented Generation settings ({@code schoolbridge.assistant.rag.*}). Ships dark:
+   * {@code enabled=false} keeps retrieval out of the chat flow (wired in Phase 3) while ingestion
+   * and the vector store still load so documents can be indexed ahead of go-live. {@code
+   * embeddingDim} must equal the {@code assistant_vector_store.embedding} {@code vector(N)} column.
+   */
+  public static class Rag {
+
+    private boolean enabled = false;
+    private int topK = 5;
+    private double minScore = 0.65;
+    private int maxContextChars = 6000;
+    private int embeddingDim = 768;
+    private int chunkSizeTokens = 600;
+    private int chunkOverlapTokens = 80;
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public int getTopK() {
+      return topK;
+    }
+
+    public void setTopK(int topK) {
+      this.topK = topK;
+    }
+
+    public double getMinScore() {
+      return minScore;
+    }
+
+    public void setMinScore(double minScore) {
+      this.minScore = minScore;
+    }
+
+    public int getMaxContextChars() {
+      return maxContextChars;
+    }
+
+    public void setMaxContextChars(int maxContextChars) {
+      this.maxContextChars = maxContextChars;
+    }
+
+    public int getEmbeddingDim() {
+      return embeddingDim;
+    }
+
+    public void setEmbeddingDim(int embeddingDim) {
+      this.embeddingDim = embeddingDim;
+    }
+
+    public int getChunkSizeTokens() {
+      return chunkSizeTokens;
+    }
+
+    public void setChunkSizeTokens(int chunkSizeTokens) {
+      this.chunkSizeTokens = chunkSizeTokens;
+    }
+
+    public int getChunkOverlapTokens() {
+      return chunkOverlapTokens;
+    }
+
+    public void setChunkOverlapTokens(int chunkOverlapTokens) {
+      this.chunkOverlapTokens = chunkOverlapTokens;
     }
   }
 }
