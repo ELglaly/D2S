@@ -27,6 +27,8 @@ public class AssistantProperties {
   private int maxQuestionLength = 500;
   private int rateLimitPerMinute = 20;
   private int maxHistoryMessages = 40;
+  private int toolResultMaxItems = 50;
+  private boolean toolGatingEnabled = true;
   private String defaultSystemPrompt = "";
 
   private final Actions actions = new Actions();
@@ -134,6 +136,22 @@ public class AssistantProperties {
 
   public void setMaxHistoryMessages(int maxHistoryMessages) {
     this.maxHistoryMessages = maxHistoryMessages;
+  }
+
+  public int getToolResultMaxItems() {
+    return toolResultMaxItems;
+  }
+
+  public void setToolResultMaxItems(int toolResultMaxItems) {
+    this.toolResultMaxItems = toolResultMaxItems;
+  }
+
+  public boolean isToolGatingEnabled() {
+    return toolGatingEnabled;
+  }
+
+  public void setToolGatingEnabled(boolean toolGatingEnabled) {
+    this.toolGatingEnabled = toolGatingEnabled;
   }
 
   public String getDefaultSystemPrompt() {

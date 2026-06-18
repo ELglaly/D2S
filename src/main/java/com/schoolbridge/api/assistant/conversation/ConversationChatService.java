@@ -1,6 +1,5 @@
 package com.schoolbridge.api.assistant.conversation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.assistant.AssistantActionService;
@@ -29,6 +28,8 @@ import com.schoolbridge.api.assistant.tools.Tool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.assistant.tools.ToolResult;
+import com.schoolbridge.api.assistant.tools.ToolResultProjector;
+import com.schoolbridge.api.assistant.tools.ToolSelector;
 import com.schoolbridge.api.common.i18n.MessageResolver;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,8 @@ public class ConversationChatService {
   private final ObjectMapper mapper;
   private final RagRetriever retriever;
   private final ContextAugmenter augmenter;
+  private final ToolResultProjector projector;
+  private final ToolSelector selector;
 
   public ConversationChatService(
       ConversationService conversations,
@@ -76,7 +79,9 @@ public class ConversationChatService {
       MessageResolver messages,
       ObjectMapper mapper,
       RagRetriever retriever,
-      ContextAugmenter augmenter) {
+      ContextAugmenter augmenter,
+      ToolResultProjector projector,
+      ToolSelector selector) {
     this.conversations = conversations;
     this.store = store;
     this.gateway = gateway;
@@ -88,6 +93,8 @@ public class ConversationChatService {
     this.mapper = mapper;
     this.retriever = retriever;
     this.augmenter = augmenter;
+    this.projector = projector;
+    this.selector = selector;
   }
 
   /** Entry point: validates, routes CONFIRM/CANCEL, otherwise streams a fresh agentic reply. */
@@ -140,8 +147,11 @@ public class ConversationChatService {
   /** The streaming read/action loop. Final assistant turn is persisted only on clean completion. */
   private void streamAnswer(
       ToolContext ctx, Conversation conversation, String query, ChatStream sink) {
+    List<Tool> visible = registry.toolsFor(ctx);
+    List<Tool> available =
+        properties.isToolGatingEnabled() ? selector.select(query, visible) : visible;
     List<LlmToolSpec> tools =
-        registry.toolsFor(ctx).stream()
+        available.stream()
             .map(t -> new LlmToolSpec(t.name(), t.description(), t.inputSchema()))
             .toList();
     String system = settings.resolveSystemPrompt(ctx);
@@ -154,7 +164,9 @@ public class ConversationChatService {
       sink.retrievalStarted();
       List<RetrievedChunk> chunks = retriever.retrieve(query, ctx);
       sink.retrievalCompleted(chunks.size());
-      system = augmenter.augment(system, chunks);
+      // Attach context to the user turn, not the system prompt, so the cached system+tool prefix
+      // stays byte-stable across turns and tool-loop iterations.
+      attachContext(history, augmenter.buildContextBlock(chunks));
     }
 
     LlmUsage usage = LlmUsage.zero();
@@ -248,6 +260,28 @@ public class ConversationChatService {
     }
   }
 
+  /**
+   * Prepends the retrieved-context block to the most recent user turn (the current question) as a
+   * leading text block, so the system prompt and tool catalog stay byte-stable for prefix caching.
+   * No-op when the block is empty.
+   */
+  private static void attachContext(List<LlmMessage> history, String contextBlock) {
+    if (contextBlock == null || contextBlock.isBlank()) {
+      return;
+    }
+    for (int i = history.size() - 1; i >= 0; i--) {
+      LlmMessage message = history.get(i);
+      if (message.role() == LlmMessage.Role.USER) {
+        List<LlmContent> merged = new ArrayList<>();
+        merged.add(new LlmContent.Text(contextBlock.strip()));
+        merged.addAll(message.content());
+        history.set(i, LlmMessage.user(merged));
+        return;
+      }
+    }
+    history.add(LlmMessage.user(contextBlock.strip()));
+  }
+
   // --- streaming helpers ----------------------------------------------------
 
   /** A whole message (start → one text block → stop) for deterministic, non-model replies. */
@@ -312,12 +346,7 @@ public class ConversationChatService {
   }
 
   private String serialize(ToolResult result) {
-    try {
-      return mapper.writeValueAsString(result);
-    } catch (JsonProcessingException e) {
-      log.warn("Failed to serialize tool result", e);
-      return "{\"status\":\"ERROR\"}";
-    }
+    return projector.serialize(result);
   }
 
   /** Per-turn text streamer: opens the content block lazily on the first delta. */

@@ -1,6 +1,5 @@
 package com.schoolbridge.api.assistant;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.assistant.cache.AssistantCache;
@@ -26,6 +25,8 @@ import com.schoolbridge.api.assistant.tools.Tool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.assistant.tools.ToolResult;
+import com.schoolbridge.api.assistant.tools.ToolResultProjector;
+import com.schoolbridge.api.assistant.tools.ToolSelector;
 import com.schoolbridge.api.common.i18n.MessageResolver;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +57,8 @@ public class AssistantServiceImpl implements AssistantService {
   private final ObjectMapper mapper;
   private final RagRetriever retriever;
   private final ContextAugmenter augmenter;
+  private final ToolResultProjector projector;
+  private final ToolSelector selector;
 
   public AssistantServiceImpl(
       LlmGateway gateway,
@@ -66,7 +69,9 @@ public class AssistantServiceImpl implements AssistantService {
       MessageResolver messages,
       ObjectMapper mapper,
       RagRetriever retriever,
-      ContextAugmenter augmenter) {
+      ContextAugmenter augmenter,
+      ToolResultProjector projector,
+      ToolSelector selector) {
     this.gateway = gateway;
     this.registry = registry;
     this.systemPrompt = systemPrompt;
@@ -76,6 +81,8 @@ public class AssistantServiceImpl implements AssistantService {
     this.mapper = mapper;
     this.retriever = retriever;
     this.augmenter = augmenter;
+    this.projector = projector;
+    this.selector = selector;
   }
 
   @Override
@@ -96,21 +103,28 @@ public class AssistantServiceImpl implements AssistantService {
       return AssistantAnswer.answered(cached.get(), meta);
     }
 
+    List<Tool> visible = registry.toolsFor(ctx);
+    List<Tool> available =
+        properties.isToolGatingEnabled() ? selector.select(question, visible) : visible;
     List<LlmToolSpec> tools =
-        registry.toolsFor(ctx).stream()
+        available.stream()
             .map(t -> new LlmToolSpec(t.name(), t.description(), t.inputSchema()))
             .toList();
+    // System stays byte-stable (no per-query RAG): the provider can cache this prefix + the tool
+    // catalog across turns and across this turn's tool-loop iterations. Retrieved context rides on
+    // the user turn instead.
     String system = systemPrompt.build(ctx);
 
     int retrievedChunks = 0;
+    String contextBlock = "";
     if (properties.getRag().isEnabled()) {
       List<RetrievedChunk> chunks = retriever.retrieve(question, ctx);
       retrievedChunks = chunks.size();
-      system = augmenter.augment(system, chunks);
+      contextBlock = augmenter.buildContextBlock(chunks);
     }
 
     List<LlmMessage> history = new ArrayList<>();
-    history.add(LlmMessage.user(question));
+    history.add(userTurn(contextBlock, question));
 
     LlmUsage usage = LlmUsage.zero();
     List<String> toolsInvoked = new ArrayList<>();
@@ -162,6 +176,18 @@ public class AssistantServiceImpl implements AssistantService {
         metadata(ctx, iterations, usage, toolsInvoked, false));
   }
 
+  /**
+   * The opening user turn: the question, optionally preceded by a retrieved-context text block
+   * (kept off the system prompt so the cached prefix stays stable).
+   */
+  private static LlmMessage userTurn(String contextBlock, String question) {
+    if (contextBlock == null || contextBlock.isBlank()) {
+      return LlmMessage.user(question);
+    }
+    return LlmMessage.user(
+        List.of(new LlmContent.Text(contextBlock.strip()), new LlmContent.Text(question)));
+  }
+
   /** Resolves and runs a read tool, returning the tool_result content block for the model. */
   private LlmContent.ToolResult invokeRead(
       LlmContent.ToolUse call, Optional<Tool> found, ToolContext ctx) {
@@ -200,12 +226,7 @@ public class AssistantServiceImpl implements AssistantService {
   }
 
   private String serialize(ToolResult result) {
-    try {
-      return mapper.writeValueAsString(result);
-    } catch (JsonProcessingException e) {
-      log.warn("Failed to serialize tool result", e);
-      return "{\"status\":\"ERROR\"}";
-    }
+    return projector.serialize(result);
   }
 
   private Map<String, Object> baseMetadata(ToolContext ctx) {
