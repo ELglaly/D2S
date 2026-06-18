@@ -22,10 +22,13 @@ import com.schoolbridge.api.assistant.tools.PreviewOutcome;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.assistant.tools.ToolResult;
+import com.schoolbridge.api.assistant.tools.ToolResultProjector;
+import com.schoolbridge.api.assistant.tools.ToolSelector;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.common.i18n.MessageResolver;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -78,7 +81,9 @@ class AssistantActionOrchestrationTest {
             messages,
             JSON,
             new RagRetriever(null, properties, null),
-            new ContextAugmenter(properties));
+            new ContextAugmenter(properties),
+            new ToolResultProjector(JSON, properties),
+            new ToolSelector(new SimpleMeterRegistry()));
 
     AssistantAnswer answer = service.ask(new AskRequest("mark all present in 5a", null), ctx);
 

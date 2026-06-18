@@ -24,10 +24,13 @@ import com.schoolbridge.api.assistant.tools.Tool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.assistant.tools.ToolResult;
+import com.schoolbridge.api.assistant.tools.ToolResultProjector;
+import com.schoolbridge.api.assistant.tools.ToolSelector;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.common.i18n.MessageResolver;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -129,7 +132,7 @@ class AssistantServiceImplTest {
   }
 
   @Test
-  void ragContextIsAppendedToSystemPromptWhenEnabled() {
+  void ragContextIsAttachedToUserTurnWhenEnabled() {
     AssistantProperties props = new AssistantProperties();
     props.getRag().setEnabled(true);
     ScriptedGateway gateway = new ScriptedGateway(text("Absence answer."));
@@ -154,15 +157,25 @@ class AssistantServiceImplTest {
             messages,
             JSON,
             retriever,
-            new ContextAugmenter(props));
+            new ContextAugmenter(props),
+            new ToolResultProjector(JSON, props),
+            new ToolSelector(new SimpleMeterRegistry()));
 
     AssistantAnswer answer = service.ask(ask("what is the absence policy"), ctx);
 
     assertThat(answer.outcome()).isEqualTo(AssistantAnswer.Outcome.ANSWERED);
     assertThat(answer.metadata().get("retrievedChunks")).isEqualTo(1);
-    String system = gateway.requests.get(0).system();
-    assertThat(system).contains("Absences need a written note.");
-    assertThat(system).contains("Reference context");
+    LlmRequest request = gateway.requests.get(0);
+    // System prompt stays free of retrieved context so the cached prefix is stable across turns.
+    assertThat(request.system()).doesNotContain("Absences need a written note.");
+    String firstUserTurn =
+        request.messages().get(0).content().stream()
+            .filter(c -> c instanceof LlmContent.Text)
+            .map(c -> ((LlmContent.Text) c).text())
+            .collect(java.util.stream.Collectors.joining("\n"));
+    assertThat(firstUserTurn).contains("Reference context");
+    assertThat(firstUserTurn).contains("Absences need a written note.");
+    assertThat(firstUserTurn).contains("what is the absence policy");
   }
 
   // --- helpers --------------------------------------------------------------
@@ -182,7 +195,9 @@ class AssistantServiceImplTest {
         messages,
         JSON,
         new RagRetriever(null, props, null),
-        new ContextAugmenter(props));
+        new ContextAugmenter(props),
+        new ToolResultProjector(JSON, props),
+        new ToolSelector(new SimpleMeterRegistry()));
   }
 
   private ToolRegistry registry(Tool... tools) {

@@ -29,13 +29,27 @@ public class ContextAugmenter {
 
   /**
    * Returns {@code systemPrompt} with a tenant-context section appended, or unchanged if no chunks.
+   * Retained for callers that still inline context into the system prompt; new callers should
+   * prefer {@link #buildContextBlock} and attach the block to the user turn so the system prefix
+   * stays byte-stable (which lets the provider cache it across turns/iterations).
    */
   public String augment(String systemPrompt, List<RetrievedChunk> chunks) {
+    String block = buildContextBlock(chunks);
+    return block.isEmpty() ? systemPrompt : systemPrompt + block;
+  }
+
+  /**
+   * Builds the guarded, char-capped reference-context section for the given chunks, or an empty
+   * string when there is nothing usable. The returned block is self-contained (guard header +
+   * numbered items) so it can be attached to the user turn instead of the system prompt, keeping
+   * the cached system+tool prefix stable.
+   */
+  public String buildContextBlock(List<RetrievedChunk> chunks) {
     if (chunks == null || chunks.isEmpty()) {
-      return systemPrompt;
+      return "";
     }
     int budget = properties.getRag().getMaxContextChars();
-    StringBuilder builder = new StringBuilder(systemPrompt).append(GUARD_HEADER);
+    StringBuilder builder = new StringBuilder(GUARD_HEADER);
     int used = 0;
     int included = 0;
     for (RetrievedChunk chunk : chunks) {
@@ -55,6 +69,6 @@ public class ContextAugmenter {
       builder.append(included).append('.').append(title).append(' ').append(content).append('\n');
       used += content.length();
     }
-    return included == 0 ? systemPrompt : builder.toString();
+    return included == 0 ? "" : builder.toString();
   }
 }

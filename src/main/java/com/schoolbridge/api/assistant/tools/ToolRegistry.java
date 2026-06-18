@@ -28,11 +28,16 @@ public class ToolRegistry {
     this.actionsEnabled = actionsEnabled;
   }
 
-  /** All tools available to the caller's role (action tools only when actions are enabled). */
+  /**
+   * All tools available to the caller's role (action tools only when actions are enabled), in a
+   * deterministic by-name order so the serialized tool catalog is byte-identical across requests —
+   * a prerequisite for the provider caching the system+tool prefix.
+   */
   public List<Tool> toolsFor(ToolContext ctx) {
     return tools.stream()
         .filter(t -> t.roles().contains(ctx.role()))
         .filter(t -> actionsEnabled || t.kind() == ToolKind.READ)
+        .sorted(java.util.Comparator.comparing(Tool::name))
         .toList();
   }
 

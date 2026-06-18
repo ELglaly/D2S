@@ -27,4 +27,9 @@ public interface Tool {
 
   /** Roles for which this tool is registered. */
   Set<UserRole> roles();
+
+  /** Intent bucket for query-based catalog gating; defaults from the tool's package. */
+  default ToolDomain domain() {
+    return ToolDomain.fromPackage(getClass());
+  }
 }

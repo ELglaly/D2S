@@ -198,14 +198,20 @@ schoolbridge:
     # deepseek-ai/deepseek-v4-pro). NOTE: NVIDIA returns a plain "404 page not found" for an unknown
     # model id on /chat/completions — confirm the id via GET /v1/models, not the URL.
     model: ${ASSISTANT_MODEL:deepseek-ai/deepseek-v4-flash}
-    max-tool-iterations: 4
+    max-tool-iterations: 3
     request-timeout: 120s
     max-tokens: 1024
     read-cache-ttl: PT24H
     max-question-length: 500
     # Conversation context window: how many of the most recent stored messages are replayed to the
     # model on each turn of POST /conversations/{id}/messages.
-    max-history-messages: 40
+    max-history-messages: 16
+    # Max array elements kept in a tool result before it is capped (with a "narrow your query"
+    # marker) on the way to the model. Identifiers are stripped from tool results regardless.
+    tool-result-max-items: 50
+    # Gate the advertised tool catalog to the domains the user's message touches (keyword-based,
+    # falls back to the full catalog when no domain matches). Cuts input tokens on large catalogs.
+    tool-gating-enabled: true
     # Optional tenant-agnostic default persona. Blank → built-in persona. A per-school row in
     # assistant_settings overrides this; the security guardrails are always appended regardless.
     default-system-prompt: ${ASSISTANT_SYSTEM_PROMPT:}
@@ -219,9 +225,9 @@ schoolbridge:
     # be indexed ahead of go-live. embedding-dim must equal the vector(768) column.
     rag:
       enabled: ${ASSISTANT_RAG_ENABLED:true}
-      top-k: 5
-      min-score: 0.65
-      max-context-chars: 6000
+      top-k: 3
+      min-score: 0.70
+      max-context-chars: 3000
       embedding-dim: 768
       chunk-size-tokens: 600
       chunk-overlap-tokens: 80
