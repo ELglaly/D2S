@@ -48,6 +48,7 @@ public enum Permission {
   DOCUMENT_MANAGE,
 
   // platform administration
+  USER_READ,
   USER_MANAGE,
   SCHOOL_MANAGE,
   WHATSAPP_DIAGNOSTICS,

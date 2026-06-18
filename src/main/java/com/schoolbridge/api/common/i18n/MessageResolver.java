@@ -1,5 +1,6 @@
 package com.schoolbridge.api.common.i18n;
 
+import java.util.Locale;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,5 +20,10 @@ public class MessageResolver {
 
   public String get(String key, Object... args) {
     return messageSource.getMessage(key, args, key, LocaleContextHolder.getLocale());
+  }
+
+  /** Resolve a key in an explicit locale (used to render both ar + en for action previews). */
+  public String get(Locale locale, String key, Object... args) {
+    return messageSource.getMessage(key, args, key, locale);
   }
 }

@@ -10,6 +10,7 @@ import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,6 +25,11 @@ import java.util.Optional;
  * </ul>
  */
 public abstract class AbstractActionTool implements ActionTool {
+
+  /** Confirmation previews always ship both languages; these render each from the bundle. */
+  protected static final Locale AR = Locale.forLanguageTag("ar");
+
+  protected static final Locale EN = Locale.ENGLISH;
 
   protected final ActionSupport actions;
 
@@ -93,6 +99,30 @@ public abstract class AbstractActionTool implements ActionTool {
 
   protected String msg(String key, Object... args) {
     return actions.messages().get(key, args);
+  }
+
+  /** Resolve a key in an explicit locale (used to build both ar + en preview summaries). */
+  protected String msgIn(Locale locale, String key, Object... args) {
+    return actions.messages().get(locale, key, args);
+  }
+
+  /**
+   * Build a {@code Ready} preparation whose ar + en summaries are the same {@code summaryKey}
+   * rendered in each language with the same positional {@code args}. Use the explicit {@link
+   * #ready} overload when an argument is itself locale-dependent (e.g. a translated clause).
+   */
+  protected PrepResult readyMsg(
+      JsonNode resolvedArgs,
+      String summaryKey,
+      Map<String, Object> impact,
+      int impactCount,
+      Object... args) {
+    return ready(
+        resolvedArgs,
+        msgIn(AR, summaryKey, args),
+        msgIn(EN, summaryKey, args),
+        impact,
+        impactCount);
   }
 
   protected static java.util.UUID uuid(JsonNode node, String field) {

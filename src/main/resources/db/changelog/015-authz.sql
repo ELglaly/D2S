@@ -87,3 +87,17 @@ INSERT INTO role_permissions (id, role, permission_id)
   SELECT gen_random_uuid(), 'PARENT', p.id FROM permissions p
   WHERE p.name IN ('GRADE_READ','HOMEWORK_READ','HOMEWORK_ACK','ANNOUNCEMENT_READ');
 --rollback DELETE FROM role_permissions;
+
+--changeset schoolbridge:015-add-user-read-permission
+--comment: USER_READ — read/list users (e.g. the assistant's list_teachers tool) without the broader USER_MANAGE. Added as a new changeset so the original seed stays immutable (forward-only).
+INSERT INTO permissions (id, name) VALUES (gen_random_uuid(), 'USER_READ');
+--rollback DELETE FROM permissions WHERE name = 'USER_READ';
+
+--changeset schoolbridge:015-grant-user-read
+--comment: Grant USER_READ to SUPER_ADMIN and SCHOOL_ADMIN (the roles that may enumerate staff).
+INSERT INTO role_permissions (id, role, permission_id)
+  SELECT gen_random_uuid(), r.role, p.id
+  FROM permissions p
+  CROSS JOIN (VALUES ('SUPER_ADMIN'), ('SCHOOL_ADMIN')) AS r(role)
+  WHERE p.name = 'USER_READ';
+--rollback DELETE FROM role_permissions WHERE permission_id = (SELECT id FROM permissions WHERE name = 'USER_READ');

@@ -73,12 +73,15 @@ class AssistantToolAuthorizationOracleTest extends AbstractIntegrationTest {
     m.put("get_student_grades", Set.of(T, A));
     m.put("list_homework", Set.of(T, A));
     m.put("get_homework_recipients", Set.of(T, A));
+    m.put("get_class_grade_summary", Set.of(T, A));
     // Admin reads
     m.put("get_announcement_recipients", Set.of(A));
     m.put("list_students", Set.of(A));
     m.put("list_classes", Set.of(A));
     m.put("list_subjects", Set.of(A));
     m.put("list_parent_links", Set.of(A));
+    m.put("list_teachers", Set.of(A));
+    m.put("list_announcements", Set.of(A));
     // Parent actions
     m.put("respond_to_absence_alert", Set.of(P));
     m.put("acknowledge_homework", Set.of(P));
