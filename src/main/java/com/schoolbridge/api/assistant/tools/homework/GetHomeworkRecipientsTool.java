@@ -9,9 +9,9 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.HomeworkResponse;
-import com.schoolbridge.api.identity.UserRole;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -47,8 +47,8 @@ public class GetHomeworkRecipientsTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.HOMEWORK_READ);
   }
 
   @Override

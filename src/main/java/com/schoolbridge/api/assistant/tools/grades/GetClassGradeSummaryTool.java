@@ -9,9 +9,9 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
-import com.schoolbridge.api.identity.UserRole;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
@@ -59,8 +59,8 @@ public class GetClassGradeSummaryTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.GRADE_READ);
   }
 
   @Override

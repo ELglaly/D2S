@@ -12,7 +12,7 @@ import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.attendance.AttendanceStatus;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
@@ -56,8 +56,8 @@ public class GetChildAbsenceCountTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.PARENT);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ATTENDANCE_READ);
   }
 
   @Override

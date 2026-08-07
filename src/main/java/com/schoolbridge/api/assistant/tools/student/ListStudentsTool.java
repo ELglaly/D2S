@@ -10,7 +10,7 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.StudentService;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
@@ -46,8 +46,8 @@ public class ListStudentsTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.STUDENT_MANAGE);
   }
 
   @Override

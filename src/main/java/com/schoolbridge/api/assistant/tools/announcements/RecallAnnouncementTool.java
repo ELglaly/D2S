@@ -11,7 +11,7 @@ import com.schoolbridge.api.assistant.tools.action.ActionSupport;
 import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -53,8 +53,8 @@ public class RecallAnnouncementTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ANNOUNCEMENT_MANAGE);
   }
 
   @Override

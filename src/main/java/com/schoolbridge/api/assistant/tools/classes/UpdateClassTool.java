@@ -12,7 +12,7 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.dto.UpdateSchoolClassRequest;
 import com.schoolbridge.api.classes.service.SchoolClassService;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.dto.UserResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,8 +53,8 @@ public class UpdateClassTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.CLASS_MANAGE);
   }
 
   @Override

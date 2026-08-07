@@ -9,9 +9,9 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.ParentHomeworkFeedEntry;
-import com.schoolbridge.api.identity.UserRole;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -52,8 +52,8 @@ public class GetChildHomeworkTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.PARENT);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.HOMEWORK_READ);
   }
 
   @Override

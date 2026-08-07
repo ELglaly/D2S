@@ -15,7 +15,7 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,8 +60,8 @@ public class PostAnnouncementTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ANNOUNCEMENT_MANAGE);
   }
 
   @Override
