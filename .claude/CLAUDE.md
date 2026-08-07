@@ -79,6 +79,38 @@ warning if it spots the pattern — it doesn't block, verify it wasn't a false
 positive before dismissing it. Full writeups + two more (Spotless import
 timing, SpotBugs `\n` format-string): `docs/COMMON_MISTAKES.md`.
 
+## Spring Boot / Java Conventions (project-specific — global java/springboot skills cover the rest)
+
+- Package-by-feature: entity/repo/service/controller at the module root,
+  `dto/` sub-package. Not package-by-layer.
+- Service = interface + `*Impl` (e.g. `HomeworkService`/`HomeworkServiceImpl`),
+  always, even for single-implementation services — enables mocking without
+  a mocking framework touching final classes.
+- **No Lombok annotations in practice** (`@Data`/`@Builder`/`@Slf4j`/etc.) —
+  despite the dependency being on the classpath, the codebase uses explicit
+  fields, getters, and constructors throughout. Match this; don't introduce
+  Lombok-annotated classes into an otherwise-explicit codebase.
+- Constructor injection only, explicit constructors (no `@Autowired` field
+  injection, no Lombok-generated constructors).
+- Entities: JPA annotations directly on the entity (`@Entity`, `@Table`,
+  `@Column`), no Lombok. Tenant-scoped entities extend
+  `common.tenancy.TenantEntity` — see `schoolbridge-tenant-entity` skill.
+- Repository queries: named-parameter `@Query` (JPQL) for anything beyond a
+  trivial derived-name finder — see `HomeworkItemRepository` for the house
+  style (multi-line JPQL as concatenated strings, `@Param` on every bind).
+- DTOs are request/response records or classes with jakarta validation
+  annotations (`@NotNull`, `@Size`, …) + a dedicated `*Mapper` — not
+  ModelMapper-only, even though `modelmapper` is a dependency.
+- Controllers: slash-style action paths only (`/resource/action`), gated
+  with `@RequirePermission`; row-ownership stays a trimmed `@PreAuthorize`
+  alongside it — see ADR-003 and ADR-006.
+- Cross-module side effects (notifications, dispatch) go through the outbox
+  (`OutboxEventRecorder.record(...)`, `HashMap` payloads) — never a direct
+  call from one domain module into `integrations`.
+- Full detail, examples, and the *why*: `docs/ARCHITECTURE.md`,
+  `docs/adr/`, `docs/COMMON_MISTAKES.md`. Project slash commands:
+  `/verify`, `/new-module`, `/gate-check`, `/add-tool`.
+
 ## Project Knowledge
 
 - `docs/ARCHITECTURE.md` — system overview, tech stack, dependency direction, folder conventions
@@ -86,6 +118,7 @@ timing, SpotBugs `\n` format-string): `docs/COMMON_MISTAKES.md`.
 - `docs/CHECKLISTS.md` — dev checklist, Definition of Done, code review / PR / release checklists
 - `docs/COMMON_MISTAKES.md` — every gotcha above, expanded, with the fix
 - `docs/adr/` — Architecture Decision Records for the *why* behind tenant isolation, RBAC, RAG, assistant tool architecture, routing style
+- `docs/PORTABLE_ENGINEERING_LESSONS.md` — general Spring/JPA/Liquibase lessons from outside this project; verify against SchoolBridge's code before acting, not verified SchoolBridge incidents
 
 ## Project Skills & Agents
 
