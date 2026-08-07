@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push to the same branch makes the in-flight run obsolete. main is excluded so every
+# commit that lands on the default branch keeps a build record.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # Runs first and independently: a leaked credential must be visible in seconds, without waiting
+  # out a full Testcontainers build. This job exists because a live NVIDIA API key and a Meta
+  # WhatsApp app-secret were both committed to application*.yml and sat in history unnoticed.
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks needs history to scan commits, not just the working tree.
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: No secret literals in committed config
+        run: |
+          # Belt-and-braces over gitleaks: these two provider prefixes are the ones this repo has
+          # actually leaked, and they are cheap to assert on directly.
+          if grep -rnE '(nvapi-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{20,}|EAA[A-Za-z0-9]{40,})' \
+               src/main/resources src/test/resources; then
+            echo "::error::A provider key literal is committed in config. Use \${ENV_VAR:} instead."
+            exit 1
+          fi
+
+      - name: No secret values in log statements
+        run: |
+          # The OTP was once logged at INFO in every profile, which is full account takeover from
+          # log access alone. LoggingOtpDispatcher is the one deliberate exception: it is fenced to
+          # the local and test profiles so developers can sign in without a WhatsApp account.
+          matches=$(grep -rnE 'log\.(info|warn|error|debug|trace)\(' src/main/java \
+            | grep -iE '\b(code|otp|token|password|secret|apiKey)\b' \
+            | grep -v 'LoggingOtpDispatcher.java' \
+            | grep -viE 'statusCode|errorCode|messageId|token_suffix|eventType' || true)
+          if [ -n "$matches" ]; then
+            echo "::error::A credential may be logged:"
+            echo "$matches"
+            exit 1
+          fi
+
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      # Spotless and SpotBugs are hard gates in this project, not advisory. Run the format check
+      # before the tests so a formatting failure reports in seconds rather than after the full
+      # Testcontainers suite.
+      - name: Spotless check
+        run: mvn -B -ntp spotless:check
+
+      # The Liquibase changelog is validated by the Testcontainers suite, which runs every changeset
+      # against a real Postgres on each boot — a broken or non-forward-only migration fails there.
+      # Testcontainers uses the Docker daemon preinstalled on ubuntu-latest.
+      - name: Verify (compile, SpotBugs, tests)
+        run: mvn -B -ntp verify
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
+          retention-days: 7

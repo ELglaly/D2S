@@ -31,27 +31,24 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 /**
- * {@link LlmGateway} backed by a Spring AI {@link ChatModel}. Loaded only when {@code
- * schoolbridge.assistant.enabled=true} and {@code engine=springai}; the native gateways are then
- * switched off (their conditions require {@code engine=native}). The concrete provider behind the
- * {@code ChatModel} is selected by Spring AI auto-config via {@code spring.ai.model.chat} + the
- * provider's api-key.
+ * {@link LlmGateway} backed by a Spring AI {@link ChatModel} — the only real gateway in the
+ * codebase (ADR-007). Loaded when {@code schoolbridge.assistant.enabled=true}; otherwise {@code
+ * AssistantConfig} supplies {@code DisabledLlmGateway}. The concrete provider behind the {@code
+ * ChatModel} is selected by Spring AI auto-config via {@code spring.ai.model.chat} + the provider's
+ * api-key.
  *
  * <p><b>Tool execution stays external.</b> Tools are advertised to the model as {@link
  * ToolCallback} definitions, but {@code internalToolExecutionEnabled=false} stops Spring AI from
  * ever invoking them — the model's tool-call requests are returned in the {@link ChatResponse} and
  * handed back to the existing orchestrator, which keeps the role/permission checks and the
- * preview→confirm→execute gate exactly as with the native gateways. The advertised callbacks
- * therefore throw if called.
+ * preview→confirm→execute gate intact. The advertised callbacks therefore throw if called.
  *
  * <p>Streaming uses the {@link LlmGateway#converseStreaming default} chunked implementation for now
  * (one blocking turn, then text chunked to the SSE sink); true token streaming over {@code
  * ChatModel.stream} is a later enhancement and is not needed for functional parity.
  */
 @Component
-@ConditionalOnExpression(
-    "'${schoolbridge.assistant.engine:native}'.equals('springai')"
-        + " and ${schoolbridge.assistant.enabled:false}")
+@ConditionalOnExpression("${schoolbridge.assistant.enabled:false}")
 public class SpringAiLlmGateway implements LlmGateway {
 
   private final ChatModel chatModel;

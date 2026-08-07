@@ -1,6 +1,7 @@
 package com.schoolbridge.api.assistant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +20,7 @@ import com.schoolbridge.api.assistant.rag.ContextAugmenter;
 import com.schoolbridge.api.assistant.rag.RagRetriever;
 import com.schoolbridge.api.assistant.tools.ActionTool;
 import com.schoolbridge.api.assistant.tools.PreviewOutcome;
+import com.schoolbridge.api.assistant.tools.ToolAuthorizer;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.assistant.tools.ToolResult;
@@ -26,6 +28,8 @@ import com.schoolbridge.api.assistant.tools.ToolResultProjector;
 import com.schoolbridge.api.assistant.tools.ToolSelector;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.common.i18n.MessageResolver;
+import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -60,7 +64,9 @@ class AssistantActionOrchestrationTest {
   @Test
   void actionProposalHaltsWithConfirmRequired() {
     StubActionTool action = new StubActionTool();
-    ToolRegistry registry = new ToolRegistry(List.of(action), true);
+    EffectivePermissionService perms = mock(EffectivePermissionService.class);
+    when(perms.permissionsForRole(UserRole.TEACHER)).thenReturn(Set.of("ATTENDANCE_RECORD"));
+    ToolRegistry registry = new ToolRegistry(List.of(action), new ToolAuthorizer(perms), true);
     LlmGateway gateway =
         request ->
             new LlmResponse(
@@ -110,8 +116,8 @@ class AssistantActionOrchestrationTest {
     }
 
     @Override
-    public Set<UserRole> roles() {
-      return Set.of(UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+    public Set<Permission> permissions() {
+      return Set.of(Permission.ATTENDANCE_RECORD);
     }
 
     @Override

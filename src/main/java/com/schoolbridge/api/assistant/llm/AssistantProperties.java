@@ -6,20 +6,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Configuration for the AI assistant module ({@code schoolbridge.assistant.*}). Ships dark: {@code
  * enabled=false} keeps the LLM beans unloaded, and {@code actions.enabled=false} keeps mutating
- * tools off even when reads are live. The API key is env-only and validated at startup when
- * enabled.
+ * tools off even when reads are live.
+ *
+ * <p>There is no {@code engine} or {@code provider} property and no API key here. Spring AI is the
+ * only engine (ADR-007) and the provider and its credentials are configured under {@code
+ * spring.ai.*} — keeping exactly one home for the key, so there is only one place a secret can be
+ * committed by accident.
  */
 @ConfigurationProperties(prefix = "schoolbridge.assistant")
 public class AssistantProperties {
 
   private boolean enabled = false;
-  private String engine = "native";
-  private String provider = "anthropic";
-  private String apiKey = "";
-  private String geminiApiKey = "";
-  private String deepseekApiKey = "";
-  private String deepseekBaseUrl = "https://integrate.api.nvidia.com/v1";
-  private String model = "claude-haiku-4-5-20251001";
+  private String model = "deepseek-ai/deepseek-v4-flash";
   private int maxToolIterations = 4;
   private Duration requestTimeout = Duration.ofSeconds(30);
   private long maxTokens = 1024;
@@ -40,38 +38,6 @@ public class AssistantProperties {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
-  }
-
-  public String getEngine() {
-    return engine;
-  }
-
-  public void setEngine(String engine) {
-    this.engine = engine;
-  }
-
-  public String getProvider() {
-    return provider;
-  }
-
-  public void setProvider(String provider) {
-    this.provider = provider;
-  }
-
-  public String getApiKey() {
-    return apiKey;
-  }
-
-  public void setApiKey(String apiKey) {
-    this.apiKey = apiKey;
-  }
-
-  public String getGeminiApiKey() {
-    return geminiApiKey;
-  }
-
-  public void setGeminiApiKey(String geminiApiKey) {
-    this.geminiApiKey = geminiApiKey;
   }
 
   public String getModel() {
@@ -168,22 +134,6 @@ public class AssistantProperties {
 
   public Rag getRag() {
     return rag;
-  }
-
-  public String getDeepseekApiKey() {
-    return deepseekApiKey;
-  }
-
-  public void setDeepseekApiKey(String deepseekApiKey) {
-    this.deepseekApiKey = deepseekApiKey;
-  }
-
-  public String getDeepseekBaseUrl() {
-    return deepseekBaseUrl;
-  }
-
-  public void setDeepseekBaseUrl(String deepseekBaseUrl) {
-    this.deepseekBaseUrl = deepseekBaseUrl;
   }
 
   /** Action-layer (mutation) settings — a second kill-switch plus the confirmation gate knobs. */

@@ -17,16 +17,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
 /**
- * Verifies the dark→enabled transition wires cleanly: with {@code enabled=true} (and a fake key)
- * the controller, action service, and SDK-gated beans all load, while a {@code @Primary} stub
- * gateway keeps the real Anthropic client off the test path. The default profile (enabled=false) is
- * covered by every other {@code @SpringBootTest}, which boots without any LLM bean.
+ * Verifies the dark→enabled transition wires cleanly: with {@code enabled=true} (and a fake Spring
+ * AI provider key) the controller, action service, and gateway all load, while a {@code @Primary}
+ * stub gateway keeps the real provider client off the test path. The default profile
+ * (enabled=false) is covered by {@link AssistantDisabledByDefaultTest} and by every other
+ * {@code @SpringBootTest}, which boot without any LLM bean.
+ *
+ * <p>The provider key is set under {@code spring.ai.*} — since ADR-007 that is the only place a
+ * credential lives, and {@code AssistantStartupValidator} fails the context without it.
  */
 @SpringBootTest(
     properties = {
       "schoolbridge.assistant.enabled=true",
-      "schoolbridge.assistant.api-key=test-key",
-      "schoolbridge.assistant.actions.enabled=true"
+      "schoolbridge.assistant.actions.enabled=true",
+      "spring.ai.model.chat=openai",
+      "spring.ai.openai.api-key=test-key"
     })
 class AssistantEnabledWiringTest extends AbstractIntegrationTest {
 

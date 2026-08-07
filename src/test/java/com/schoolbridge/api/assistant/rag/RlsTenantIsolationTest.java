@@ -3,6 +3,7 @@ package com.schoolbridge.api.assistant.rag;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
+import com.schoolbridge.api.RlsTestRole;
 import com.schoolbridge.api.assistant.rag.dto.IngestDocumentRequest;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.common.tenancy.TenantContext;
@@ -23,15 +24,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Verifies the changelog-014 RLS policy AND the {@code set_config('app.current_tenant', …)}
- * plumbing. The migration leaves RLS un-FORCED so the owner role used everywhere else bypasses it;
- * this test FORCEs it for the duration so the owner is also subject, then relies on it being reset
- * in teardown.
+ * Verifies the changelog-014 RLS policy on {@code assistant_vector_store} AND the {@link
+ * com.schoolbridge.api.common.tenancy.TenantSessionBinder} plumbing that feeds it.
  *
- * <p>Under FORCE the {@code WITH CHECK} clause means an ingest INSERT only succeeds if the tenant
- * GUC was bound on the very connection the vector store writes through — so a green ingest proves
- * the binding reaches PgVectorStore's connection, and the cross-tenant read proves the DB blocks
- * leakage independently of the application filter.
+ * <p><b>Why every case runs inside a transaction under {@link RlsTestRole}.</b> The migration
+ * leaves RLS un-FORCEd so the owner bypasses it, and Testcontainers connects as the bootstrap
+ * superuser, which bypasses RLS whether or not the table is FORCEd. An earlier version of this
+ * class used {@code ALTER TABLE … FORCE ROW LEVEL SECURITY} and asserted on the default connection;
+ * that assertion held because of the application-side metadata filter, and would have held with the
+ * policy dropped. Running as an unprivileged role is what makes these assertions about the
+ * database.
+ *
+ * <p>Ingestion and retrieval are {@code @Transactional}, so calling them inside {@link
+ * TransactionTemplate} makes them join the transaction that carries the {@code SET LOCAL ROLE} —
+ * the same connection the policy is evaluated on.
  */
 @SpringBootTest(
     properties = {
@@ -54,35 +60,84 @@ class RlsTenantIsolationTest extends AbstractIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    jdbc.execute("ALTER TABLE assistant_vector_store FORCE ROW LEVEL SECURITY");
+    RlsTestRole.ensureExists(jdbc);
     schoolA = persistSchool("Alpha");
     schoolB = persistSchool("Beta");
   }
 
   @AfterEach
   void tearDown() {
-    // Always lift FORCE so the rest of the suite (which relies on owner bypass) is unaffected.
-    jdbc.execute("ALTER TABLE assistant_vector_store NO FORCE ROW LEVEL SECURITY");
     TenantContext.clear();
   }
 
   @Test
   void ingestAndRetrievalSucceedOnlyBecauseTenantGucIsBound() {
     TenantContext.set(schoolA);
-    // Under FORCE + WITH CHECK this INSERT throws unless bindTenant reached the write connection.
-    ingestion.ingest(faq(), ctxFor(schoolA));
 
-    assertThat(retriever.retrieve(CONTENT, ctxFor(schoolA))).isNotEmpty();
+    tx.executeWithoutResult(
+        status -> {
+          jdbc.execute(RlsTestRole.ASSUME);
+          // WITH CHECK rejects this INSERT unless bindTenant reached the write connection.
+          ingestion.ingest(faq(), ctxFor(schoolA));
+          assertThat(retriever.retrieve(CONTENT, ctxFor(schoolA))).isNotEmpty();
+        });
   }
 
   @Test
-  void databaseBlocksCrossTenantRetrieval() {
+  void databaseHidesAnotherTenantsChunksFromARawQuery() {
+    ingestAsSchoolA();
+
+    Long visibleToB = countChunksAs(schoolB);
+    Long visibleToA = countChunksAs(schoolA);
+
+    assertThat(visibleToB).as("school B must not see school A's chunks").isZero();
+    assertThat(visibleToA).as("the policy must not hide a tenant's own chunks").isPositive();
+  }
+
+  @Test
+  void unboundTenantSeesNoChunksRatherThanEveryTenantsChunks() {
+    ingestAsSchoolA();
+
+    Long visible =
+        tx.execute(
+            status -> {
+              jdbc.execute(RlsTestRole.ASSUME);
+              return jdbc.queryForObject("select count(*) from assistant_vector_store", Long.class);
+            });
+
+    assertThat(visible).as("an unbound tenant GUC must fail closed").isZero();
+  }
+
+  @Test
+  void retrievalReturnsNothingForAnotherTenant() {
+    ingestAsSchoolA();
+
+    tx.executeWithoutResult(
+        status -> {
+          jdbc.execute(RlsTestRole.ASSUME);
+          assertThat(retriever.retrieve(CONTENT, ctxFor(schoolB)))
+              .as("school B's retrieval must surface none of school A's chunks")
+              .isEmpty();
+        });
+  }
+
+  /** Raw count, going around the retriever's metadata filter so only RLS can be doing the work. */
+  private Long countChunksAs(UUID schoolId) {
+    return tx.execute(
+        status -> {
+          jdbc.execute(RlsTestRole.ASSUME);
+          jdbc.queryForObject(
+              "select set_config('app.current_tenant', ?, true)",
+              String.class,
+              schoolId.toString());
+          return jdbc.queryForObject("select count(*) from assistant_vector_store", Long.class);
+        });
+  }
+
+  private void ingestAsSchoolA() {
     TenantContext.set(schoolA);
     ingestion.ingest(faq(), ctxFor(schoolA));
-
-    assertThat(retriever.retrieve(CONTENT, ctxFor(schoolB)))
-        .as("RLS must hide school A's chunks from school B")
-        .isEmpty();
+    TenantContext.clear();
   }
 
   private IngestDocumentRequest faq() {

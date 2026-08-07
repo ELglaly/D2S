@@ -1,10 +1,19 @@
 spring:
+  # DB_USERNAME must be the least-privilege application role, NOT the role that owns the tables.
+  # PostgreSQL lets a table owner bypass row-level security, so connecting as the owner silently
+  # disables every changelog-017 tenant-isolation policy. RlsStartupValidator refuses to boot this
+  # profile if that happens. Role setup: docs/RUNBOOK.md, "Database roles".
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: ${DB_POOL_MAX:20}
+  # Migrations need DDL and therefore run as the owner, which is exactly the privilege the runtime
+  # role must not have. Two identities, one database.
+  liquibase:
+    user: ${DB_MIGRATION_USERNAME}
+    password: ${DB_MIGRATION_PASSWORD}
   data:
     redis:
       host: ${REDIS_HOST}

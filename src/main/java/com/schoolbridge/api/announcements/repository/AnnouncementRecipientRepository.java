@@ -1,6 +1,8 @@
 package com.schoolbridge.api.announcements.repository;
 
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -25,7 +27,26 @@ public interface AnnouncementRecipientRepository
 
   long countByAnnouncementId(UUID announcementId);
 
-  Optional<AnnouncementRecipient> findFirstByAnnouncementIdAndParentUserId(
+  /**
+   * Recipient counts for a whole page of announcements in one grouped query. The list endpoint used
+   * to call {@link #countByAnnouncementId} per row — 20 extra round-trips per page, against the
+   * largest table in the schema. Announcements with no recipients are simply absent from the
+   * result, so callers must default them to zero.
+   */
+  @Query(
+      "select r.announcementId, count(r) from AnnouncementRecipient r "
+          + "where r.announcementId in :announcementIds "
+          + "group by r.announcementId")
+  List<Object[]> countByAnnouncementIdIn(
+      @Param("announcementIds") Collection<UUID> announcementIds);
+
+  /**
+   * Every recipient row a parent holds for one announcement — one per linked child, since the table
+   * is keyed {@code (announcement_id, parent_user_id, student_id)}. Acknowledgement must span all
+   * of them: a parent with two children in scope sees one announcement and taps acknowledge once,
+   * and the earlier {@code findFirst...} variant left the sibling rows unacknowledged forever.
+   */
+  List<AnnouncementRecipient> findAllByAnnouncementIdAndParentUserId(
       UUID announcementId, UUID parentUserId);
 
   boolean existsByAnnouncementIdAndParentUserId(UUID announcementId, UUID parentUserId);

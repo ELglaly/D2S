@@ -1,6 +1,8 @@
 package com.schoolbridge.api.assistant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +23,7 @@ import com.schoolbridge.api.assistant.rag.RagRetriever;
 import com.schoolbridge.api.assistant.rag.RetrievedChunk;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.Tool;
+import com.schoolbridge.api.assistant.tools.ToolAuthorizer;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.assistant.tools.ToolResult;
@@ -28,6 +31,8 @@ import com.schoolbridge.api.assistant.tools.ToolResultProjector;
 import com.schoolbridge.api.assistant.tools.ToolSelector;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.common.i18n.MessageResolver;
+import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -201,7 +206,11 @@ class AssistantServiceImplTest {
   }
 
   private ToolRegistry registry(Tool... tools) {
-    return new ToolRegistry(List.of(tools), true);
+    EffectivePermissionService perms = mock(EffectivePermissionService.class);
+    lenient()
+        .when(perms.permissionsForRole(UserRole.TEACHER))
+        .thenReturn(Set.of("GRADE_READ", "ATTENDANCE_RECORD"));
+    return new ToolRegistry(List.of(tools), new ToolAuthorizer(perms), true);
   }
 
   private static AskRequest ask(String q) {
@@ -269,8 +278,8 @@ class AssistantServiceImplTest {
     }
 
     @Override
-    public Set<UserRole> roles() {
-      return Set.of(UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+    public Set<Permission> permissions() {
+      return Set.of(Permission.GRADE_READ);
     }
 
     @Override

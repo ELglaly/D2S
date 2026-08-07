@@ -5,6 +5,7 @@ import com.schoolbridge.api.assistant.rag.dto.KnowledgeDocumentResponse;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.common.audit.AuditService;
 import com.schoolbridge.api.common.error.NotFoundException;
+import com.schoolbridge.api.common.tenancy.TenantSessionBinder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +20,6 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,29 +37,26 @@ public class DocumentIngestionService {
   private final VectorStore vectorStore;
   private final DocumentChunker chunker;
   private final AuditService audit;
-  private final JdbcTemplate jdbcTemplate;
+  private final TenantSessionBinder sessionBinder;
 
   public DocumentIngestionService(
       KnowledgeDocumentRepository documents,
       VectorStore vectorStore,
       DocumentChunker chunker,
       AuditService audit,
-      JdbcTemplate jdbcTemplate) {
+      TenantSessionBinder sessionBinder) {
     this.documents = documents;
     this.vectorStore = vectorStore;
     this.chunker = chunker;
     this.audit = audit;
-    this.jdbcTemplate = jdbcTemplate;
+    this.sessionBinder = sessionBinder;
   }
 
   /**
    * Binds the tenant for the vector-store RLS policy on the current transaction (changelog 014).
    */
   private void bindTenant(ToolContext ctx) {
-    jdbcTemplate.queryForObject(
-        "select set_config('app.current_tenant', ?, true)",
-        String.class,
-        ctx.schoolId().toString());
+    sessionBinder.bindTenant(ctx.schoolId());
   }
 
   /** Ingests (or idempotently skips) one document for the caller's tenant. */

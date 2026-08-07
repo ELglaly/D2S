@@ -3,8 +3,6 @@ package com.schoolbridge.api.assistant.llm.springai;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.assistant.llm.AnthropicLlmGateway;
-import com.schoolbridge.api.assistant.llm.DeepSeekLlmGateway;
 import com.schoolbridge.api.assistant.llm.LlmGateway;
 import com.schoolbridge.api.assistant.llm.LlmMessage;
 import com.schoolbridge.api.assistant.llm.LlmRequest;
@@ -24,12 +22,17 @@ import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Flux;
 
 /**
- * With {@code engine=springai} the single {@link LlmGateway} bean is the {@link SpringAiLlmGateway}
- * (backed here by a stub {@link ChatModel}) and the native provider gateways are switched off — the
- * mutual exclusion that lets the migration ship dark and flip by config.
+ * When the assistant is enabled, the single {@link LlmGateway} bean is {@link SpringAiLlmGateway}
+ * (backed here by a stub {@link ChatModel}). Spring AI is the only engine — the native provider
+ * gateways were deleted in ADR-007, so there is no {@code engine} property to select and no second
+ * implementation that could win the bean.
  */
 @SpringBootTest(
-    properties = {"schoolbridge.assistant.enabled=true", "schoolbridge.assistant.engine=springai"})
+    properties = {
+      "schoolbridge.assistant.enabled=true",
+      "spring.ai.model.chat=openai",
+      "spring.ai.openai.api-key=test-key"
+    })
 class SpringAiEngineWiringTest extends AbstractIntegrationTest {
 
   @TestConfiguration
@@ -54,11 +57,11 @@ class SpringAiEngineWiringTest extends AbstractIntegrationTest {
   @Autowired ApplicationContext context;
 
   @Test
-  void springAiGatewaySelectedAndNativeGatewaysOff() {
+  void springAiIsTheOnlyGateway() {
     LlmGateway gateway = context.getBean(LlmGateway.class);
     assertThat(gateway).isInstanceOf(SpringAiLlmGateway.class);
-    assertThat(context.getBeanNamesForType(AnthropicLlmGateway.class)).isEmpty();
-    assertThat(context.getBeanNamesForType(DeepSeekLlmGateway.class)).isEmpty();
+    // Exactly one gateway bean — the DisabledLlmGateway fallback must not also be present.
+    assertThat(context.getBeanNamesForType(LlmGateway.class)).hasSize(1);
 
     LlmRequest request =
         new LlmRequest("system", List.of(LlmMessage.user("hi")), List.of(), "model", 64);

@@ -21,6 +21,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <p>When {@link TenantContext} is empty (admin maintenance code, the unauthenticated parent OTP
  * lookup, infrastructure repositories like {@code OutboxRepository}/{@code AuditLogRepository}),
  * the filter stays disabled — those repos query without tenant scoping, which is what we want.
+ *
+ * <p>The same branch also publishes the tenant to PostgreSQL via {@link TenantSessionBinder} for
+ * the changelog-017 RLS policies. Both controls hang off one condition on purpose: if the Hibernate
+ * filter and the database policy could ever disagree about which tenant is bound, the weaker of the
+ * two would silently win.
  */
 @Aspect
 @Component
@@ -28,6 +33,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class TenantFilterAspect {
 
   @PersistenceContext private EntityManager entityManager;
+
+  private final TenantSessionBinder sessionBinder;
+
+  public TenantFilterAspect(TenantSessionBinder sessionBinder) {
+    this.sessionBinder = sessionBinder;
+  }
 
   // Target the Spring Data root interface so we catch methods declared in SimpleJpaRepository
   // (findById, findAll, save, …) — they're not in our package and a pointcut on
@@ -39,6 +50,9 @@ public class TenantFilterAspect {
       Session session = entityManager.unwrap(Session.class);
       if (session.getEnabledFilter("tenantFilter") == null) {
         session.enableFilter("tenantFilter").setParameter("schoolId", tenant);
+        // Guarded by the same check, so this costs one round trip per transaction rather than one
+        // per repository call.
+        sessionBinder.bindTenant(tenant);
       }
     }
     return pjp.proceed();

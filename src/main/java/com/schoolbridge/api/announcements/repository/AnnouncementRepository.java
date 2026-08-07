@@ -2,6 +2,8 @@ package com.schoolbridge.api.announcements.repository;
 
 import com.schoolbridge.api.announcements.Announcement;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -26,4 +28,18 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, UUID
   Page<Announcement> findAll(Pageable pageable);
 
   Page<Announcement> findAllByStatus(AnnouncementStatus status, Pageable pageable);
+
+  /**
+   * SCHEDULED announcements whose send time has arrived, across every school.
+   *
+   * <p>Deliberately <b>not</b> tenant-filtered: the sweeper runs without a bound {@code
+   * TenantContext} and must see every school's due announcements. It re-binds the tenant per row
+   * before touching anything else, so the cross-tenant read stops here.
+   */
+  @Query(
+      "select a from Announcement a "
+          + "where a.status = com.schoolbridge.api.announcements.enums.AnnouncementStatus.SCHEDULED "
+          + "and a.scheduledFor <= :now "
+          + "order by a.scheduledFor asc")
+  List<Announcement> findDueScheduled(@Param("now") Instant now, Pageable pageable);
 }

@@ -82,14 +82,18 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     List<ParentStudentLink> links = resolveLinksForScope(request);
     long recipientCount = materializeRecipients(saved, links);
 
-    Map<String, Object> createdPayload = new HashMap<>();
-    createdPayload.put("announcementId", saved.getId());
-    createdPayload.put("schoolId", schoolId);
-    createdPayload.put("language", saved.getLanguage());
-    createdPayload.put("body", saved.getBody());
-    createdPayload.put("attachmentKey", saved.getAttachmentKey());
-    createdPayload.put("recipientCount", recipientCount);
-    outbox.record(schoolId, AGGREGATE_TYPE, saved.getId(), EVENT_CREATED, createdPayload);
+    // Only dispatch now if this is not scheduled. Recording the outbox event unconditionally meant
+    // an announcement scheduled for next week was delivered within seconds while the UI still
+    // showed SCHEDULED — the schedule was decorative. AnnouncementScheduleSweeper records the event
+    // when scheduledFor actually arrives.
+    if (initialStatus == AnnouncementStatus.SENT) {
+      outbox.record(
+          schoolId,
+          AGGREGATE_TYPE,
+          saved.getId(),
+          EVENT_CREATED,
+          dispatchPayload(saved, recipientCount));
+    }
 
     auditService.record(
         schoolId,
@@ -109,7 +113,36 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         status == null
             ? announcements.findAll(pageable)
             : announcements.findAllByStatus(status, pageable);
-    return page.map(a -> mapper.toResponse(a, recipients.countByAnnouncementId(a.getId())));
+    // One grouped count for the whole page instead of one query per row.
+    Map<UUID, Long> counts = recipientCounts(page.map(Announcement::getId).toList());
+    return page.map(a -> mapper.toResponse(a, counts.getOrDefault(a.getId(), 0L)));
+  }
+
+  /**
+   * Dispatch payload for {@code announcement.created}. Built with {@link HashMap}, never {@code
+   * Map.of} — {@code attachmentKey} is nullable and {@code Map.of} throws NPE on a null value.
+   */
+  private Map<String, Object> dispatchPayload(Announcement saved, long recipientCount) {
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("announcementId", saved.getId());
+    payload.put("schoolId", saved.getSchoolId());
+    payload.put("language", saved.getLanguage());
+    payload.put("body", saved.getBody());
+    payload.put("attachmentKey", saved.getAttachmentKey());
+    payload.put("recipientCount", recipientCount);
+    return payload;
+  }
+
+  /** Recipient counts keyed by announcement id; ids with no recipients are simply absent. */
+  private Map<UUID, Long> recipientCounts(List<UUID> announcementIds) {
+    if (announcementIds.isEmpty()) {
+      return Map.of();
+    }
+    Map<UUID, Long> counts = new HashMap<>();
+    for (Object[] row : recipients.countByAnnouncementIdIn(announcementIds)) {
+      counts.put((UUID) row[0], (Long) row[1]);
+    }
+    return counts;
   }
 
   @Override
@@ -156,13 +189,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
   @Transactional
   public void acknowledge(UUID announcementId, UUID parentUserId) {
     Announcement entity = requireAnnouncement(announcementId);
-    AnnouncementRecipient recipient =
-        recipients
-            .findFirstByAnnouncementIdAndParentUserId(announcementId, parentUserId)
-            .orElseThrow(
-                () ->
-                    new NotFoundException("error.announcement.not_in_recipients", announcementId));
-    recipient.acknowledge(Instant.now());
+    // One row per linked child. A parent sees a single announcement and acknowledges once, so the
+    // tap must clear every row they hold for it — otherwise a parent with two children stays
+    // permanently "unacknowledged" for the sibling they never had a way to acknowledge separately.
+    List<AnnouncementRecipient> rows =
+        recipients.findAllByAnnouncementIdAndParentUserId(announcementId, parentUserId);
+    if (rows.isEmpty()) {
+      throw new NotFoundException("error.announcement.not_in_recipients", announcementId);
+    }
+    Instant now = Instant.now();
+    rows.forEach(r -> r.acknowledge(now));
 
     auditService.record(
         entity.getSchoolId(),
@@ -170,7 +206,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         "announcement.acknowledged",
         AGGREGATE_TYPE,
         entity.getId(),
-        Map.of("recipientId", recipient.getId()));
+        Map.of("recipientIds", rows.stream().map(AnnouncementRecipient::getId).toList()));
   }
 
   Announcement requireAnnouncement(UUID id) {

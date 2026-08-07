@@ -64,8 +64,9 @@ import org.springframework.transaction.support.TransactionTemplate;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
       "schoolbridge.assistant.enabled=true",
-      "schoolbridge.assistant.api-key=test-key",
-      "schoolbridge.assistant.actions.enabled=true"
+      "schoolbridge.assistant.actions.enabled=true",
+      "spring.ai.model.chat=openai",
+      "spring.ai.openai.api-key=test-key"
     })
 class AssistantIntegrationTest extends AbstractIntegrationTest {
 
