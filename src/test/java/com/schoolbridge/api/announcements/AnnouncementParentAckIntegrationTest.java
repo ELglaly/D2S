@@ -65,8 +65,10 @@ class AnnouncementParentAckIntegrationTest extends AbstractIntegrationTest {
   private UUID senderId;
   private UUID recipientParentId;
   private UUID outsiderParentId;
+  private UUID twoChildParentId;
   private String recipientToken;
   private String outsiderToken;
+  private String twoChildToken;
   private UUID announcementId;
 
   @BeforeEach
@@ -107,11 +109,14 @@ class AnnouncementParentAckIntegrationTest extends AbstractIntegrationTest {
                             passwordEncoder.encode("pass")))
                     .getId());
 
-    recipientParentId = seedParentWithChild("+201090000001");
+    recipientParentId = seedParentWithChildren("+201090000001", 1);
     outsiderParentId = seedParentWithoutChild("+201090000002");
+    // Seeded before the announcement is created, since recipients are materialised at create time.
+    twoChildParentId = seedParentWithChildren("+201090000003", 2);
 
     recipientToken = issueParentToken(recipientParentId);
     outsiderToken = issueParentToken(outsiderParentId);
+    twoChildToken = issueParentToken(twoChildParentId);
 
     TenantContext.set(schoolId);
     AnnouncementResponse created =
@@ -153,10 +158,48 @@ class AnnouncementParentAckIntegrationTest extends AbstractIntegrationTest {
     var stored =
         tx.execute(
             s ->
-                recipientRepository.findFirstByAnnouncementIdAndParentUserId(
+                recipientRepository.findAllByAnnouncementIdAndParentUserId(
                     announcementId, recipientParentId));
-    assertThat(stored).isPresent();
-    assertThat(stored.get().getAcknowledgedAt()).as("ack timestamp must be set").isNotNull();
+    assertThat(stored).hasSize(1);
+    assertThat(stored.get(0).getAcknowledgedAt()).as("ack timestamp must be set").isNotNull();
+  }
+
+  /**
+   * Regression: a parent with two children in scope holds two recipient rows but sees one
+   * announcement and taps acknowledge once. Before this fix {@code acknowledge} used a {@code
+   * findFirst...} lookup, so the sibling row kept a null {@code acknowledged_at} forever and the
+   * school's acknowledgement report under-counted with no way for the parent to correct it.
+   */
+  @Test
+  void parentWithTwoChildren_singleAcknowledge_clearsEveryRecipientRow() {
+    TenantContext.set(schoolId);
+    var before =
+        tx.execute(
+            s ->
+                recipientRepository.findAllByAnnouncementIdAndParentUserId(
+                    announcementId, twoChildParentId));
+    assertThat(before).as("fan-out must produce one row per linked child").hasSize(2);
+    TenantContext.clear();
+
+    given()
+        .header("Authorization", "Bearer " + twoChildToken)
+        .when()
+        .post("/api/v1/announcements/" + announcementId + "/acknowledge")
+        .then()
+        .log()
+        .ifValidationFails()
+        .statusCode(204);
+
+    TenantContext.set(schoolId);
+    var after =
+        tx.execute(
+            s ->
+                recipientRepository.findAllByAnnouncementIdAndParentUserId(
+                    announcementId, twoChildParentId));
+    assertThat(after).hasSize(2);
+    assertThat(after)
+        .as("one tap must acknowledge every child's row, not just the first")
+        .allSatisfy(r -> assertThat(r.getAcknowledgedAt()).isNotNull());
   }
 
   @Test
@@ -169,24 +212,27 @@ class AnnouncementParentAckIntegrationTest extends AbstractIntegrationTest {
         .statusCode(403);
   }
 
-  private UUID seedParentWithChild(String phone) {
+  private UUID seedParentWithChildren(String phone, int childCount) {
     UUID parentId =
         tx.execute(
             s ->
                 userRepository
                     .save(User.parent(schoolId, "Parent " + phone, phone, blindIndex.hash(phone)))
                     .getId());
-    UUID studentId =
-        tx.execute(
-            s ->
-                studentRepository
-                    .save(new Student(schoolId, "Child " + phone, LocalDate.of(2015, 1, 1), null))
-                    .getId());
-    tx.executeWithoutResult(
-        s ->
-            linkRepository.save(
-                new ParentStudentLink(
-                    schoolId, parentId, studentId, RelationshipType.MOTHER, true)));
+    for (int i = 0; i < childCount; i++) {
+      String childName = "Child " + phone + "-" + i;
+      UUID studentId =
+          tx.execute(
+              s ->
+                  studentRepository
+                      .save(new Student(schoolId, childName, LocalDate.of(2015, 1, 1), null))
+                      .getId());
+      tx.executeWithoutResult(
+          s ->
+              linkRepository.save(
+                  new ParentStudentLink(
+                      schoolId, parentId, studentId, RelationshipType.MOTHER, true)));
+    }
     return parentId;
   }
 

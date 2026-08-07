@@ -87,6 +87,17 @@ public class Announcement extends TenantEntity {
     this.status = AnnouncementStatus.RECALLED;
   }
 
+  /**
+   * Moves a SCHEDULED announcement to SENT once its {@code scheduledFor} has arrived. Called only
+   * by {@code AnnouncementScheduleSweeper}; a RECALLED announcement is deliberately left alone so
+   * cancelling before the send time actually cancels it.
+   */
+  public void markSent() {
+    if (this.status == AnnouncementStatus.SCHEDULED) {
+      this.status = AnnouncementStatus.SENT;
+    }
+  }
+
   public UUID getSenderId() {
     return senderId;
   }

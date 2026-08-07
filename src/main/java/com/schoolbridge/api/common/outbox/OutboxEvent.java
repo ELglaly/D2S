@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
@@ -54,11 +55,24 @@ public class OutboxEvent {
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  /**
+   * When this row becomes claimable again. Set on insert so the first delivery is immediate, then
+   * pushed out by {@link #markFailed} on each failure. Null for terminal rows.
+   */
+  @Column(name = "next_attempt_at")
+  private Instant nextAttemptAt = Instant.now();
+
   @Column(name = "published_at")
   private Instant publishedAt;
 
   @Column(name = "last_error", length = 2000)
   private String lastError;
+
+  /** Deliveries attempted before a row is parked as {@link OutboxStatus#DEAD} for an operator. */
+  public static final int MAX_ATTEMPTS = 8;
+
+  private static final Duration BASE_BACKOFF = Duration.ofSeconds(10);
+  private static final Duration MAX_BACKOFF = Duration.ofMinutes(30);
 
   protected OutboxEvent() {}
 
@@ -74,13 +88,28 @@ public class OutboxEvent {
   public void markPublished() {
     this.status = OutboxStatus.PUBLISHED;
     this.publishedAt = Instant.now();
+    this.nextAttemptAt = null;
     this.lastError = null;
   }
 
+  /**
+   * Records a failed delivery and schedules the retry. Exponential backoff (10s, 20s, 40s, …)
+   * capped at 30 minutes; after {@link #MAX_ATTEMPTS} the row goes {@code DEAD} and stops being
+   * claimed, so a poison payload cannot spin the relay forever while still leaving the evidence in
+   * place for an operator.
+   */
   public void markFailed(String error) {
     this.attempts += 1;
-    this.status = OutboxStatus.FAILED;
     this.lastError = error == null ? null : error.substring(0, Math.min(error.length(), 2000));
+    if (this.attempts >= MAX_ATTEMPTS) {
+      this.status = OutboxStatus.DEAD;
+      this.nextAttemptAt = null;
+      return;
+    }
+    this.status = OutboxStatus.FAILED;
+    long backoffSeconds =
+        Math.min(BASE_BACKOFF.getSeconds() << (this.attempts - 1), MAX_BACKOFF.getSeconds());
+    this.nextAttemptAt = Instant.now().plusSeconds(backoffSeconds);
   }
 
   public UUID getId() {
@@ -113,5 +142,13 @@ public class OutboxEvent {
 
   public int getAttempts() {
     return attempts;
+  }
+
+  public Instant getNextAttemptAt() {
+    return nextAttemptAt;
+  }
+
+  public String getLastError() {
+    return lastError;
   }
 }

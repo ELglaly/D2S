@@ -17,14 +17,22 @@ logging:
 # FakeWhatsAppClient bean in tests (FakeWhatsAppClientConfig) so no network is actually used; the
 # WireMock-driven adapter tests override schoolbridge.whatsapp.api-base-url per-test.
 schoolbridge:
+  crypto:
+    # Fixed throwaway keys — application.yml deliberately has no default, so tests must supply them.
+    aes-key: c2Nob29sYnJpZGdlLWRldi1hZXMta2V5LTMyYnl0ZXM=
+    blind-index-key: c2Nob29sYnJpZGdlLWRldi1ibGluZC1pbmRleC1rZXk=
+  rate-limit:
+    # Off by default in tests: suites fire hundreds of requests from one address and would trip the
+    # anonymous cap. RateLimitIntegrationTest re-enables it with a tiny limit to prove it works.
+    enabled: false
   push:
     fcm:
       enabled: false
-  assistant:
-    # Default provider is deepseek (application.yml); supply a dummy key so the DeepSeek RestClient
-    # bean builds at context startup. No network is used — assistant tests inject a @Primary
-    # scripted gateway, and other tests never invoke the gateway.
-    deepseek-api-key: test-deepseek-key
+  announcements:
+    sweeper:
+      # Off by default in tests so ambient sweeps do not race assertions; the sweeper's own test
+      # invokes the scheduled method directly.
+      enabled: false
   whatsapp:
     api-base-url: http://localhost:0/wa-test
     phone-number-id: 999999999999999

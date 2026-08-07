@@ -8,30 +8,30 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   ai:
-    # Spring AI migration — Phase 0. The spring-ai-* starters are on the classpath but their model
-    # auto-configurations are active-by-default (matchIfMissing=true) and instantiate a provider API
-    # eagerly, which fails the context when no key is present ("simpleApiKey cannot be null"). Disable
-    # every model auto-config here so the app keeps using the existing native LlmGateway. Phase 1's
-    # SpringAiModelConfig flips the selected provider back on only when engine=springai.
+    # Spring AI is the only LLM engine (ADR-007). The spring-ai-* model auto-configurations are
+    # active-by-default (matchIfMissing=true) and instantiate a provider API eagerly, which fails
+    # the context when no key is present ("simpleApiKey cannot be null"). Every model auto-config
+    # is therefore pinned "none" below and chat is opt-in.
     model:
-      # engine=springai routes chat through this Spring AI model. Default "openai" = NVIDIA NIM /
-      # DeepSeek (OpenAI-compatible) via spring.ai.openai below. Set SPRING_AI_CHAT=none to fully
-      # disable Spring AI chat (e.g. when reverting to engine=native). Embedding stays "none" so RAG
-      # uses the in-process placeholder embedder (dim 768) until real Vertex embeddings are wired at
-      # deploy time (see docs/PLAN_SPRING_AI_RAG.md §16).
-      chat: ${SPRING_AI_CHAT:openai}
+      # Chat provider for the assistant. "none" by default so the app starts with no LLM wiring at
+      # all — matching schoolbridge.assistant.enabled=false. Set SPRING_AI_CHAT=openai (NVIDIA NIM /
+      # DeepSeek, OpenAI-compatible, configured below) or another provider to turn it on, and set
+      # that provider's key. Embedding stays "none" so RAG uses the in-process placeholder embedder
+      # (dim 768) until real Vertex embeddings are wired at deploy time (docs/PLAN_SPRING_AI_RAG.md).
+      chat: ${SPRING_AI_CHAT:none}
       embedding: none
       image: none
       moderation: none
       audio:
         speech: none
         transcription: none
-    # OpenAI-compatible chat model. Defaults point at NVIDIA NIM (DeepSeek), reusing the same nvapi
-    # key + host as the native deepseek gateway, so engine=springai works out of the box. NOTE: the
-    # Spring AI OpenAI client appends "/v1/chat/completions", so base-url must NOT include "/v1".
+    # OpenAI-compatible chat model, pointed at NVIDIA NIM (DeepSeek) by default.
+    # NOTE: the Spring AI OpenAI client appends "/v1/chat/completions", so base-url must NOT
+    # include "/v1" — a base URL carrying a path gets that path replaced, not extended.
+    # api-key is env-only and has NO default. Never inline a key here: this file is committed.
     openai:
       base-url: ${OPENAI_BASE_URL:https://integrate.api.nvidia.com}
-      api-key: ${OPENAI_API_KEY:${DEEPSEEK_API_KEY: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}}
+      api-key: ${OPENAI_API_KEY:}
       chat:
         options:
           model: ${ASSISTANT_MODEL:deepseek-ai/deepseek-v4-flash}
@@ -65,6 +65,12 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+          # Announcement/attendance fan-out inserts one recipient row per (parent, student). Without
+          # batching that is one network round trip per row — a 1,500-student school costs ~2,500
+          # round trips inside a single HTTP request. Batching turns it into ~50.
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   messages:
@@ -98,9 +104,13 @@ springdoc:
 # Application-specific configuration. Dev defaults below are overridden by env vars in prod.
 schoolbridge:
   crypto:
-    # 32-byte keys, base64-encoded. DEV ONLY defaults — always override in prod.
-    aes-key: ${AES_KEY:c2Nob29sYnJpZGdlLWRldi1hZXMta2V5LTMyYnl0ZXM=}
-    blind-index-key: ${BLIND_INDEX_KEY:c2Nob29sYnJpZGdlLWRldi1ibGluZC1pbmRleC1rZXk=}
+    # 32-byte keys, base64-encoded. NO DEFAULT ON PURPOSE — startup fails if these are unset.
+    # A default here would mean any profile that forgot to override it silently encrypts real
+    # student PII under a key that is public in this repo, and the failure is invisible until a
+    # breach. The throwaway dev values live in application-local.yml / application-test.yml;
+    # prod supplies them from the environment (application-prod.yml).
+    aes-key: ${AES_KEY}
+    blind-index-key: ${BLIND_INDEX_KEY}
   jwt:
     # PEM-encoded RSA keypair. Blank in dev → JwtService generates ephemeral keys at startup
     # (tokens stop verifying after restart, which is fine for local development).
@@ -173,30 +183,37 @@ schoolbridge:
       deferred-release-rate: PT1M
       missed-roster-cron: "0 */15 * * * *"
       missed-roster-dedup-ttl: 36h
+  rate-limit:
+    # Blanket per-caller cap across the API (RateLimitInterceptor). Targeted limiters — login per email,
+    # OTP per phone — stay in place; this is the backstop for everything else.
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    authenticated-per-minute: ${RATE_LIMIT_AUTHENTICATED:120}
+    anonymous-per-minute: ${RATE_LIMIT_ANONYMOUS:20}
+  otp:
+    # Caps OTP *requests* per phone. Each request costs a real WhatsApp template or SMS send, so an
+    # unlimited endpoint is an unbounded bill plus a WABA quality-rating risk.
+    max-requests-per-hour: ${OTP_MAX_PER_HOUR:3}
+    max-requests-per-day: ${OTP_MAX_PER_DAY:10}
+  announcements:
+    sweeper:
+      # Releases SCHEDULED announcements once scheduledFor arrives. Without this, scheduling is
+      # decorative — see AnnouncementScheduleSweeper.
+      enabled: ${ANNOUNCEMENT_SWEEPER_ENABLED:true}
+      release-rate: PT1M
+      batch-size: 100
   assistant:
-    # Natural-language assistant. Ships dark: enabled=false keeps the LLM beans unloaded;
-    # actions.enabled=false keeps mutating tools off even when reads are live.
-    enabled: ${ASSISTANT_ENABLED:true}
-    # LLM engine: "native" (the hand-written Anthropic/Gemini/DeepSeek gateways, default) or
-    # "springai" (the Spring AI ChatModel gateway). When springai, also set spring.ai.model.chat to
-    # the provider (e.g. anthropic) and its api-key; the native gateways stay off.
-    engine: ${ASSISTANT_ENGINE:springai}
-    # Provider selection: "anthropic" (default), "gemini", or "deepseek". Only the selected
-    # provider's beans load.
-    provider: ${ASSISTANT_PROVIDER:deepseek}
-    # Anthropic — env-only; validated at startup when provider=anthropic and enabled=true.
-    api-key: ${ANTHROPIC_API_KEY:}
-    # Gemini (Google AI Studio) — env-only; validated at startup when provider=gemini and enabled=true.
-    gemini-api-key: ${GEMINI_API_KEY:}
-    # DeepSeek via NVIDIA NIM (OpenAI-compatible) — env-only key; validated at startup when
-    # provider=deepseek and enabled=true. Set DEEPSEEK_API_KEY to the nvapi-* key. To target
-    # DeepSeek's own API instead, set DEEPSEEK_BASE_URL=https://api.deepseek.com and an sk-* key.
-    deepseek-api-key: ${DEEPSEEK_API_KEY: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}
-    deepseek-base-url: ${DEEPSEEK_BASE_URL:https://integrate.api.nvidia.com/v1}
-    # Default model per provider: anthropic → claude-haiku-4-5-20251001, gemini → gemini-2.0-flash,
-    # deepseek (NVIDIA NIM) → deepseek-ai/deepseek-v4-flash (this key also serves
-    # deepseek-ai/deepseek-v4-pro). NOTE: NVIDIA returns a plain "404 page not found" for an unknown
-    # model id on /chat/completions — confirm the id via GET /v1/models, not the URL.
+    # Natural-language assistant. SHIPS DARK, and the defaults below actually say so:
+    # enabled=false keeps every LLM bean unloaded (AssistantConfig supplies DisabledLlmGateway);
+    # actions.enabled=false keeps mutating tools off even when reads are live;
+    # rag.enabled=false keeps retrieval out of the chat flow.
+    # Turning this on is an explicit, per-environment opt-in — see ADR-007. It also sends tool
+    # results (student names, attendance, grades) to a third-party inference endpoint, so it needs
+    # a data-processing decision before it is enabled anywhere real.
+    enabled: ${ASSISTANT_ENABLED:false}
+    # There is NO engine or provider property. Spring AI is the only engine (ADR-007); the provider
+    # and its api-key live under spring.ai.* above, so there is exactly one home for the key.
+    # NVIDIA NIM returns a plain "404 page not found" for an unknown model id on /chat/completions —
+    # confirm the id via GET /v1/models, not by reading the URL back.
     model: ${ASSISTANT_MODEL:deepseek-ai/deepseek-v4-flash}
     max-tool-iterations: 3
     request-timeout: 120s
@@ -216,7 +233,9 @@ schoolbridge:
     # assistant_settings overrides this; the security guardrails are always appended regardless.
     default-system-prompt: ${ASSISTANT_SYSTEM_PROMPT:}
     actions:
-      enabled: ${ASSISTANT_ACTIONS_ENABLED:true}
+      # Second kill-switch: mutating tools (write attendance, grades, homework, classes, students,
+      # announcements). Off by default and cut from the v1 surface entirely — ADR-007.
+      enabled: ${ASSISTANT_ACTIONS_ENABLED:false}
       confirmation-ttl: PT5M
       destructive-require-typed-confirm: true
       max-bulk-impact: 200
@@ -224,7 +243,7 @@ schoolbridge:
     # the chat flow (wired in Phase 3). Ingestion + the vector store load regardless so documents can
     # be indexed ahead of go-live. embedding-dim must equal the vector(768) column.
     rag:
-      enabled: ${ASSISTANT_RAG_ENABLED:true}
+      enabled: ${ASSISTANT_RAG_ENABLED:false}
       top-k: 3
       min-score: 0.70
       max-context-chars: 3000

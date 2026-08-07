@@ -11,3 +11,4 @@ these adds a new ADR that supersedes it rather than editing history.
 | [004](ADR-004-spring-ai-pgvector-rag.md) | Spring AI + pgvector RAG, additive under `LlmGateway` | Accepted (ships dark) |
 | [005](ADR-005-assistant-tool-architecture.md) | AI assistant tools as thin adapters over existing services | Accepted |
 | [006](ADR-006-slash-style-action-paths.md) | Slash-style action paths, not AIP colon-verb paths | Accepted |
+| [007](ADR-007-scope-correction-and-assistant-freeze.md) | Scope correction (messaging/files/calendar/transport are unbuilt) + assistant freeze; Spring AI is the only LLM engine, native gateways deleted | Accepted |

@@ -19,13 +19,20 @@ spring:
         format_sql: true
 
 schoolbridge:
+  crypto:
+    # Throwaway 32-byte dev keys, base64-encoded. Safe to commit ONLY because this profile is
+    # expected to run against a local disposable database. Never point the local profile at data
+    # you care about — these values are public in this repo.
+    aes-key: ${AES_KEY:c2Nob29sYnJpZGdlLWRldi1hZXMta2V5LTMyYnl0ZXM=}
+    blind-index-key: ${BLIND_INDEX_KEY:c2Nob29sYnJpZGdlLWRldi1ibGluZC1pbmRleC1rZXk=}
   whatsapp:
-    # Paste your Meta credentials here to activate real WhatsApp sends.
-    # Without access-token, the app uses LoggingWhatsAppClient (logs only, no real sends).
+    # Meta credentials are env-only — NEVER inline them here, this file is committed.
+    # Export WHATSAPP_ACCESS_TOKEN / WHATSAPP_PHONE_NUMBER_ID / WHATSAPP_APP_SECRET to activate
+    # real sends. Leave them unset and the app uses LoggingWhatsAppClient (logs only, no network).
     # Get these from: https://developers.facebook.com → Your App → WhatsApp → API Setup
-    access-token: ${WHATSAPP_ACCESS_TOKEN:EAAONltZC5QKwBRpnTQ3ZAw5bPJjzWR5jK3w2EeGOKxioJVaPIIYnIZBUih828qwxZBfzPs4cJcZC7AdguW0IAHFubx814xdrdjX3oJ0DVOGV627DgqGTVC9nOglhq8m5Mm0DR0ztHcIjwWkd9jt87pSAT20vzmUwUD6iI9v4THOcfxoIwY1NAkoU7yBDZAfNuk0toIWfoLa0ZABw1HNdpQUiiPZCOAnP6PW6Is86rIzNTCyVvkycXmNiv7C19ZA7P5hw0it7vL12gj6ObTMeJRgjy}
-    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:1235221469666960}
-    app-secret: ${WHATSAPP_APP_SECRET:4bcf1a57cf218d267be4de5bb9846928}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    app-secret: ${WHATSAPP_APP_SECRET:}
     verify-token: ${WHATSAPP_VERIFY_TOKEN:schoolbridge-local}
     # For testing before /custom templates are approved, Meta provides a free "hello_world" template.
     # Once your custom templates are approved, the defaults below are correct.

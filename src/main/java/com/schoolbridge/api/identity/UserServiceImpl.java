@@ -45,6 +45,15 @@ public class UserServiceImpl implements UserService {
         .findById(schoolId)
         .orElseThrow(() -> new NotFoundException("error.school.not_found", schoolId));
 
+    // Bound to the target school for the same reason list() and findById() are: this endpoint is
+    // SUPER_ADMIN-only and a platform admin carries no school-scoped principal, so TenantContext is
+    // empty here. Without the binding the changelog-017 WITH CHECK rejects the INSERT outright —
+    // an unbound tenant GUC fails closed, which is correct behaviour and the wrong outcome for a
+    // caller who has told us exactly which school they mean.
+    return TenantContext.runAs(schoolId, () -> createInSchool(schoolId, request));
+  }
+
+  private UserResponse createInSchool(UUID schoolId, CreateUserRequest request) {
     User user;
     if (request.role() == UserRole.PARENT) {
       if (request.phone() == null || request.phone().isBlank()) {

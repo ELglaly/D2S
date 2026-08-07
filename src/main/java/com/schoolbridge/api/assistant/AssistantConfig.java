@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 public class AssistantConfig {
 
   /**
-   * Guarantees exactly one {@link LlmGateway} bean: the real {@code AnthropicLlmGateway} when the
-   * assistant is enabled, otherwise this no-op fallback so the orchestrator still wires cleanly.
+   * Guarantees exactly one {@link LlmGateway} bean: {@code SpringAiLlmGateway} when the assistant
+   * is enabled, otherwise this no-op fallback so the orchestrator still wires cleanly.
    */
   @Bean
   @ConditionalOnMissingBean(LlmGateway.class)

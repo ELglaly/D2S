@@ -114,6 +114,7 @@ timing, SpotBugs `\n` format-string): `docs/COMMON_MISTAKES.md`.
 ## Project Knowledge
 
 - `docs/ARCHITECTURE.md` — system overview, tech stack, dependency direction, folder conventions
+- `docs/RUNBOOK.md` — deploy + operate: the two-DB-role split RLS depends on, secret rotation, alarms, incident playbooks
 - `docs/DOMAIN_GLOSSARY.md` — business/domain terminology
 - `docs/CHECKLISTS.md` — dev checklist, Definition of Done, code review / PR / release checklists
 - `docs/COMMON_MISTAKES.md` — every gotcha above, expanded, with the fix

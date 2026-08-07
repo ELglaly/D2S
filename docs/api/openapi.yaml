@@ -38,6 +38,8 @@ tags:
   description: Platform-admin school (tenant) management. All endpoints require SUPER_ADMIN.
 - name: WhatsApp Diagnostics
   description: WhatsApp integration status and credential check (SUPER_ADMIN only)
+- name: Authorization Admin
+  description: Manage role→permission mappings
 - name: School Users
   description: Platform-admin user management within a school tenant. Requires SUPER_ADMIN.
 - name: Homework
@@ -144,35 +146,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/SchoolSettingsResponse"
-  /api/v1/assistant/settings:
-    get:
-      tags:
-      - assistant-settings-controller
-      operationId: get
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/AssistantSettingsResponse"
-    put:
-      tags:
-      - assistant-settings-controller
-      operationId: update
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSettingsRequest"
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/AssistantSettingsResponse"
   /integrations/whatsapp/webhook:
     get:
       tags:
@@ -1120,57 +1093,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/DeviceTokenResponse"
-  /api/v1/conversations:
-    get:
-      tags:
-      - conversation-controller
-      operationId: list_4
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ConversationResponse"
-    post:
-      tags:
-      - conversation-controller
-      operationId: create_7
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateConversationRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ConversationResponse"
-  /api/v1/conversations/{id}/messages:
-    post:
-      tags:
-      - conversation-message-controller
-      operationId: send
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SendMessageRequest"
-        required: true
-      responses:
-        "200":
-          description: OK
   /api/v1/classes:
     get:
       tags:
@@ -1178,7 +1100,7 @@ paths:
       summary: List classes
       description: "Returns a paginated list of all classes for the school, newest\
         \ first."
-      operationId: list_5
+      operationId: list_4
       parameters:
       - name: pageable
         in: query
@@ -1209,7 +1131,7 @@ paths:
       - Classes
       summary: Create class
       description: Creates a new school class for the tenant.
-      operationId: create_8
+      operationId: create_7
       requestBody:
         content:
           application/json:
@@ -1762,92 +1684,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MarkAllPresentResponse"
-  /api/v1/assistant/knowledge:
-    get:
-      tags:
-      - document-admin-controller
-      operationId: list_6
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/KnowledgeDocumentResponse"
-    post:
-      tags:
-      - document-admin-controller
-      operationId: ingest
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/IngestDocumentRequest"
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/KnowledgeDocumentResponse"
-  /api/v1/assistant/ask:
-    post:
-      tags:
-      - assistant-controller
-      operationId: ask
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AskRequest"
-        required: true
-      responses:
-        "200":
-          description: OK
-  /api/v1/assistant/actions/{token}/confirm:
-    post:
-      tags:
-      - assistant-controller
-      operationId: confirm
-      parameters:
-      - name: token
-        in: path
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ConfirmActionRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ConfirmResult"
-  /api/v1/assistant/actions/{token}/cancel:
-    post:
-      tags:
-      - assistant-controller
-      operationId: cancel
-      parameters:
-      - name: token
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ConfirmResult"
   /api/v1/announcements:
     get:
       tags:
@@ -1855,7 +1691,7 @@ paths:
       summary: List announcements
       description: "Returns a paginated list of all announcements for the school,\
         \ newest first. Filter by status to narrow results."
-      operationId: list_7
+      operationId: list_5
       parameters:
       - name: status
         in: query
@@ -1901,7 +1737,7 @@ paths:
         \ SCHOOL_ADMIN may use any scope (SCHOOL, GRADE, CLASS, CUSTOM). TEACHER may\
         \ only use CLASS scope for a class they are assigned to. Recipients are derived\
         \ from linked parents of enrolled students matching the scope."
-      operationId: create_9
+      operationId: create_8
       requestBody:
         content:
           application/json:
@@ -2003,12 +1839,133 @@ paths:
           description: Not authenticated
         "404":
           description: Announcement not found
+  /api/v1/admin/authz/roles/{role}/permissions/{permission}:
+    post:
+      tags:
+      - Authorization Admin
+      summary: Grant a permission to a role
+      operationId: grant
+      parameters:
+      - name: role
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - SUPER_ADMIN
+          - SCHOOL_ADMIN
+          - TEACHER
+          - PARENT
+      - name: permission
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - GRADE_CREATE
+          - GRADE_READ
+          - GRADE_UPDATE
+          - GRADE_DELETE
+          - HOMEWORK_CREATE
+          - HOMEWORK_PUBLISH
+          - HOMEWORK_READ
+          - HOMEWORK_UPDATE
+          - HOMEWORK_DELETE
+          - HOMEWORK_ACK
+          - ATTENDANCE_RECORD
+          - ATTENDANCE_READ
+          - CLASS_MANAGE
+          - CLASS_READ
+          - SUBJECT_MANAGE
+          - SUBJECT_READ
+          - ENROLLMENT_MANAGE
+          - STUDENT_MANAGE
+          - STUDENT_READ
+          - PARENT_LINK_MANAGE
+          - ANNOUNCEMENT_SEND
+          - ANNOUNCEMENT_READ
+          - ANNOUNCEMENT_MANAGE
+          - ASSISTANT_SETTINGS_MANAGE
+          - DOCUMENT_MANAGE
+          - USER_READ
+          - USER_MANAGE
+          - SCHOOL_MANAGE
+          - WHATSAPP_DIAGNOSTICS
+          - MANAGE_ROLES
+          - MANAGE_PERMISSIONS
+      responses:
+        "204":
+          description: Granted (idempotent)
+        "403":
+          description: Requires MANAGE_PERMISSIONS
+        "401":
+          description: Not authenticated
+    delete:
+      tags:
+      - Authorization Admin
+      summary: Revoke a permission from a role
+      operationId: revoke
+      parameters:
+      - name: role
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - SUPER_ADMIN
+          - SCHOOL_ADMIN
+          - TEACHER
+          - PARENT
+      - name: permission
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - GRADE_CREATE
+          - GRADE_READ
+          - GRADE_UPDATE
+          - GRADE_DELETE
+          - HOMEWORK_CREATE
+          - HOMEWORK_PUBLISH
+          - HOMEWORK_READ
+          - HOMEWORK_UPDATE
+          - HOMEWORK_DELETE
+          - HOMEWORK_ACK
+          - ATTENDANCE_RECORD
+          - ATTENDANCE_READ
+          - CLASS_MANAGE
+          - CLASS_READ
+          - SUBJECT_MANAGE
+          - SUBJECT_READ
+          - ENROLLMENT_MANAGE
+          - STUDENT_MANAGE
+          - STUDENT_READ
+          - PARENT_LINK_MANAGE
+          - ANNOUNCEMENT_SEND
+          - ANNOUNCEMENT_READ
+          - ANNOUNCEMENT_MANAGE
+          - ASSISTANT_SETTINGS_MANAGE
+          - DOCUMENT_MANAGE
+          - USER_READ
+          - USER_MANAGE
+          - SCHOOL_MANAGE
+          - WHATSAPP_DIAGNOSTICS
+          - MANAGE_ROLES
+          - MANAGE_PERMISSIONS
+      responses:
+        "403":
+          description: Requires MANAGE_PERMISSIONS
+        "204":
+          description: Revoked (idempotent)
+        "401":
+          description: Not authenticated
   /api/v1/subjects/{id}:
     get:
       tags:
       - Subjects
       summary: Get a subject by ID
-      operationId: get_1
+      operationId: get
       parameters:
       - name: id
         in: path
@@ -2060,7 +2017,7 @@ paths:
       tags:
       - Subjects
       summary: Update a subject
-      operationId: update_1
+      operationId: update
       parameters:
       - name: id
         in: path
@@ -2117,7 +2074,7 @@ paths:
       - Students
       summary: Get student
       description: Returns a single student by ID.
-      operationId: get_2
+      operationId: get_1
       parameters:
       - name: id
         in: path
@@ -2177,7 +2134,7 @@ paths:
       - Students
       summary: Update student
       description: Partially updates a student record. Only provided fields are changed.
-      operationId: update_2
+      operationId: update_1
       parameters:
       - name: id
         in: path
@@ -2229,7 +2186,7 @@ paths:
       summary: Get homework item
       description: Returns a homework item. Parents receive 404 if their child is
         not a recipient (anti-enumeration).
-      operationId: get_3
+      operationId: get_2
       parameters:
       - name: id
         in: path
@@ -2285,7 +2242,7 @@ paths:
       summary: Update homework item
       description: "Updates subject, description, attachmentKey, and dueDate on a\
         \ DRAFT or PUBLISHED item. Recipients are not re-materialized. 409 if ARCHIVED."
-      operationId: update_3
+      operationId: update_2
       parameters:
       - name: id
         in: path
@@ -2335,7 +2292,7 @@ paths:
       tags:
       - Grades
       summary: Get a single grade record
-      operationId: get_4
+      operationId: get_3
       parameters:
       - name: id
         in: path
@@ -2387,7 +2344,7 @@ paths:
       tags:
       - Grades
       summary: Update a grade record
-      operationId: update_4
+      operationId: update_3
       parameters:
       - name: id
         in: path
@@ -2438,7 +2395,7 @@ paths:
       - Classes
       summary: Get class
       description: Returns a single class by ID.
-      operationId: get_5
+      operationId: get_4
       parameters:
       - name: id
         in: path
@@ -2498,7 +2455,7 @@ paths:
       - Classes
       summary: Update class
       description: Partially updates a class. Only provided fields are changed.
-      operationId: update_5
+      operationId: update_4
       parameters:
       - name: id
         in: path
@@ -2639,7 +2596,7 @@ paths:
       - School Users
       summary: Get user
       description: Returns a single user by ID within the school.
-      operationId: get_6
+      operationId: get_5
       parameters:
       - name: schoolId
         in: path
@@ -2684,7 +2641,7 @@ paths:
       - Schools
       summary: Get school
       description: Returns a single school by ID.
-      operationId: get_7
+      operationId: get_6
       parameters:
       - name: id
         in: path
@@ -2969,7 +2926,7 @@ paths:
       - Attendance
       summary: Get attendance record
       description: Returns a single attendance record by ID.
-      operationId: get_8
+      operationId: get_7
       parameters:
       - name: id
         in: path
@@ -3128,7 +3085,7 @@ paths:
       - Announcements
       summary: Get announcement
       description: Returns a single announcement by ID.
-      operationId: get_9
+      operationId: get_8
       parameters:
       - name: id
         in: path
@@ -3207,6 +3164,73 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageResponseAnnouncementRecipientResponse"
+  /api/v1/admin/authz/roles/{role}/permissions:
+    get:
+      tags:
+      - Authorization Admin
+      summary: List the permissions granted to a role
+      operationId: list_6
+      parameters:
+      - name: role
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - SUPER_ADMIN
+          - SCHOOL_ADMIN
+          - TEACHER
+          - PARENT
+      responses:
+        "403":
+          description: Requires MANAGE_ROLES
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RolePermissionsResponse"
+        "200":
+          description: Granted permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RolePermissionsResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RolePermissionsResponse"
+  /api/v1/admin/authz/permissions:
+    get:
+      tags:
+      - Authorization Admin
+      summary: List the permission catalog
+      operationId: catalog
+      responses:
+        "200":
+          description: Permission catalog
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PermissionResponse"
+        "403":
+          description: Requires MANAGE_PERMISSIONS
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PermissionResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PermissionResponse"
   /api/v1/teacher-subject-assignments/{id}:
     delete:
       tags:
@@ -3295,27 +3319,12 @@ paths:
           description: Not authenticated
         "204":
           description: Device deregistered
-  /api/v1/conversations/{id}:
-    delete:
-      tags:
-      - conversation-controller
-      operationId: delete_8
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: OK
   /api/v1/class-subjects/{id}:
     delete:
       tags:
       - Class Subjects
       summary: Remove a subject from a class
-      operationId: delete_9
+      operationId: delete_8
       parameters:
       - name: id
         in: path
@@ -3334,21 +3343,6 @@ paths:
           description: Class-subject assignment not found
         "204":
           description: Removed
-  /api/v1/assistant/knowledge/{id}:
-    delete:
-      tags:
-      - document-admin-controller
-      operationId: delete_10
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: OK
 components:
   schemas:
     LocalTime:
@@ -3437,20 +3431,6 @@ components:
           type: boolean
         rosterDueByLocalTime:
           $ref: "#/components/schemas/LocalTime"
-    UpdateSettingsRequest:
-      type: object
-      properties:
-        systemPrompt:
-          maxLength: 8000
-          minLength: 0
-          type: string
-    AssistantSettingsResponse:
-      type: object
-      properties:
-        systemPrompt:
-          type: string
-        usingDefault:
-          type: boolean
     CreateSubjectRequest:
       required:
       - name
@@ -3589,6 +3569,7 @@ components:
           enum:
           - BASIC
           - STANDARD
+          - FREE
           - PREMIUM
         settings:
           $ref: "#/components/schemas/SchoolSettingsRequest"
@@ -3611,6 +3592,7 @@ components:
           enum:
           - BASIC
           - STANDARD
+          - FREE
           - PREMIUM
         status:
           type: string
@@ -3959,36 +3941,6 @@ components:
           type: string
         active:
           type: boolean
-    CreateConversationRequest:
-      type: object
-      properties:
-        title:
-          maxLength: 200
-          minLength: 0
-          type: string
-    ConversationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        lastMessageAt:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-    SendMessageRequest:
-      required:
-      - content
-      type: object
-      properties:
-        content:
-          maxLength: 4000
-          minLength: 0
-          type: string
     CreateSchoolClassRequest:
       required:
       - academicYear
@@ -4259,94 +4211,6 @@ components:
         skippedCount:
           type: integer
           format: int32
-    IngestDocumentRequest:
-      required:
-      - content
-      - title
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - KB
-          - FAQ
-          - TOOL_DOC
-          - GUIDE
-          - BUSINESS_RULE
-          - UPLOAD
-        title:
-          maxLength: 300
-          minLength: 0
-          type: string
-        lang:
-          maxLength: 8
-          minLength: 0
-          type: string
-        content:
-          maxLength: 200000
-          minLength: 0
-          type: string
-    KnowledgeDocumentResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        type:
-          type: string
-          enum:
-          - KB
-          - FAQ
-          - TOOL_DOC
-          - GUIDE
-          - BUSINESS_RULE
-          - UPLOAD
-        title:
-          type: string
-        lang:
-          type: string
-        status:
-          type: string
-          enum:
-          - PENDING
-          - INDEXED
-          - FAILED
-        chunkCount:
-          type: integer
-          format: int32
-        createdAt:
-          type: string
-          format: date-time
-    AskRequest:
-      required:
-      - question
-      type: object
-      properties:
-        question:
-          maxLength: 500
-          minLength: 0
-          type: string
-        language:
-          maxLength: 8
-          minLength: 0
-          type: string
-    ConfirmActionRequest:
-      type: object
-      properties:
-        confirmation:
-          maxLength: 50
-          minLength: 0
-          type: string
-    ConfirmResult:
-      type: object
-      properties:
-        status:
-          type: string
-        message:
-          type: string
-        data:
-          type: object
     CreateAnnouncementRequest:
       required:
       - body
@@ -5012,6 +4876,22 @@ components:
         totalPages:
           type: integer
           format: int32
+    RolePermissionsResponse:
+      type: object
+      properties:
+        role:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    PermissionResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
     ProblemDetail:
       type: object
       properties:

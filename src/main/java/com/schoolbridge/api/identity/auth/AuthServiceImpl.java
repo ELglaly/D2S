@@ -2,6 +2,7 @@ package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import com.schoolbridge.api.common.error.RateLimitException;
+import com.schoolbridge.api.common.tenancy.TenantSessionBinder;
 import com.schoolbridge.api.identity.PlatformAdmin;
 import com.schoolbridge.api.identity.PlatformAdminRepository;
 import com.schoolbridge.api.identity.RefreshToken;
@@ -36,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final LoginRateLimiter rateLimiter;
+  private final TenantSessionBinder sessionBinder;
 
   public AuthServiceImpl(
       UserRepository userRepository,
@@ -43,13 +45,15 @@ public class AuthServiceImpl implements AuthService {
       RefreshTokenRepository refreshTokenRepository,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      LoginRateLimiter rateLimiter) {
+      LoginRateLimiter rateLimiter,
+      TenantSessionBinder sessionBinder) {
     this.userRepository = userRepository;
     this.platformAdminRepository = platformAdminRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.rateLimiter = rateLimiter;
+    this.sessionBinder = sessionBinder;
   }
 
   @Override
@@ -69,7 +73,10 @@ public class AuthServiceImpl implements AuthService {
       return issueForPlatformAdmin(admin.get());
     }
 
-    Optional<User> user = userRepository.findByEmail(email);
+    // Email is globally unique across tenants precisely so a staff member can sign in without
+    // knowing their schoolId — which means this lookup runs before any tenant is bound and must
+    // step outside the changelog-017 RLS predicate, or every login resolves to zero rows.
+    Optional<User> user = sessionBinder.withBypass(() -> userRepository.findByEmail(email));
     if (user.isPresent()
         && user.get().getStatus() == UserStatus.ACTIVE
         && user.get().getPasswordHash() != null

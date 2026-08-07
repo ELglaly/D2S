@@ -2,6 +2,7 @@ package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import com.schoolbridge.api.assistant.tools.ToolContext;
+import com.schoolbridge.api.common.tenancy.TenantSessionBinder;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +10,6 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +29,13 @@ public class RagRetriever {
 
   private final VectorStore vectorStore;
   private final AssistantProperties properties;
-  private final JdbcTemplate jdbcTemplate;
+  private final TenantSessionBinder sessionBinder;
 
   public RagRetriever(
-      VectorStore vectorStore, AssistantProperties properties, JdbcTemplate jdbcTemplate) {
+      VectorStore vectorStore, AssistantProperties properties, TenantSessionBinder sessionBinder) {
     this.vectorStore = vectorStore;
     this.properties = properties;
-    this.jdbcTemplate = jdbcTemplate;
+    this.sessionBinder = sessionBinder;
   }
 
   /** Top-k tenant-scoped chunks for the query, or empty if RAG is off / blank / on failure. */
@@ -47,11 +47,9 @@ public class RagRetriever {
     }
     try {
       // Bind the tenant for the RLS policy on the same transaction/connection the vector store
-      // uses.
-      jdbcTemplate.queryForObject(
-          "select set_config('app.current_tenant', ?, true)",
-          String.class,
-          ctx.schoolId().toString());
+      // uses. Retrieval can run outside a repository call, so it cannot rely on TenantFilterAspect
+      // having bound it already.
+      sessionBinder.bindTenant(ctx.schoolId());
       Filter.Expression tenantFilter =
           new FilterExpressionBuilder().eq("school_id", ctx.schoolId().toString()).build();
       SearchRequest request =

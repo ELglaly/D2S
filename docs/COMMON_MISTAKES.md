@@ -149,6 +149,38 @@ literal `\n` is passed to `String.format`/`.formatted(...)`.
 **Fix:** for multi-line templates with placeholders, use
 `template.replace("{x}", v)` instead of `.formatted(...)`.
 
+## 11. `current_setting(gkey, true)` returns `''`, not NULL, after a reset
+
+An RLS policy written as
+`school_id = current_setting('app.current_tenant', true)::uuid` looks like it
+fails closed when no tenant is bound. It does — the *first* time. Once
+`set_config(..., true)` has run once on that connection, the GUC is reset to an
+empty **string**, not to unset, and `''::uuid` raises
+`invalid input syntax for type uuid: ""`. On a pooled connection that means the
+second unbound query of a session 500s instead of returning nothing.
+
+**Fix:** `nullif(current_setting('app.current_tenant', true), '')::uuid`. NULL
+matches no row, which is the fail-closed behaviour you wanted. See changelog
+`017-tenant-rls.sql`.
+
+## 12. Testcontainers connects as a superuser, so RLS tests prove nothing
+
+`PostgreSQLContainer` sets `POSTGRES_USER`, which makes that role the bootstrap
+**superuser**. Superusers bypass row-level security unconditionally — `ALTER
+TABLE … FORCE ROW LEVEL SECURITY` does *not* subject them, it only subjects the
+owner. A test that FORCEs a table and then asserts isolation on the default
+connection is asserting nothing and will pass with the policy deleted.
+
+**Fix:** create an unprivileged role and `SET LOCAL ROLE` onto it inside the test
+transaction (`SET LOCAL` reverts on commit, so no other test inherits it). The
+role and the statement that assumes it live in the `RlsTestRole` test helper;
+`TenantRlsIntegrationTest` and `RlsTenantIsolationTest` both use it.
+
+`RlsTenantIsolationTest` (changelog 014) originally used the FORCE approach and
+was weaker than its javadoc claimed — its cross-tenant assertion passed because
+of the application-side metadata filter, not the policy. It now runs under the
+unprivileged role and asserts with raw SQL, so only RLS can be doing the work.
+
 ## Known, accepted risk (not a bug to "fix" reflexively)
 
 - `docs/CODE_REVIEW.md` M2 — tenant `findById` isolation depends on the
