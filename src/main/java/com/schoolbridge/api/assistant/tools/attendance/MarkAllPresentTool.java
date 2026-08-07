@@ -13,7 +13,7 @@ import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.attendance.dto.MarkAllPresentRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,8 +57,8 @@ public class MarkAllPresentTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ATTENDANCE_RECORD);
   }
 
   @Override

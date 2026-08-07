@@ -20,6 +20,7 @@ import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.common.i18n.MessageResolver;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import java.time.Instant;
@@ -190,8 +191,8 @@ class AbstractActionToolTest {
     }
 
     @Override
-    public Set<UserRole> roles() {
-      return Set.of(UserRole.SCHOOL_ADMIN);
+    public Set<Permission> permissions() {
+      return Set.of(Permission.ATTENDANCE_RECORD);
     }
 
     @Override

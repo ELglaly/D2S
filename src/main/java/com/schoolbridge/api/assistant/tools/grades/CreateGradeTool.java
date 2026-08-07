@@ -11,9 +11,9 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.dto.StudentResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.CreateGradeRequest;
-import com.schoolbridge.api.identity.UserRole;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,8 +56,8 @@ public class CreateGradeTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.TEACHER, UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.GRADE_CREATE);
   }
 
   @Override

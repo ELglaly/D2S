@@ -10,7 +10,7 @@ import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,8 +52,8 @@ public class GetUnacknowledgedAnnouncementsTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.PARENT);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ANNOUNCEMENT_READ);
   }
 
   @Override

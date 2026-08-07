@@ -1,16 +1,17 @@
 package com.schoolbridge.api.assistant.tools;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 
 /**
  * A capability exposed to the LLM. Each tool is a thin adapter over an existing service.
  *
- * <p>{@link #roles()} is the coarse availability gate and mirrors the backing endpoint's role
- * guard: a tool is offered to the model only when {@link ToolContext#role()} is in this set.
- * Fine-grained scope checks (e.g. {@code teacherTeaches}, parent-link) run <em>inside</em> the tool
- * at execution time, never here.
+ * <p>{@link #permissions()} is the permission this tool requires and mirrors the backing endpoint's
+ * {@code @RequirePermission}. A tool is offered to a caller iff the caller's role holds at least
+ * one of these permissions in the DB-backed {@code role_permissions} grants (see {@link
+ * ToolAuthorizer}) — the single source of truth. Fine-grained scope checks (e.g. {@code
+ * teacherTeaches}, parent-link) run <em>inside</em> the tool at execution time, never here.
  */
 public interface Tool {
 
@@ -25,8 +26,11 @@ public interface Tool {
 
   ToolKind kind();
 
-  /** Roles for which this tool is registered. */
-  Set<UserRole> roles();
+  /**
+   * The permission(s) this tool requires (ANY-of). Mirrors the backing endpoint's
+   * {@code @RequirePermission}; a caller may use the tool iff their role holds at least one.
+   */
+  Set<Permission> permissions();
 
   /** Intent bucket for query-based catalog gating; defaults from the tool's package. */
   default ToolDomain domain() {

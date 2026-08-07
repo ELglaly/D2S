@@ -16,7 +16,7 @@ import com.schoolbridge.api.assistant.tools.support.NameMatching;
 import com.schoolbridge.api.assistant.tools.support.NameMatching.MatchResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +68,8 @@ public class AcknowledgeAnnouncementTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.PARENT);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ANNOUNCEMENT_READ);
   }
 
   @Override

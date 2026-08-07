@@ -13,7 +13,7 @@ import com.schoolbridge.api.classes.dto.EnrollStudentRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -49,8 +49,8 @@ public class EnrollStudentTool extends AbstractActionTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.SCHOOL_ADMIN);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.ENROLLMENT_MANAGE);
   }
 
   @Override

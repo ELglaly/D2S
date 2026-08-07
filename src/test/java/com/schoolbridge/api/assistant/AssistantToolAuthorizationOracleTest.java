@@ -1,122 +1,132 @@
 package com.schoolbridge.api.assistant;
 
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
 import com.schoolbridge.api.assistant.tools.Tool;
+import com.schoolbridge.api.assistant.tools.ToolAuthorizer;
+import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.UserRole;
-import java.util.LinkedHashMap;
+import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
+import com.schoolbridge.api.identity.auth.principal.SchoolScopedPrincipal;
+import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * The CI security oracle (plan §18): each assistant tool must be registered for <em>exactly</em>
- * the roles whose backing endpoint guard it would pass — no more, no less. This locks tool exposure
- * to the existing REST authorization so the assistant can never widen access. No tool may target
- * SUPER_ADMIN (deferred).
+ * The CI security oracle (plain permission model): each role must see <em>exactly</em> the tools
+ * whose required permission it holds. The expected set is computed from an independent, hardcoded
+ * copy of the {@code 015-authz.sql} role grants and the tools' own {@code permissions()}, then
+ * asserted against {@link ToolRegistry#toolsFor} driven by the real {@link ToolAuthorizer} +
+ * DB-seeded {@code role_permissions}. This pins three things at once: the seed has not drifted,
+ * each tool's declared permission has not changed, and the authorizer filters on it. SUPER_ADMIN
+ * holds every permission and therefore sees every tool.
  */
 @SpringBootTest
 class AssistantToolAuthorizationOracleTest extends AbstractIntegrationTest {
 
-  @Autowired ToolRegistry registry;
+  @Autowired List<Tool> tools;
+  @Autowired ToolAuthorizer authorizer;
 
-  private static final UserRole P = UserRole.PARENT;
-  private static final UserRole T = UserRole.TEACHER;
-  private static final UserRole A = UserRole.SCHOOL_ADMIN;
-
-  private static final Map<String, Set<UserRole>> EXPECTED = expected();
+  /** Independent copy of the seeded role→permission grants (015-authz.sql). */
+  private static final Map<UserRole, Set<String>> SEED =
+      Map.of(
+          UserRole.PARENT,
+              Set.of("GRADE_READ", "HOMEWORK_READ", "HOMEWORK_ACK", "ANNOUNCEMENT_READ"),
+          UserRole.TEACHER,
+              Set.of(
+                  "GRADE_CREATE",
+                  "GRADE_READ",
+                  "GRADE_UPDATE",
+                  "HOMEWORK_CREATE",
+                  "HOMEWORK_PUBLISH",
+                  "HOMEWORK_READ",
+                  "HOMEWORK_UPDATE",
+                  "HOMEWORK_DELETE",
+                  "ATTENDANCE_RECORD",
+                  "ATTENDANCE_READ",
+                  "CLASS_READ",
+                  "SUBJECT_READ",
+                  "STUDENT_READ",
+                  "ANNOUNCEMENT_SEND",
+                  "ANNOUNCEMENT_READ"),
+          UserRole.SCHOOL_ADMIN,
+              Set.of(
+                  "GRADE_CREATE",
+                  "GRADE_READ",
+                  "GRADE_UPDATE",
+                  "GRADE_DELETE",
+                  "HOMEWORK_CREATE",
+                  "HOMEWORK_PUBLISH",
+                  "HOMEWORK_READ",
+                  "HOMEWORK_UPDATE",
+                  "HOMEWORK_DELETE",
+                  "ATTENDANCE_RECORD",
+                  "ATTENDANCE_READ",
+                  "CLASS_MANAGE",
+                  "CLASS_READ",
+                  "SUBJECT_MANAGE",
+                  "SUBJECT_READ",
+                  "ENROLLMENT_MANAGE",
+                  "STUDENT_MANAGE",
+                  "STUDENT_READ",
+                  "PARENT_LINK_MANAGE",
+                  "ANNOUNCEMENT_SEND",
+                  "ANNOUNCEMENT_READ",
+                  "ANNOUNCEMENT_MANAGE",
+                  "ASSISTANT_SETTINGS_MANAGE",
+                  "DOCUMENT_MANAGE",
+                  "USER_READ"),
+          UserRole.SUPER_ADMIN,
+              Arrays.stream(Permission.values()).map(Enum::name).collect(toSet()));
 
   @Test
-  void everyToolIsRegisteredForExactlyItsAuthorizedRoles() {
-    Map<String, Set<UserRole>> actual =
-        registry.all().stream().collect(Collectors.toMap(Tool::name, Tool::roles));
-
-    assertThat(actual)
-        .as("the set of registered assistant tools must match the authorization oracle")
-        .containsOnlyKeys(EXPECTED.keySet().toArray(String[]::new));
-
-    EXPECTED.forEach(
-        (name, roles) ->
-            assertThat(actual.get(name))
-                .as("tool '%s' must be registered for exactly %s", name, roles)
-                .isEqualTo(roles));
+  void everyRoleSeesExactlyTheToolsItHoldsAPermissionFor() {
+    ToolRegistry registry = new ToolRegistry(tools, authorizer, true);
+    for (UserRole role : List.of(UserRole.PARENT, UserRole.TEACHER, UserRole.SCHOOL_ADMIN)) {
+      Set<String> visible =
+          registry.toolsFor(ctx(role)).stream().map(Tool::name).collect(Collectors.toSet());
+      assertThat(visible)
+          .as("role %s must see exactly the tools whose permission it holds", role)
+          .isEqualTo(expectedFor(role));
+    }
   }
 
   @Test
-  void noToolTargetsSuperAdmin() {
-    assertThat(registry.all())
-        .filteredOn(t -> t.roles().contains(UserRole.SUPER_ADMIN))
-        .as("SUPER_ADMIN is deferred — no tool may target it")
-        .isEmpty();
+  void superAdminSeesEveryTool() {
+    ToolRegistry registry = new ToolRegistry(tools, authorizer, true);
+    Set<String> visible =
+        registry.toolsFor(ctx(UserRole.SUPER_ADMIN)).stream()
+            .map(Tool::name)
+            .collect(Collectors.toSet());
+    assertThat(visible).isEqualTo(tools.stream().map(Tool::name).collect(Collectors.toSet()));
   }
 
-  private static Map<String, Set<UserRole>> expected() {
-    Map<String, Set<UserRole>> m = new LinkedHashMap<>();
-    // Parent reads
-    m.put("list_my_children", Set.of(P));
-    m.put("get_child_attendance", Set.of(P));
-    m.put("get_child_absence_count", Set.of(P));
-    m.put("get_child_homework", Set.of(P));
-    m.put("get_child_grades", Set.of(P));
-    m.put("get_unacknowledged_announcements", Set.of(P));
-    // Teacher / admin reads
-    m.put("list_my_classes", Set.of(T));
-    m.put("get_class_attendance", Set.of(T, A));
-    m.put("get_student_attendance", Set.of(T, A));
-    m.put("get_class_enrollments", Set.of(T, A));
-    m.put("get_class_grades", Set.of(T, A));
-    m.put("get_student_grades", Set.of(T, A));
-    m.put("list_homework", Set.of(T, A));
-    m.put("get_homework_recipients", Set.of(T, A));
-    m.put("get_class_grade_summary", Set.of(T, A));
-    // Admin reads
-    m.put("get_announcement_recipients", Set.of(A));
-    m.put("list_students", Set.of(A));
-    m.put("list_classes", Set.of(A));
-    m.put("list_subjects", Set.of(A));
-    m.put("list_parent_links", Set.of(A));
-    m.put("list_teachers", Set.of(A));
-    m.put("list_announcements", Set.of(A));
-    // Parent actions
-    m.put("respond_to_absence_alert", Set.of(P));
-    m.put("acknowledge_homework", Set.of(P));
-    m.put("acknowledge_announcement", Set.of(P));
-    // Teacher / admin actions
-    m.put("mark_attendance", Set.of(T, A));
-    m.put("mark_all_present", Set.of(T, A));
-    m.put("create_grade", Set.of(T, A));
-    m.put("update_grade", Set.of(T, A));
-    m.put("create_homework", Set.of(T, A));
-    m.put("publish_homework", Set.of(T, A));
-    m.put("update_homework", Set.of(T, A));
-    m.put("archive_homework", Set.of(T, A));
-    m.put("post_class_announcement", Set.of(T, A));
-    // Admin actions
-    m.put("add_student", Set.of(A));
-    m.put("update_student", Set.of(A));
-    m.put("delete_student", Set.of(A));
-    m.put("create_class", Set.of(A));
-    m.put("update_class", Set.of(A));
-    m.put("delete_class", Set.of(A));
-    m.put("enroll_student", Set.of(A));
-    m.put("remove_enrollment", Set.of(A));
-    m.put("link_parent_to_student", Set.of(A));
-    m.put("remove_parent_link", Set.of(A));
-    m.put("create_subject", Set.of(A));
-    m.put("update_subject", Set.of(A));
-    m.put("delete_subject", Set.of(A));
-    m.put("add_subject_to_class", Set.of(A));
-    m.put("remove_class_subject", Set.of(A));
-    m.put("assign_teacher_to_subject", Set.of(A));
-    m.put("remove_teacher_assignment", Set.of(A));
-    m.put("post_announcement", Set.of(A));
-    m.put("recall_announcement", Set.of(A));
-    m.put("delete_grade", Set.of(A));
-    return m;
+  private Set<String> expectedFor(UserRole role) {
+    Set<String> grants = SEED.get(role);
+    return tools.stream()
+        .filter(t -> t.permissions().stream().map(Enum::name).anyMatch(grants::contains))
+        .map(Tool::name)
+        .collect(Collectors.toSet());
+  }
+
+  private static ToolContext ctx(UserRole role) {
+    UUID schoolId = UUID.randomUUID();
+    SchoolScopedPrincipal principal =
+        role == UserRole.PARENT
+            ? new ParentPrincipal(UUID.randomUUID(), schoolId)
+            : new StaffPrincipal(UUID.randomUUID(), schoolId, role);
+    return new ToolContext(schoolId, principal, role, Locale.ENGLISH, null);
   }
 }

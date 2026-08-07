@@ -10,9 +10,9 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
-import com.schoolbridge.api.identity.UserRole;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -54,8 +54,8 @@ public class GetChildGradesTool implements ReadTool {
   }
 
   @Override
-  public Set<UserRole> roles() {
-    return Set.of(UserRole.PARENT);
+  public Set<Permission> permissions() {
+    return Set.of(Permission.GRADE_READ);
   }
 
   @Override
