@@ -42,6 +42,17 @@ schoolbridge:
       attendance-absent-name: ${WHATSAPP_TEMPLATE_ABSENT:attendance_absent_v1}
       attendance-late-name: ${WHATSAPP_TEMPLATE_LATE:attendance_late_v1}
       attendance-excused-name: ${WHATSAPP_TEMPLATE_EXCUSED:attendance_excused_v1}
+  storage:
+    # The MinIO in docker-compose.yml. Its root credentials are the compose file's own dev values —
+    # safe to name here for the same reason as the crypto keys above, and for no other reason.
+    # Create the bucket once: docker compose exec minio mc mb /data/schoolbridge-attachments
+    endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
+    access-key: ${STORAGE_ACCESS_KEY:schoolbridge}
+    secret-key: ${STORAGE_SECRET_KEY:schoolbridge123}
+    av:
+      # No ClamAV in docker-compose — uploads are scanned as SKIPPED locally. Turn this on and point
+      # it at a clamav/clamav container to exercise the real path.
+      enabled: ${STORAGE_AV_ENABLED:false}
 
 logging:
   level:

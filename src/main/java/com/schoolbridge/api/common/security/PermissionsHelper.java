@@ -3,9 +3,11 @@ package com.schoolbridge.api.common.security;
 import com.schoolbridge.api.announcements.enums.AnnouncementScope;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
 import com.schoolbridge.api.announcements.repository.AnnouncementRepository;
+import com.schoolbridge.api.attachments.AttachmentRepository;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
 import com.schoolbridge.api.homework.HomeworkItemRepository;
+import com.schoolbridge.api.homework.HomeworkRecipientRepository;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
@@ -33,6 +35,8 @@ public class PermissionsHelper {
   private final AnnouncementRepository announcements;
   private final AnnouncementRecipientRepository announcementRecipients;
   private final HomeworkItemRepository homeworkItems;
+  private final HomeworkRecipientRepository homeworkRecipients;
+  private final AttachmentRepository attachments;
 
   public PermissionsHelper(
       SchoolClassRepository schoolClasses,
@@ -40,13 +44,17 @@ public class PermissionsHelper {
       ParentStudentLinkRepository parentLinks,
       AnnouncementRepository announcements,
       AnnouncementRecipientRepository announcementRecipients,
-      HomeworkItemRepository homeworkItems) {
+      HomeworkItemRepository homeworkItems,
+      HomeworkRecipientRepository homeworkRecipients,
+      AttachmentRepository attachments) {
+    this.attachments = attachments;
     this.schoolClasses = schoolClasses;
     this.teacherSubjectAssignments = teacherSubjectAssignments;
     this.parentLinks = parentLinks;
     this.announcements = announcements;
     this.announcementRecipients = announcementRecipients;
     this.homeworkItems = homeworkItems;
+    this.homeworkRecipients = homeworkRecipients;
   }
 
   /**
@@ -166,5 +174,47 @@ public class PermissionsHelper {
         .findById(homeworkId)
         .map(h -> h.getTeacherId().equals(staff.userId()))
         .orElse(false);
+  }
+
+  /**
+   * Returns {@code true} when the current parent principal is a recipient of some homework item or
+   * announcement that carries this attachment. Used in SpEL: {@code
+   * @perms.parentCanReadAttachment(#id)}.
+   *
+   * <p>The {@code ATTACHMENT_READ} grant on the PARENT role is deliberately coarse — it says a
+   * parent may open attachments, not <em>which</em> ones. This is the part that answers "which",
+   * and without it any parent in a school could download any other family's uploaded photo by id.
+   * Note it grants nothing for an attachment that is not yet attached to anything, which is the
+   * correct answer for one still being uploaded by a teacher.
+   */
+  /**
+   * Returns {@code true} when the current staff principal uploaded the given attachment. Used in
+   * SpEL: {@code @perms.isAttachmentUploader(#id)}.
+   *
+   * <p>Completing someone else's upload is not a read, it is the step that decides whether an
+   * object becomes downloadable, so a teacher may only finish their own.
+   */
+  public boolean isAttachmentUploader(UUID attachmentId) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || !(auth.getPrincipal() instanceof StaffPrincipal staff)) {
+      return false;
+    }
+    return attachments
+        .findById(attachmentId)
+        .map(a -> a.getUploaderUserId().equals(staff.userId()))
+        .orElse(false);
+  }
+
+  public boolean parentCanReadAttachment(UUID attachmentId) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || attachmentId == null) {
+      return false;
+    }
+    if (!(auth.getPrincipal() instanceof ParentPrincipal parent)) {
+      return false;
+    }
+    String reference = attachmentId.toString();
+    return homeworkRecipients.existsForParentAndAttachment(parent.userId(), reference)
+        || announcementRecipients.existsForParentAndAttachment(parent.userId(), reference);
   }
 }

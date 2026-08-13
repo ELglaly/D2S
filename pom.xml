@@ -30,6 +30,7 @@
     <wiremock.version>3.9.2</wiremock.version>
     <anthropic.version>2.35.0</anthropic.version>
     <google-genai.version>1.57.0</google-genai.version>
+    <aws-sdk.version>2.31.78</aws-sdk.version>
 
     <!-- Spring AI (BOM-managed). GA baselines on Spring Boot 3.4.x. -->
     <spring-ai.version>1.0.1</spring-ai.version>
@@ -48,6 +49,14 @@
         <groupId>org.springframework.ai</groupId>
         <artifactId>spring-ai-bom</artifactId>
         <version>${spring-ai.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- AWS SDK v2 BOM: aligns the s3 client with its shared http/core modules. -->
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bom</artifactId>
+        <version>${aws-sdk.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -202,6 +211,16 @@
     </dependency>
 
     <!-- Observability: actuator, metrics, distributed tracing, JSON logs -->
+    <!--
+      Object storage for attachments (P0 item 10). S3-compatible: MinIO locally via an endpoint
+      override, S3/R2 in production, one property apart. The presigner lives in this artifact —
+      user bytes never transit the API origin in either direction (docs/PLAN_FILE_UPLOAD.md §2).
+    -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
@@ -266,6 +285,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>rabbitmq</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>minio</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -12,6 +12,10 @@ import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
 import com.schoolbridge.api.announcements.repository.AnnouncementRepository;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
+import com.schoolbridge.api.attachments.Attachment;
+import com.schoolbridge.api.attachments.AttachmentKeys;
+import com.schoolbridge.api.attachments.AttachmentRepository;
+import com.schoolbridge.api.attachments.AvResult;
 import com.schoolbridge.api.classes.RelationshipType;
 import com.schoolbridge.api.classes.entity.Enrollment;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;
@@ -32,6 +36,7 @@ import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
 import com.schoolbridge.api.tenant.SchoolSettings;
 import com.schoolbridge.api.tenant.SubscriptionTier;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -50,6 +55,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @SpringBootTest
 class AnnouncementFanoutIntegrationTest extends AbstractIntegrationTest {
 
+  @Autowired AttachmentRepository attachmentRepository;
   @Autowired AnnouncementService announcementService;
   @Autowired AnnouncementRepository announcementRepository;
   @Autowired AnnouncementRecipientRepository recipientRepository;
@@ -207,6 +213,10 @@ class AnnouncementFanoutIntegrationTest extends AbstractIntegrationTest {
   @Test
   void schoolScope_recordsAnnouncementCreatedOutboxEventWithExpectedPayload() {
     UUID parentId = createParentWithChild("+201000030001");
+    // attachmentKey stopped being a free string when the attachment pipeline landed: it must now
+    // resolve to a CLEAN attachment in this school, so the test creates a real one rather than a
+    // literal.
+    UUID attachmentId = createCleanAttachment();
 
     CreateAnnouncementRequest request =
         new CreateAnnouncementRequest(
@@ -216,7 +226,7 @@ class AnnouncementFanoutIntegrationTest extends AbstractIntegrationTest {
             null,
             Language.AR,
             "إعلان للصندوق الصادر",
-            "attachments/key-123",
+            attachmentId.toString(),
             true,
             null);
 
@@ -242,13 +252,35 @@ class AnnouncementFanoutIntegrationTest extends AbstractIntegrationTest {
     assertThat(payload.get("announcementId").asText()).isEqualTo(created.id().toString());
     assertThat(payload.get("schoolId").asText()).isEqualTo(schoolId.toString());
     assertThat(payload.get("language").asText()).isEqualTo("AR");
-    assertThat(payload.get("attachmentKey").asText()).isEqualTo("attachments/key-123");
+    assertThat(payload.get("attachmentKey").asText()).isEqualTo(attachmentId.toString());
     assertThat(payload.get("recipientCount").asLong()).isEqualTo(1L);
     assertThat(payload.has("body")).isTrue();
 
     // parentId is asserted via the recipient row (the outbox event aggregates recipient count
     // only).
     assertThat(parentId).isNotNull();
+  }
+
+  /**
+   * A CLEAN attachment in this school, persisted directly — the upload round trip is covered by
+   * {@code AttachmentPipelineIntegrationTest}, not here.
+   */
+  private UUID createCleanAttachment() {
+    return tx.execute(
+        s -> {
+          TenantContext.set(schoolId);
+          Attachment attachment =
+              new Attachment(
+                  schoolId,
+                  senderId,
+                  AttachmentKeys.forAttachment(schoolId, UUID.randomUUID(), Instant.now()),
+                  "circular.pdf",
+                  "application/pdf",
+                  1024L);
+          attachment.markUploaded(1024L);
+          attachment.markClean("application/pdf", AvResult.SKIPPED, Instant.now());
+          return attachmentRepository.save(attachment).getId();
+        });
   }
 
   private UUID createParentWithChild(String phone) {

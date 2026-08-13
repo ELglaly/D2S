@@ -1,5 +1,6 @@
 package com.schoolbridge.api.homework;
 
+import com.schoolbridge.api.attachments.AttachmentService;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.common.audit.AuditService;
@@ -40,6 +41,7 @@ public class HomeworkServiceImpl implements HomeworkService {
   private final HomeworkMapper mapper;
   private final OutboxEventRecorder outbox;
   private final AuditService auditService;
+  private final AttachmentService attachments;
 
   public HomeworkServiceImpl(
       HomeworkItemRepository homeworkItems,
@@ -47,13 +49,15 @@ public class HomeworkServiceImpl implements HomeworkService {
       ParentStudentLinkRepository parentLinks,
       HomeworkMapper mapper,
       OutboxEventRecorder outbox,
-      AuditService auditService) {
+      AuditService auditService,
+      AttachmentService attachments) {
     this.homeworkItems = homeworkItems;
     this.recipients = recipients;
     this.parentLinks = parentLinks;
     this.mapper = mapper;
     this.outbox = outbox;
     this.auditService = auditService;
+    this.attachments = attachments;
   }
 
   @Override
@@ -61,6 +65,11 @@ public class HomeworkServiceImpl implements HomeworkService {
   public HomeworkResponse create(UUID schoolId, UUID actorId, CreateHomeworkRequest request) {
     HomeworkStatus initialStatus =
         request.publish() ? HomeworkStatus.PUBLISHED : HomeworkStatus.DRAFT;
+
+    // attachmentKey is an attachment id, not a free string: it must exist in this school and have
+    // passed inspection. Publishing an item that points at an object still being scanned would put
+    // a link in front of parents before anyone knows the file is safe.
+    attachments.requireUsableReference(schoolId, request.attachmentKey());
 
     HomeworkItem item =
         new HomeworkItem(
@@ -137,6 +146,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     if (item.getStatus() == HomeworkStatus.ARCHIVED) {
       throw new ConflictException("error.homework.archived_cannot_modify", id);
     }
+    attachments.requireUsableReference(item.getSchoolId(), request.attachmentKey());
     item.update(
         request.subject(), request.description(), request.attachmentKey(), request.dueDate());
     return mapper.toResponse(

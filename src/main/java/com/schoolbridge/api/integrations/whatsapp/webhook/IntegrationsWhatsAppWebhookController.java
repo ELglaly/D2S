@@ -203,6 +203,10 @@ public class IntegrationsWhatsAppWebhookController {
 
   private static int rank(DeliveryStatus status) {
     return switch (status) {
+      // Pre-provider states. Unreachable in practice — a row in either carries no messageId, and
+      // the webhook matches rows by messageId — but ranked below QUEUED so that if one ever were
+      // matched, a real provider status would still advance it rather than being dropped.
+      case DEFERRED, SUPPRESSED -> -1;
       case QUEUED -> 0;
       case SENT -> 1;
       case DELIVERED -> 2;

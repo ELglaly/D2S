@@ -32,6 +32,18 @@ schoolbridge:
   outbox:
     relay:
       enabled: true
+  storage:
+    endpoint: ${STORAGE_ENDPOINT:}
+    region: ${STORAGE_REGION}
+    bucket: ${STORAGE_BUCKET}
+    access-key: ${STORAGE_ACCESS_KEY}
+    secret-key: ${STORAGE_SECRET_KEY}
+    av:
+      # Not optional in production. AvStartupValidator fails this profile's context if it is false,
+      # because an unscanned attachment served back to a parent is the pipeline's whole risk.
+      enabled: ${STORAGE_AV_ENABLED:true}
+      host: ${STORAGE_AV_HOST}
+      port: ${STORAGE_AV_PORT:3310}
 
 management:
   endpoints:

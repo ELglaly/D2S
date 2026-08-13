@@ -39,6 +39,9 @@ public class AnnouncementRecipient extends TenantEntity {
   @Column(name = "message_id", length = 255)
   private String messageId;
 
+  @Column(name = "deferred_until")
+  private Instant deferredUntil;
+
   protected AnnouncementRecipient() {}
 
   public AnnouncementRecipient(
@@ -60,6 +63,31 @@ public class AnnouncementRecipient extends TenantEntity {
   public void markSent(String providerMessageId) {
     this.deliveryStatus = DeliveryStatus.SENT;
     this.messageId = providerMessageId;
+    this.deferredUntil = null;
+  }
+
+  /**
+   * Held because the recipient is inside their quiet window. {@code AnnouncementDeferralSweeper}
+   * releases it once {@code until} passes.
+   */
+  public void markDeferred(Instant until) {
+    this.deliveryStatus = DeliveryStatus.DEFERRED;
+    this.deferredUntil = until;
+  }
+
+  /** Back to QUEUED so the normal dispatch path can pick it up. */
+  public void releaseFromDeferral() {
+    this.deliveryStatus = DeliveryStatus.QUEUED;
+    this.deferredUntil = null;
+  }
+
+  /**
+   * The recipient opted out of announcements. Distinct from FAILED on purpose: nothing went wrong,
+   * nothing should be retried, and a delivery report should not count this as a miss.
+   */
+  public void markSuppressed() {
+    this.deliveryStatus = DeliveryStatus.SUPPRESSED;
+    this.deferredUntil = null;
   }
 
   /**
@@ -101,5 +129,9 @@ public class AnnouncementRecipient extends TenantEntity {
 
   public String getMessageId() {
     return messageId;
+  }
+
+  public Instant getDeferredUntil() {
+    return deferredUntil;
   }
 }

@@ -59,6 +59,21 @@ schoolbridge:
       reminder-horizon-days: 2
       deferred-release-rate: PT1M
       dedup-ttl: 36h
+  storage:
+    # Endpoint and credentials are supplied per-test by @DynamicPropertySource from the MinIO
+    # Testcontainer (AbstractIntegrationTest), because the presigned URL's signature covers the host
+    # and the container's port is only known at runtime. The values here just keep the context
+    # startable for the suites that never touch storage.
+    endpoint: http://localhost:0
+    bucket: schoolbridge-test
+    access-key: test-access-key
+    secret-key: test-secret-key
+    av:
+      enabled: false
+    sweeper:
+      # Off by default so an ambient sweep cannot delete a row another test is asserting on.
+      # AttachmentSweeperTest invokes the scheduled method directly.
+      enabled: false
   attendance:
     sweeper:
       # Off by default in tests — AttendanceSweeperTest constructs the bean directly with @Autowired

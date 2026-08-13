@@ -1,5 +1,6 @@
 package com.schoolbridge.api.config;
 
+import com.schoolbridge.api.attachments.StorageProperties;
 import com.schoolbridge.api.common.crypto.CryptoProperties;
 import com.schoolbridge.api.identity.jwt.JwtProperties;
 import com.schoolbridge.api.integrations.push.PushProperties;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
   CryptoProperties.class,
   JwtProperties.class,
   PushProperties.class,
+  StorageProperties.class,
   WhatsAppProperties.class
 })
 public class ApplicationConfig {
