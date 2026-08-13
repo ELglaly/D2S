@@ -25,6 +25,20 @@ public interface HomeworkRecipientRepository extends JpaRepository<HomeworkRecip
 
   List<HomeworkRecipient> findAllByHomeworkId(UUID homeworkId);
 
+  /**
+   * True when the parent is a recipient of some homework item carrying this attachment. Backs the
+   * download authorization check: a parent may open the photo on their own child's homework, and
+   * nothing else. Joined rather than derived because the attachment reference lives on the item,
+   * not on the recipient row.
+   */
+  @Query(
+      "select count(r) > 0 from HomeworkRecipient r, HomeworkItem h "
+          + "where r.homeworkId = h.id "
+          + "  and r.parentUserId = :parentUserId "
+          + "  and h.attachmentKey = :attachmentKey")
+  boolean existsForParentAndAttachment(
+      @Param("parentUserId") UUID parentUserId, @Param("attachmentKey") String attachmentKey);
+
   long countByHomeworkId(UUID homeworkId);
 
   long countByHomeworkIdAndAcknowledgedAtIsNotNull(UUID homeworkId);

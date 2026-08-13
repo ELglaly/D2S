@@ -194,7 +194,7 @@ Priority answers "can you launch and retain a school without it".
 |---|---|---|---|---|
 | 1 | **Teacher↔parent messaging** (SRS FR-6) | The product is pitched as a private WhatsApp community. Without 1:1 threads it is a broadcast tool, which schools already have for free via WhatsApp groups. This is the differentiator, and the reason a school switches. | Critical | L |
 | 2 | **File / media pipeline** | `attachment_key` is a dead string. Parents expect a photo of the homework page and a PDF of the circular. Needs presigned upload, MIME/size validation, AV scanning, presigned time-limited download, per-tenant key prefixing, retention. | Critical | M |
-| 3 | **Parent notification preferences + per-user quiet hours** | Quiet hours are school-wide only (`schools.alerts_respect_quiet_hours`). A 22:00 alert to a parent who opted out is the top uninstall and complaint driver, and in several jurisdictions a consent requirement. | Critical | M |
+| 3 | ~~**Parent notification preferences + per-user quiet hours**~~ **BUILT** — changelog 019. Per-user window (inheriting the school's), per-category opt-out, ordered channels. ATTENDANCE is deliberately non-mutable: it carries the NFR-P2 SLA. | ~~Critical~~ Done | M |
 | 4 | **Admin dashboard + delivery/attendance reporting** (SRS FR-7) | Schools buy and renew on evidence that the message landed. Delivery rows exist; nothing aggregates them. | High | M |
 | 5 | **School calendar / events** | Cheap, high perceived value, the natural home for exam dates and holidays, and it drives weekly re-opens. | High | S–M |
 | 6 | **Full-text search** (announcements, homework, later messages) | Bodies are AES-GCM encrypted and `updatable=false` — search is currently *impossible by construction*. See §5.3. | High | M |
@@ -442,7 +442,7 @@ conversation logs — pick the number now, before messaging adds a sixth table.
 | Parent session is an opaque Redis token, 24 h, no refresh, no device binding | High | A Redis flush logs out every parent simultaneously. No revocation path, no "sign out other devices". **Fix:** persist parent sessions (or treat Redis as durable with AOF + replication), bind to a device, add a refresh flow. |
 | OTP: 6 digits, 5 attempts, 5-minute TTL, unsalted SHA-256 in Redis | Medium | The attempt cap is correct. Unsalted SHA-256 of a 6-digit code is trivially reversible, but anyone reading Redis already holds the ticket, so real impact is low. The material gap is the missing per-phone request cap (§1.5). |
 | No lockout or anomaly detection on parent auth | Medium | Staff login has `LoginRateLimiter`; parent OTP has nothing. |
-| No file upload path, therefore no AV scanning, MIME allow-list, or real size enforcement | High (when built) | `spring.servlet.multipart.max-file-size: 5MB` is the only control and nothing uses it. Build the pipeline with validation from day one: presigned PUT, server-side MIME sniffing, ClamAV, per-tenant key prefix, presigned time-limited GET. Never serve user files from the API origin. |
+| ~~No file upload path, therefore no AV scanning, MIME allow-list, or real size enforcement~~ | ~~High (when built)~~ | **Fixed** — changelog 018 and the `attachments` module. Presigned PUT with the length signed into the URL, server-side magic-byte sniffing that must agree with the declared type, ClamAV over clamd `INSTREAM` (with a prod startup validator refusing to boot when it is off), server-generated `{schoolId}/…` keys, presigned time-limited GET, retention + abandoned-upload sweeper. Bytes never transit the API origin in either direction. See `PLAN_FILE_UPLOAD.md`. |
 | ~~No RLS on tenant tables except the vector store~~ | ~~High~~ | **Fixed** — changelog 017 covers all 20 tenant tables. See §4 and `P0_REMEDIATION.md` item 12. |
 | Audit coverage is partial and unenforced | Medium | `AuditService` is called from some services; nothing guarantees every mutating endpoint audits. **Fix:** drive auditing from the same AOP layer as `@RequirePermission` so coverage is structural rather than remembered. |
 | Audit log is not tamper-evident | Medium | "Append-only" by convention only — nothing prevents `UPDATE`/`DELETE`. Add a hash chain, or revoke UPDATE/DELETE on `audit_logs` for the application DB role. |
@@ -494,8 +494,8 @@ only, with deferred release handled by the attendance and homework sweepers.
 
 | Improvement | Priority | Note |
 |---|---|---|
-| Fold push into `NotificationDispatcher` as a first-class channel with a per-user preference order | Critical | Today push and WhatsApp/SMS are unrelated systems; there is no single answer to "was this parent notified". |
-| `notification_preferences` — user × category × channel, opt-out, per-user quiet hours | Critical | See §2.3. |
+| ~~Fold push into `NotificationDispatcher` as a first-class channel with a per-user preference order~~ | **Done** | Changelog 019. `NotificationChannel.PUSH`, default order PUSH→WHATSAPP→SMS, tokens read from the existing `device_tokens`. A channel that cannot reach the user is *unavailable*, not failed. |
+| ~~`notification_preferences` — user × category × channel, opt-out, per-user quiet hours~~ | **Done** | Split into two tables — one window per person, not per category. See `PLAN_NOTIFICATION_PREFERENCES.md` §2.2. |
 | Digest notifications (daily or weekly parent summary) | High | Directly reduces WhatsApp template spend — the largest variable cost in this product — and reduces opt-outs. |
 | Unified `notification_deliveries` + consume Meta delivery-status webhooks back onto rows | High | `message_id` is stored; nothing consumes delivery or read callbacks. |
 | Retry with backoff + DLQ | Critical | First failure is currently terminal (§1.3). |
@@ -618,8 +618,8 @@ Status as of 2026-08-07. Detail and verification:
 | 7 | Delete the native LLM gateways | 3.2 | **Done** |
 | 8 | Stand up CI | 4 | **Done** — not yet observed passing on GitHub |
 | 9 | Verify scheduled announcements + webhook signature | 9, 7 | **Done** — webhook was already correct; scheduling was **broken worse than reported** (below) |
-| 10 | File upload pipeline | 2.2 | **Scheduled as its own gated build** — greenfield feature |
-| 11 | Parent notification preferences + quiet hours | 2.3 | **Scheduled as its own gated build** — greenfield feature |
+| 10 | File upload pipeline | 2.2 | **Done** — changelog 018; presigned PUT/GET, sniffed MIME allow-list, ClamAV, per-tenant prefix, retention sweeper. See `PLAN_FILE_UPLOAD.md` |
+| 11 | Parent notification preferences + quiet hours | 2.3 | **Done** — changelog 019; per-user quiet hours, per-category opt-out, ordered channels, push folded into the dispatcher, announcement deferral. See `PLAN_NOTIFICATION_PREFERENCES.md` |
 | 12 | RLS on tenant tables | 4 | **Done** — changelog 017 on all 20 tenant tables; **prod must connect as a non-owner role** (below) |
 | 13 | N+1 count and in-transaction fan-out | 11 | **N+1 done; JDBC batching added. Async fan-out deferred** (below) |
 | 14 | README and operational runbook | 13 | **Done** — real README plus `docs/RUNBOOK.md` |

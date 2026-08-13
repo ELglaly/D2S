@@ -4,8 +4,12 @@ What changed in response to the P0 list in
 [`PLATFORM_REVIEW.md`](PLATFORM_REVIEW.md) §14, how it was verified, and what is
 deliberately still open.
 
-Items 1–9, 12, 13 and 14 are addressed. Items 10 and 11 are scheduled as their own
-gated builds — both are greenfield feature work, not defect fixes.
+**All fourteen items are addressed.** Items 1–9 and 12–14 were fixed in place; items
+10 and 11 were greenfield feature work and each got its own gated build.
+
+What remains open is not code: the four leaked credentials still need rotating at
+the provider, and the third-party-inference decision is still unmade. Both are
+below.
 
 ---
 
@@ -299,19 +303,70 @@ CI greps executed locally against this tree: no provider-key literals in
 
 ---
 
-## Not done
+## The two greenfield items
 
-| Item | Why it is not a fix |
-|---|---|
-| **10 — File upload pipeline** | Greenfield. Presigned upload, MIME sniffing, AV scanning, per-tenant prefixing, presigned download, retention. `attachment_key` is an opaque string today and MinIO sits in `docker-compose.yml` with no client in the pom. |
-| **11 — Notification preferences + per-user quiet hours** | Greenfield. Needs a `notification_preferences` table and push unified into `NotificationDispatcher`, which is currently a separate path from WhatsApp/SMS. |
+Neither was a defect fix, so each got its own migration, endpoints, tenant-isolation
+audit and gate. Bundling them here would have produced one unreviewable diff.
 
-Both are scheduled as their own gated builds rather than folded in here: each needs
-its own migration, endpoints and tenant-isolation audit, and bundling them would have
-produced one unreviewable diff. Object storage for item 10 will use the AWS SDK v2 S3
-client — it drives the MinIO already in `docker-compose.yml` via an endpoint
-override and real S3/R2 later without a code change, and presigned PUT/GET is the
-whole point, since user files must never proxy through the API origin.
+**Item 11 — notification preferences + per-user quiet hours — is now done.** Full
+design and rationale: [`PLAN_NOTIFICATION_PREFERENCES.md`](PLAN_NOTIFICATION_PREFERENCES.md).
+Summary of what shipped:
+
+- Changelog `019-notification-preferences.sql` — `notification_settings` (one
+  quiet-hours window per user) and `notification_preferences` (opt-out plus an
+  ordered channel list per user × category), both with RLS in the 017/018 shape,
+  plus `announcement_recipients.deferred_until`.
+- **Per-user quiet hours** that inherit the school's window when unset, so a
+  deployment where nobody has touched their preferences behaves exactly as before.
+  Absent rows mean defaults, never "off" — a failed write cannot silently mute a
+  parent.
+- **ATTENDANCE is non-mutable.** It carries the NFR-P2 five-minute SLA; a parent who
+  muted it would not learn their child is missing. Enforced as the first branch of
+  the resolver and proven by a test that writes the forbidden opt-out row straight
+  to the table, so the guarantee holds even if a future endpoint bypasses the 422.
+- **Push is finally a channel.** `FcmPushClient` had no production caller and
+  `device_tokens` was write-only. Default order is now PUSH → WHATSAPP → SMS —
+  cheapest first — and a channel that cannot reach the user is *unavailable*, not
+  failed, so it falls through silently.
+- **Announcements can now be deferred at all.** They were the highest-volume
+  parent-facing message and the only one with no hold path, which is precisely what
+  made a 22:00 notification possible. `AnnouncementDeferralSweeper` releases holds
+  every minute and re-checks recall and opt-out before sending.
+- `SUPPRESSED` is a distinct status from `FAILED` on both announcement and homework
+  recipients: an honoured opt-out is not a delivery miss and must not be counted as
+  one.
+- One defect found and fixed while writing this up: `LoggingPushClient` reported
+  every stub send as **accepted**. With push first in the default order that would
+  have ended the dispatch walk and swallowed every notification for any user with a
+  registered device — in exactly the deployment where FCM has not been configured
+  yet. It now reports not-accepted, with a unit test guarding it.
+
+**Item 10 — file upload pipeline — is now done**, in its own gated build. Full design
+and rationale: [`PLAN_FILE_UPLOAD.md`](PLAN_FILE_UPLOAD.md). Summary of what shipped:
+
+- Changelog `018-attachments.sql` — the `attachments` table, its RLS policy in the
+  changelog-017 shape, and three new permissions.
+- **Presigned PUT in, presigned GET out.** User bytes never transit the API origin, so
+  a stored-XSS or content-sniffing bug in a user file cannot execute in the API's own
+  security origin against an authenticated session.
+- **Size is enforced by the object store, not by client good behaviour.** A presigned
+  PUT cannot carry a `content-length-range` condition — that is a presigned POST
+  feature — so the declared length is *signed* into the URL, and re-checked against
+  `HeadObject` at completion.
+- **The declared content type is never trusted.** The allow-list is matched against
+  magic bytes read from the stored object via a bounded ranged GET, and the client's
+  declaration only has to agree with it. A `.pdf` carrying a PE header is the case
+  this exists for, and it is a test.
+- **Keys are server-generated** as `{schoolId}/{yyyy}/{MM}/{objectId}`. A
+  client-influenced key would be a cross-tenant write primitive.
+- **ClamAV** over the clamd `INSTREAM` protocol, streamed rather than buffered.
+  Off by default so `mvn verify` does not need a 250 MB image — and
+  `AvStartupValidator` refuses to boot the prod profile with it off, because a
+  security control that silently does nothing is worse than one that is absent.
+  An unreachable scanner fails the upload rather than storing an unscanned object.
+- **`attachment_key` stopped being an opaque string.** It is now a reference validated
+  on homework and announcement create/update: it must resolve to a `CLEAN` attachment
+  in the same school.
 
 Also unchanged and still worth attention: the `role_permissions` table has no
 `school_id`, so a runtime grant applies platform-wide (§4). The seed is careful, so

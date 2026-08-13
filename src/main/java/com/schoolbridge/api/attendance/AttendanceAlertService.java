@@ -5,13 +5,19 @@ import com.schoolbridge.api.classes.entity.ParentStudentLink;
 import com.schoolbridge.api.classes.entity.Student;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.StudentRepository;
+import com.schoolbridge.api.common.time.QuietHoursCalculator;
 import com.schoolbridge.api.identity.User;
 import com.schoolbridge.api.identity.UserRepository;
 import com.schoolbridge.api.integrations.DispatchRequest;
 import com.schoolbridge.api.integrations.DispatchResult;
 import com.schoolbridge.api.integrations.NotificationDispatcher;
+import com.schoolbridge.api.integrations.NotificationTarget;
+import com.schoolbridge.api.integrations.UserDispatchRequest;
 import com.schoolbridge.api.integrations.whatsapp.TemplateParam;
 import com.schoolbridge.api.integrations.whatsapp.WhatsAppProperties;
+import com.schoolbridge.api.notifications.NotificationCategory;
+import com.schoolbridge.api.notifications.NotificationDecision;
+import com.schoolbridge.api.notifications.NotificationPreferenceService;
 import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
 import com.schoolbridge.api.tenant.SchoolSettings;
@@ -62,6 +68,7 @@ public class AttendanceAlertService {
   private final StudentRepository students;
   private final SchoolRepository schools;
   private final NotificationDispatcher dispatcher;
+  private final NotificationPreferenceService preferences;
   private final WhatsAppProperties whatsAppProperties;
   private final MessageSource messageSource;
 
@@ -73,6 +80,7 @@ public class AttendanceAlertService {
       StudentRepository students,
       SchoolRepository schools,
       NotificationDispatcher dispatcher,
+      NotificationPreferenceService preferences,
       WhatsAppProperties whatsAppProperties,
       MessageSource messageSource) {
     this.records = records;
@@ -82,6 +90,7 @@ public class AttendanceAlertService {
     this.students = students;
     this.schools = schools;
     this.dispatcher = dispatcher;
+    this.preferences = preferences;
     this.whatsAppProperties = whatsAppProperties;
     this.messageSource = messageSource;
   }
@@ -248,25 +257,43 @@ public class AttendanceAlertService {
       return;
     }
     User parent = parentOpt.get();
-    if (parent.getPhone() == null || parent.getPhone().isBlank()) {
-      row.markFailed("parent_phone_missing");
-      return;
-    }
 
     String studentName = firstName(student.getFullName());
     String dateText = DATE_FORMAT.format(date);
     String templateName = templateNameFor(triggeringStatus);
     String smsBody = renderSmsBody(triggeringStatus, language, studentName, dateText);
 
-    DispatchRequest request =
+    DispatchRequest content =
         new DispatchRequest(
             parent.getPhone(),
             language,
             templateName,
             List.of(TemplateParam.of(studentName), TemplateParam.of(dateText)),
             smsBody);
+    // HashMap, not Map.of — this payload grows deep-link fields that are routinely null.
+    Map<String, String> pushData = new HashMap<>();
+    pushData.put("type", "attendance");
+    pushData.put("attendanceRecordId", row.getAttendanceRecordId().toString());
+
+    // ATTENDANCE is a non-mutable category: this call can only ever reorder channels, never remove
+    // one and never suppress or defer. It is here so a parent who prefers push gets push — not so
+    // they can turn an absence alert off, which they cannot.
+    NotificationDecision decision =
+        preferences.resolve(
+            row.getSchoolId(),
+            row.getParentUserId(),
+            NotificationCategory.ATTENDANCE,
+            Instant.now());
+
+    UserDispatchRequest request =
+        new UserDispatchRequest(
+            new NotificationTarget(row.getSchoolId(), row.getParentUserId(), parent.getPhone()),
+            content,
+            renderPushTitle(language),
+            smsBody,
+            pushData);
     try {
-      DispatchResult result = dispatcher.dispatch(request);
+      DispatchResult result = dispatcher.dispatch(request, decision.channels());
       if (result.accepted() && result.messageId() != null) {
         row.markSent(result.messageId());
       } else {
@@ -306,6 +333,12 @@ public class AttendanceAlertService {
     String key = smsKeyFor(status);
     Locale locale = language == Language.AR ? Locale.of("ar") : Locale.ENGLISH;
     return messageSource.getMessage(key, new Object[] {studentName, dateText}, key, locale);
+  }
+
+  private String renderPushTitle(Language language) {
+    Locale locale = language == Language.AR ? Locale.of("ar") : Locale.ENGLISH;
+    return messageSource.getMessage(
+        "notification.push.attendance.title", null, "Attendance alert", locale);
   }
 
   private static String smsKeyFor(AttendanceStatus status) {

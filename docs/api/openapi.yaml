@@ -30,6 +30,10 @@ tags:
   description: School class management
 - name: Students
   description: Student roster management and bulk import
+- name: Attachments
+  description: Presigned file upload and download
+- name: Notifications
+  description: Per-user notification preferences and quiet hours
 - name: Subjects
   description: Subject catalog management
 - name: Teacher Subject Assignments
@@ -146,6 +150,64 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/SchoolSettingsResponse"
+  /api/v1/notifications/preferences:
+    get:
+      tags:
+      - Notifications
+      summary: Get the caller's notification preferences
+      description: "Returns every category, including ones the user has never configured\
+        \ — those come back with their defaults, so the client never has to distinguish\
+        \ stored from default. Attendance is always returned enabled: it cannot be\
+        \ switched off."
+      operationId: get
+      responses:
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
+        "200":
+          description: Preferences returned
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
+    put:
+      tags:
+      - Notifications
+      summary: Replace the caller's notification preferences
+      description: "Whole-set replace rather than a partial patch, so two devices\
+        \ editing at once cannot interleave into a state the user never chose. Quiet\
+        \ hours must be supplied as a pair or omitted entirely; omitting both inherits\
+        \ the school's window."
+      operationId: replace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferencesRequest"
+        required: true
+      responses:
+        "200":
+          description: Preferences saved
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
+        "422":
+          description: "Half a quiet-hours window, or an attempt to disable attendance\
+            \ alerts"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/NotificationPreferencesResponse"
   /integrations/whatsapp/webhook:
     get:
       tags:
@@ -1684,6 +1746,101 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/MarkAllPresentResponse"
+  /api/v1/attachments:
+    post:
+      tags:
+      - Attachments
+      summary: Request an upload URL
+      description: "Records a PENDING attachment and returns a presigned PUT. The\
+        \ client uploads the bytes directly to object storage, then calls /attachments/{id}/complete.\
+        \ The declared size is signed into the URL, so object storage itself rejects\
+        \ a body of any other length."
+      operationId: create_8
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAttachmentRequest"
+        required: true
+      responses:
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentUploadTicket"
+        "422":
+          description: "Size over the cap, or a content type not on the allow-list"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentUploadTicket"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentUploadTicket"
+        "201":
+          description: Upload ticket issued
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentUploadTicket"
+  /api/v1/attachments/{id}/complete:
+    post:
+      tags:
+      - Attachments
+      summary: Finish an upload
+      description: "Verifies the object exists at the expected size, sniffs its real\
+        \ content type from the stored bytes, and scans it. The response carries the\
+        \ terminal status: CLEAN is downloadable, REJECTED is not. A rejected or infected\
+        \ object is deleted from storage immediately."
+      operationId: complete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: "Bytes were never uploaded, or the attachment is already complete"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "422":
+          description: Anti-virus reported a signature match
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "200":
+          description: Inspection finished; see status
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "404":
+          description: Attachment not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
   /api/v1/announcements:
     get:
       tags:
@@ -1737,7 +1894,7 @@ paths:
         \ SCHOOL_ADMIN may use any scope (SCHOOL, GRADE, CLASS, CUSTOM). TEACHER may\
         \ only use CLASS scope for a class they are assigned to. Recipients are derived\
         \ from linked parents of enrolled students matching the scope."
-      operationId: create_8
+      operationId: create_9
       requestBody:
         content:
           application/json:
@@ -1885,6 +2042,9 @@ paths:
           - ANNOUNCEMENT_SEND
           - ANNOUNCEMENT_READ
           - ANNOUNCEMENT_MANAGE
+          - ATTACHMENT_UPLOAD
+          - ATTACHMENT_READ
+          - ATTACHMENT_DELETE
           - ASSISTANT_SETTINGS_MANAGE
           - DOCUMENT_MANAGE
           - USER_READ
@@ -1945,6 +2105,9 @@ paths:
           - ANNOUNCEMENT_SEND
           - ANNOUNCEMENT_READ
           - ANNOUNCEMENT_MANAGE
+          - ATTACHMENT_UPLOAD
+          - ATTACHMENT_READ
+          - ATTACHMENT_DELETE
           - ASSISTANT_SETTINGS_MANAGE
           - DOCUMENT_MANAGE
           - USER_READ
@@ -1965,7 +2128,7 @@ paths:
       tags:
       - Subjects
       summary: Get a subject by ID
-      operationId: get
+      operationId: get_1
       parameters:
       - name: id
         in: path
@@ -2074,7 +2237,7 @@ paths:
       - Students
       summary: Get student
       description: Returns a single student by ID.
-      operationId: get_1
+      operationId: get_2
       parameters:
       - name: id
         in: path
@@ -2186,7 +2349,7 @@ paths:
       summary: Get homework item
       description: Returns a homework item. Parents receive 404 if their child is
         not a recipient (anti-enumeration).
-      operationId: get_2
+      operationId: get_3
       parameters:
       - name: id
         in: path
@@ -2292,7 +2455,7 @@ paths:
       tags:
       - Grades
       summary: Get a single grade record
-      operationId: get_3
+      operationId: get_4
       parameters:
       - name: id
         in: path
@@ -2395,7 +2558,7 @@ paths:
       - Classes
       summary: Get class
       description: Returns a single class by ID.
-      operationId: get_4
+      operationId: get_5
       parameters:
       - name: id
         in: path
@@ -2596,7 +2759,7 @@ paths:
       - School Users
       summary: Get user
       description: Returns a single user by ID within the school.
-      operationId: get_5
+      operationId: get_6
       parameters:
       - name: schoolId
         in: path
@@ -2641,7 +2804,7 @@ paths:
       - Schools
       summary: Get school
       description: Returns a single school by ID.
-      operationId: get_6
+      operationId: get_7
       parameters:
       - name: id
         in: path
@@ -2926,7 +3089,7 @@ paths:
       - Attendance
       summary: Get attendance record
       description: Returns a single attendance record by ID.
-      operationId: get_7
+      operationId: get_8
       parameters:
       - name: id
         in: path
@@ -3079,13 +3242,126 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AttendanceHistoryEntry"
+  /api/v1/attachments/{id}:
+    get:
+      tags:
+      - Attachments
+      summary: Get attachment metadata
+      description: Metadata only. The storage key is never exposed.
+      operationId: get_9
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Attachment metadata
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+        "404":
+          description: Attachment not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentResponse"
+    delete:
+      tags:
+      - Attachments
+      summary: Delete an attachment
+      description: "Deletes the object and the row. Refused with 409 while a homework\
+        \ item or announcement still references it, so a published item cannot end\
+        \ up pointing at nothing."
+      operationId: delete_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: Still referenced
+        "204":
+          description: Deleted
+        "403":
+          description: Insufficient permissions
+        "401":
+          description: Not authenticated
+        "404":
+          description: Attachment not found
+  /api/v1/attachments/{id}/download:
+    get:
+      tags:
+      - Attachments
+      summary: Get a download URL
+      description: "Returns a short-lived presigned GET, issued only for a CLEAN attachment.\
+        \ The URL is a bearer credential until it expires, so it is minted per request\
+        \ and never stored. A PARENT may only download an attachment carried by homework\
+        \ or an announcement they are a recipient of."
+      operationId: download
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "409":
+          description: Attachment is not CLEAN
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentDownloadTicket"
+        "403":
+          description: Insufficient permissions
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentDownloadTicket"
+        "401":
+          description: Not authenticated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentDownloadTicket"
+        "200":
+          description: Download ticket issued
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentDownloadTicket"
+        "404":
+          description: Attachment not found
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AttachmentDownloadTicket"
   /api/v1/announcements/{id}:
     get:
       tags:
       - Announcements
       summary: Get announcement
       description: Returns a single announcement by ID.
-      operationId: get_8
+      operationId: get_10
       parameters:
       - name: id
         in: path
@@ -3236,7 +3512,7 @@ paths:
       tags:
       - Teacher Subject Assignments
       summary: Remove a teacher-subject assignment
-      operationId: delete_5
+      operationId: delete_6
       parameters:
       - name: id
         in: path
@@ -3259,7 +3535,7 @@ paths:
       - Parent-Student Links
       summary: Remove parent-student link
       description: Deletes the link between a parent and a student.
-      operationId: delete_6
+      operationId: delete_7
       parameters:
       - name: id
         in: path
@@ -3282,7 +3558,7 @@ paths:
       - Enrollments
       summary: Remove enrollment
       description: Removes a student from a class by deleting the enrollment record.
-      operationId: delete_7
+      operationId: delete_8
       parameters:
       - name: id
         in: path
@@ -3324,7 +3600,7 @@ paths:
       tags:
       - Class Subjects
       summary: Remove a subject from a class
-      operationId: delete_8
+      operationId: delete_9
       parameters:
       - name: id
         in: path
@@ -3431,6 +3707,60 @@ components:
           type: boolean
         rosterDueByLocalTime:
           $ref: "#/components/schemas/LocalTime"
+    CategoryPreference:
+      required:
+      - category
+      - channels
+      type: object
+      properties:
+        category:
+          type: string
+          enum:
+          - ANNOUNCEMENT
+          - HOMEWORK
+          - ATTENDANCE
+        enabled:
+          type: boolean
+        channels:
+          type: array
+          items:
+            type: string
+            enum:
+            - PUSH
+            - WHATSAPP
+            - SMS
+    NotificationPreferencesRequest:
+      required:
+      - preferences
+      type: object
+      properties:
+        respectQuietHours:
+          type: boolean
+        quietHoursStart:
+          $ref: "#/components/schemas/LocalTime"
+        quietHoursEnd:
+          $ref: "#/components/schemas/LocalTime"
+        preferences:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryPreference"
+    NotificationPreferencesResponse:
+      type: object
+      properties:
+        respectQuietHours:
+          type: boolean
+        quietHoursStart:
+          $ref: "#/components/schemas/LocalTime"
+        quietHoursEnd:
+          $ref: "#/components/schemas/LocalTime"
+        effectiveQuietHoursStart:
+          $ref: "#/components/schemas/LocalTime"
+        effectiveQuietHoursEnd:
+          $ref: "#/components/schemas/LocalTime"
+        preferences:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryPreference"
     CreateSubjectRequest:
       required:
       - name
@@ -4211,6 +4541,79 @@ components:
         skippedCount:
           type: integer
           format: int32
+    CreateAttachmentRequest:
+      required:
+      - contentType
+      - fileName
+      type: object
+      properties:
+        fileName:
+          maxLength: 255
+          minLength: 0
+          type: string
+        contentType:
+          maxLength: 128
+          minLength: 0
+          type: string
+        sizeBytes:
+          maximum: 1073741824
+          type: integer
+          format: int64
+    AttachmentUploadTicket:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+          format: uuid
+        uploadUrl:
+          type: string
+        method:
+          type: string
+        requiredHeaders:
+          type: object
+          additionalProperties:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    AttachmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum:
+          - PENDING
+          - UPLOADED
+          - CLEAN
+          - REJECTED
+          - INFECTED
+        rejectionReason:
+          type: string
+        avResult:
+          type: string
+          enum:
+          - CLEAN
+          - INFECTED
+          - SKIPPED
+        uploaderUserId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
     CreateAnnouncementRequest:
       required:
       - body
@@ -4680,6 +5083,7 @@ components:
           enum:
           - PENDING
           - DEFERRED
+          - SUPPRESSED
           - SENT
           - FAILED
         acknowledgedAt:
@@ -4708,6 +5112,7 @@ components:
           enum:
           - PENDING
           - DEFERRED
+          - SUPPRESSED
           - SENT
           - FAILED
         messageId:
@@ -4807,6 +5212,21 @@ components:
         parentRespondedAt:
           type: string
           format: date-time
+    AttachmentDownloadTicket:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+          format: uuid
+        downloadUrl:
+          type: string
+        fileName:
+          type: string
+        contentType:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
     PageResponseAnnouncementResponse:
       type: object
       properties:
@@ -4845,6 +5265,8 @@ components:
           type: string
           enum:
           - QUEUED
+          - DEFERRED
+          - SUPPRESSED
           - SENT
           - DELIVERED
           - READ

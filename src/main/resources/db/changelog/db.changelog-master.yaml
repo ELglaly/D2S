@@ -50,3 +50,9 @@ databaseChangeLog:
   - include:
       file: 017-tenant-rls.sql
       relativeToChangelogFile: true
+  - include:
+      file: 018-attachments.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 019-notification-preferences.sql
+      relativeToChangelogFile: true

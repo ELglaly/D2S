@@ -181,6 +181,61 @@ was weaker than its javadoc claimed — its cross-tenant assertion passed becaus
 of the application-side metadata filter, not the policy. It now runs under the
 unprivileged role and asserts with raw SQL, so only RLS can be doing the work.
 
+## 13. A presigned **PUT** cannot enforce a maximum upload size
+
+`content-length-range` is a presigned **POST** form-policy condition. There is no
+equivalent for PUT, so `presignPutObject` gives you a URL that will happily accept
+a body of any length — validating the client's declared size server-side before
+minting the URL constrains nothing, because the client is not obliged to send what
+it declared.
+
+**Fix:** set `contentLength` on the `PutObjectRequest` before presigning. The SDK
+signs it, so the object store rejects any body that disagrees, and the cap is
+enforced by S3 rather than by client good behaviour. Return
+`PresignedPutObjectRequest.signedHeaders()` to the client — a PUT that omits a
+signed header gets a 403 that reads exactly like a credentials failure. Re-check
+the real size with `HeadObject` afterwards anyway, for backends whose signature
+semantics are laxer than S3's. See `S3ObjectStorage.presignPut`.
+
+## 14. `S3Presigner` must carry the same `endpointOverride` as the client
+
+A SigV4 signature covers the host. Building the `S3Client` against a MinIO or R2
+endpoint but leaving the `S3Presigner` on the default AWS resolver produces URLs
+signed for `s3.<region>.amazonaws.com`, and the request to the real endpoint fails
+with a 403 that looks like bad credentials and is not.
+
+**Fix:** apply `endpointOverride` and `pathStyleAccessEnabled` to *both* beans —
+`StorageConfig` does. In tests this also means the presigner has to be pointed at
+the Testcontainer's mapped port, which is only known at runtime, so
+`@DynamicPropertySource` rather than a static property.
+
+## 15. A dev stub that reports success ends a first-match-wins fallback chain
+
+**Symptom:** in an environment where an optional provider is not configured, users
+stop receiving notifications entirely. Nothing errors. Logs look busy and healthy.
+
+**Cause:** `NotificationDispatcher.dispatch(UserDispatchRequest, channels)` walks the
+channel list and **stops at the first channel that accepts**. `LoggingPushClient` —
+the no-op that stands in when `schoolbridge.push.fcm.enabled=false` — used to return
+`new PushSendResult(true, "stub-" + nanoTime())`. Harmless while push had no caller.
+The moment push became the first entry in `NotificationChannel.DEFAULT_ORDER`, any
+user with a registered device got their notification "delivered" to a log line, and
+WhatsApp was never tried.
+
+The stub was written before the code that consumed it, and it was written to look
+like the success path rather than to tell the truth.
+
+**Fix:** a stub for a channel in a fallback chain must report **not accepted**. It
+did not send anything, so it must not claim to have. `LoggingPushClient` now returns
+`new PushSendResult(false, null)`, the walk falls through to WhatsApp, and
+`push.send.failure` climbing with `push.send.success` at zero is the operational
+signal that FCM is unconfigured. `LoggingPushClientTest` is a one-assertion guard
+against a silent total outage.
+
+**Generalise:** whenever a no-op adapter feeds a "try until one works" loop, its
+return value is a control-flow decision, not a formality. Ask what the loop does with
+`true` before writing it.
+
 ## Known, accepted risk (not a bug to "fix" reflexively)
 
 - `docs/CODE_REVIEW.md` M2 — tenant `findById` isolation depends on the

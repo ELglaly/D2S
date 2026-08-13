@@ -24,6 +24,8 @@
 | integrations   | WhatsApp / external adapters                      |
 | attendance     | Attendance records, reports                       |
 | homework       | Homework items, recipients, reminders              |
+| attachments    | Presigned upload/download, MIME sniffing, AV scan  |
+| notifications  | Per-user quiet hours, opt-out, channel preference  |
 | assistant      | AI assistant: conversation, tool-calling, RAG      |
 
 Full system overview, tech stack, dependency direction, and folder-structure
@@ -73,6 +75,13 @@ migration → entity → repo → DTO+mapper → service → controller → test
 - **ON DELETE CASCADE** → all FK refs to `users(id)` / `schools(id)` must cascade
   → `memory/feedback_device_token_fk_cascade.md`
 
+- **Presigned S3 PUT has no size cap** → sign `contentLength`; give `S3Presigner` the
+  client's `endpointOverride` → `memory/feedback_presigned_put_cannot_cap_size.md`
+
+- **A no-op stub that returns "accepted" ends a fallback chain** → stubs for a
+  first-match-wins channel walk must report failure
+  → `memory/feedback_stub_success_ends_fallback_chain.md`
+
 A PostToolUse hook (`tools/hooks/check-known-gotchas.ps1`) advisory-checks
 the first five of these automatically after every Edit/Write and surfaces a
 warning if it spots the pattern — it doesn't block, verify it wasn't a false
@@ -119,6 +128,8 @@ timing, SpotBugs `\n` format-string): `docs/COMMON_MISTAKES.md`.
 - `docs/CHECKLISTS.md` — dev checklist, Definition of Done, code review / PR / release checklists
 - `docs/COMMON_MISTAKES.md` — every gotcha above, expanded, with the fix
 - `docs/adr/` — Architecture Decision Records for the *why* behind tenant isolation, RBAC, RAG, assistant tool architecture, routing style
+- `docs/PLAN_FILE_UPLOAD.md` — attachment pipeline design: why presigned PUT/GET, why the declared content type is never trusted, why AV is off by default but fails prod startup
+- `docs/PLAN_NOTIFICATION_PREFERENCES.md` — notification preferences: why attendance is non-mutable, why quiet hours and opt-out live in two tables, why the fan-out services resolve rather than the dispatcher
 - `docs/PORTABLE_ENGINEERING_LESSONS.md` — general Spring/JPA/Liquibase lessons from outside this project; verify against SchoolBridge's code before acting, not verified SchoolBridge incidents
 
 ## Project Skills & Agents

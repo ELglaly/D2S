@@ -47,6 +47,8 @@ Package root: `com.schoolbridge.api`
 | `announcements`          | School/class announcements, targeting, acknowledgement              |
 | `attendance`              | Attendance records, absence alerts, reports                         |
 | `homework`                 | Homework items, recipients, reminders (**current gate**)            |
+| `attachments`               | Presigned S3 upload/download, MIME sniffing, AV scan, retention      |
+| `notifications`             | Per-user quiet hours, per-category opt-out, channel order           |
 | `integrations`               | WhatsApp / push / SMS adapters, RabbitMQ consumers, outbox dispatch  |
 | `assistant`                   | AI assistant: conversation, tool-calling, RAG, permission-gated actions |
 

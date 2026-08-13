@@ -75,6 +75,13 @@ public class HomeworkRecipient extends TenantEntity {
     this.lastError = error == null ? null : truncate(error);
   }
 
+  /** The parent opted out of homework reminders. Terminal; see {@link HomeworkDeliveryStatus}. */
+  public void markSuppressed() {
+    this.deliveryStatus = HomeworkDeliveryStatus.SUPPRESSED;
+    this.deferredUntil = null;
+    this.lastError = null;
+  }
+
   public void acknowledge(Instant when) {
     if (this.acknowledgedAt == null) {
       this.acknowledgedAt = when;

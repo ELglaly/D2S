@@ -38,6 +38,10 @@ public interface HomeworkItemRepository extends JpaRepository<HomeworkItem, UUID
       @Param("dueDateTo") LocalDate dueDateTo,
       Pageable pageable);
 
+  /** Items referencing this attachment. Blocks deleting an attachment that is still in use. */
+  @Query("select count(h) from HomeworkItem h where h.attachmentKey = :attachmentKey")
+  long countReferencingAttachment(@Param("attachmentKey") String attachmentKey);
+
   /** Teacher own-history query — items they authored, newest first. */
   @Query("select h from HomeworkItem h where h.teacherId = :teacherId order by h.createdAt desc")
   Page<HomeworkItem> findByTeacherId(@Param("teacherId") UUID teacherId, Pageable pageable);

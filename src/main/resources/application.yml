@@ -161,6 +161,50 @@ schoolbridge:
       # Set to true in prod and supply GOOGLE_APPLICATION_CREDENTIALS or credentials-file.
       enabled: ${PUSH_FCM_ENABLED:false}
       credentials-file: ${GOOGLE_APPLICATION_CREDENTIALS:}
+  storage:
+    # Attachment object store. S3-compatible: MinIO locally (see docker-compose.yml), S3 or R2 in
+    # production, one endpoint override apart. User bytes never pass through this API — uploads are
+    # presigned PUT and downloads are presigned GET, so a stored-XSS or sniffing bug in a
+    # user-supplied file cannot execute in the API's security origin. docs/PLAN_FILE_UPLOAD.md.
+    # access-key / secret-key are env-only with NO default, like the crypto keys: a default here
+    # would let a profile that forgot to override it start against the wrong bucket.
+    endpoint: ${STORAGE_ENDPOINT:}
+    region: ${STORAGE_REGION:us-east-1}
+    bucket: ${STORAGE_BUCKET:schoolbridge-attachments}
+    access-key: ${STORAGE_ACCESS_KEY:}
+    secret-key: ${STORAGE_SECRET_KEY:}
+    # MinIO on a bare host has no wildcard DNS, so the virtual-host form does not resolve.
+    path-style-access: ${STORAGE_PATH_STYLE:true}
+    max-upload-bytes: ${STORAGE_MAX_UPLOAD_BYTES:10485760}
+    upload-url-ttl: 10m
+    # A download URL is a bearer credential for a student's photo and survives being pasted into a
+    # chat; it should expire before it can be usefully shared.
+    download-url-ttl: 5m
+    # Checked against the type SNIFFED from the stored bytes. The client's declared Content-Type
+    # only has to agree with it — it is never the thing that is trusted.
+    allowed-content-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+      - application/pdf
+    sniff-bytes: 4096
+    av:
+      # ClamAV over the clamd INSTREAM protocol. OFF by default so local dev and `mvn verify` do not
+      # need the image and its signature-database startup. AvStartupValidator refuses to boot the
+      # prod profile with this off — a security control that silently does nothing is worse than one
+      # that is absent, because it is believed.
+      enabled: ${STORAGE_AV_ENABLED:false}
+      host: ${STORAGE_AV_HOST:localhost}
+      port: ${STORAGE_AV_PORT:3310}
+      timeout: 30s
+    sweeper:
+      # Deletes attachments abandoned mid-upload (a URL was issued and never used) and objects past
+      # retention. Off in the default test profile, like the other sweepers.
+      enabled: ${STORAGE_SWEEPER_ENABLED:true}
+      cron: "0 15 3 * * *"
+      abandoned-after: 24h
+      retention: 365d
+      batch-size: 200
   homework:
     sweeper:
       # Fires reminders for PUBLISHED items due within horizon-days when school-local time is

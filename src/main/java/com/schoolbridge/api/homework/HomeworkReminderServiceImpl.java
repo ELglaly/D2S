@@ -1,23 +1,29 @@
 package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.announcements.enums.Language;
-import com.schoolbridge.api.attendance.QuietHoursCalculator;
 import com.schoolbridge.api.identity.User;
 import com.schoolbridge.api.identity.UserRepository;
 import com.schoolbridge.api.integrations.DispatchRequest;
 import com.schoolbridge.api.integrations.DispatchResult;
+import com.schoolbridge.api.integrations.NotificationChannel;
 import com.schoolbridge.api.integrations.NotificationDispatcher;
+import com.schoolbridge.api.integrations.NotificationTarget;
+import com.schoolbridge.api.integrations.UserDispatchRequest;
 import com.schoolbridge.api.integrations.whatsapp.TemplateParam;
 import com.schoolbridge.api.integrations.whatsapp.WhatsAppProperties;
+import com.schoolbridge.api.notifications.NotificationCategory;
+import com.schoolbridge.api.notifications.NotificationDecision;
+import com.schoolbridge.api.notifications.NotificationPreferenceService;
 import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
 import com.schoolbridge.api.tenant.SchoolSettings;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>{@link HomeworkItem#markReminderSent} is stamped immediately <em>before</em> the
  *       per-recipient loop so that a concurrent sweeper tick cannot re-enter the same item while
  *       dispatch is in progress.
- *   <li>Quiet-hours are controlled by the same {@link SchoolSettings#isAlertsRespectQuietHours()}
- *       flag as attendance alerts — one knob per school.
+ *   <li>Quiet hours and opt-out are decided <em>per parent</em> by {@link
+ *       NotificationPreferenceService}, not by the school-wide flag. A parent who never touched
+ *       their preferences still gets the school's behaviour, because that flag is what the resolver
+ *       falls back to — so this is a widening, not a change, for existing schools.
  * </ul>
  */
 @Service
@@ -50,6 +58,7 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
   private final SchoolRepository schools;
   private final UserRepository users;
   private final NotificationDispatcher dispatcher;
+  private final NotificationPreferenceService preferences;
   private final WhatsAppProperties whatsAppProperties;
   private final MessageSource messageSource;
   private final MeterRegistry meterRegistry;
@@ -60,6 +69,7 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
       SchoolRepository schools,
       UserRepository users,
       NotificationDispatcher dispatcher,
+      NotificationPreferenceService preferences,
       WhatsAppProperties whatsAppProperties,
       MessageSource messageSource,
       MeterRegistry meterRegistry) {
@@ -68,6 +78,7 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
     this.schools = schools;
     this.users = users;
     this.dispatcher = dispatcher;
+    this.preferences = preferences;
     this.whatsAppProperties = whatsAppProperties;
     this.messageSource = messageSource;
     this.meterRegistry = meterRegistry;
@@ -91,17 +102,7 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
       return;
     }
     SchoolSettings settings = school.getSettings();
-    ZoneId zone = ZoneId.of(school.getTimezone());
     Instant now = Instant.now();
-    boolean quietHoursApply =
-        settings.isAlertsRespectQuietHours()
-            && QuietHoursCalculator.isInQuietWindow(
-                now, zone, settings.getQuietHoursStart(), settings.getQuietHoursEnd());
-    Instant deferredUntil =
-        quietHoursApply
-            ? QuietHoursCalculator.nextEndOfWindow(
-                now, zone, settings.getQuietHoursStart(), settings.getQuietHoursEnd())
-            : null;
 
     // Stamp before the loop so a concurrent sweep tick cannot re-enter this item.
     item.markReminderSent(now);
@@ -113,11 +114,14 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
     List<HomeworkRecipient> recipientList = recipients.findAllByHomeworkId(homeworkId);
     int sent = 0;
     int deferred = 0;
+    int suppressed = 0;
     int skipped = 0;
 
     for (HomeworkRecipient row : recipientList) {
       HomeworkDeliveryStatus status = row.getDeliveryStatus();
-      if (status == HomeworkDeliveryStatus.SENT || status == HomeworkDeliveryStatus.FAILED) {
+      if (status == HomeworkDeliveryStatus.SENT
+          || status == HomeworkDeliveryStatus.FAILED
+          || status == HomeworkDeliveryStatus.SUPPRESSED) {
         skipped++;
         continue;
       }
@@ -125,12 +129,23 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
         deferred++;
         continue;
       }
-      if (quietHoursApply) {
-        row.markDeferred(deferredUntil);
+
+      NotificationDecision decision =
+          preferences.resolve(
+              item.getSchoolId(), row.getParentUserId(), NotificationCategory.HOMEWORK, now);
+      if (decision.suppressed()) {
+        row.markSuppressed();
+        suppressed++;
+        continue;
+      }
+      if (decision.deferred()) {
+        row.markDeferred(decision.deferUntil());
         deferred++;
         continue;
       }
-      dispatchOne(row, item.getSubject(), dueDateText, templateName, language);
+
+      dispatchOne(
+          row, item, item.getSubject(), dueDateText, templateName, language, decision.channels());
       if (row.getDeliveryStatus() == HomeworkDeliveryStatus.SENT) {
         sent++;
       }
@@ -142,14 +157,17 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
             "schoolId",
             item.getSchoolId().toString(),
             "status",
-            quietHoursApply && deferred > 0 ? "deferred" : "ok")
+            deferred > 0 ? "deferred" : "ok")
         .increment();
+    countCategory("notification.deferred", deferred);
+    countCategory("notification.suppressed", suppressed);
 
     log.info(
-        "homework_reminder_dispatched homeworkId={} sent={} deferred={} skipped={}",
+        "homework_reminder_dispatched homeworkId={} sent={} deferred={} suppressed={} skipped={}",
         homeworkId,
         sent,
         deferred,
+        suppressed,
         skipped);
   }
 
@@ -174,13 +192,25 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
             ? toDispatchLanguage(school.getSettings().getDefaultLanguage())
             : Language.EN;
 
+    // Re-resolved rather than reused from the deferral: a parent who opted out during the hold has
+    // expressed a newer intent than the one that put the row here.
+    NotificationDecision decision =
+        preferences.resolve(
+            row.getSchoolId(), row.getParentUserId(), NotificationCategory.HOMEWORK, Instant.now());
+    if (decision.suppressed()) {
+      row.markSuppressed();
+      return;
+    }
+
     row.releaseFromDeferral();
     dispatchOne(
         row,
+        item,
         item.getSubject(),
         DATE_FORMAT.format(item.getDueDate()),
         whatsAppProperties.getTemplate().getHomeworkReminderName(),
-        language);
+        language,
+        decision.channels());
 
     log.info(
         "homework_reminder_deferred_released recipientId={} status={}",
@@ -190,30 +220,40 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
 
   private void dispatchOne(
       HomeworkRecipient row,
+      HomeworkItem item,
       String subject,
       String dueDateText,
       String templateName,
-      Language language) {
+      Language language,
+      List<NotificationChannel> channels) {
     User parent = users.findById(row.getParentUserId()).orElse(null);
     if (parent == null) {
       row.markFailed("parent_user_missing");
       return;
     }
-    if (parent.getPhone() == null || parent.getPhone().isBlank()) {
-      row.markFailed("parent_phone_missing");
-      return;
-    }
 
     String smsBody = renderSmsBody(language, subject, dueDateText);
-    DispatchRequest request =
+    DispatchRequest content =
         new DispatchRequest(
             parent.getPhone(),
             language,
             templateName,
             List.of(TemplateParam.of(subject), TemplateParam.of(dueDateText)),
             smsBody);
+    // HashMap, not Map.of — this payload grows deep-link fields that are routinely null.
+    Map<String, String> pushData = new HashMap<>();
+    pushData.put("type", "homework");
+    pushData.put("homeworkId", item.getId().toString());
+
+    UserDispatchRequest request =
+        new UserDispatchRequest(
+            new NotificationTarget(row.getSchoolId(), row.getParentUserId(), parent.getPhone()),
+            content,
+            pushTitle(language),
+            smsBody,
+            pushData);
     try {
-      DispatchResult result = dispatcher.dispatch(request);
+      DispatchResult result = dispatcher.dispatch(request, channels);
       if (result.accepted() && result.messageId() != null) {
         row.markSent(result.messageId());
       } else {
@@ -229,12 +269,29 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
   }
 
   private String renderSmsBody(Language language, String subject, String dueDateText) {
-    Locale locale = language == Language.AR ? Locale.of("ar") : Locale.ENGLISH;
+    Locale locale = localeOf(language);
     return messageSource.getMessage(
         "notification.whatsapp.template.homework_reminder",
         new Object[] {subject, dueDateText},
         "Homework: " + subject + ". Due " + dueDateText + ".",
         locale);
+  }
+
+  private String pushTitle(Language language) {
+    return messageSource.getMessage(
+        "notification.push.homework.title", null, "Homework reminder", localeOf(language));
+  }
+
+  private void countCategory(String metric, int amount) {
+    if (amount > 0) {
+      meterRegistry
+          .counter(metric, "category", NotificationCategory.HOMEWORK.name())
+          .increment(amount);
+    }
+  }
+
+  private static Locale localeOf(Language language) {
+    return language == Language.AR ? Locale.of("ar") : Locale.ENGLISH;
   }
 
   private static Language toDispatchLanguage(com.schoolbridge.api.tenant.Language source) {

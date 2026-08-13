@@ -25,6 +25,10 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, UUID
   @Query("select a from Announcement a where a.id = :id")
   Optional<Announcement> findById(@Param("id") UUID id);
 
+  /** Announcements referencing this attachment. Blocks deleting one that is still in use. */
+  @Query("select count(a) from Announcement a where a.attachmentKey = :attachmentKey")
+  long countReferencingAttachment(@Param("attachmentKey") String attachmentKey);
+
   Page<Announcement> findAll(Pageable pageable);
 
   Page<Announcement> findAllByStatus(AnnouncementStatus status, Pageable pageable);

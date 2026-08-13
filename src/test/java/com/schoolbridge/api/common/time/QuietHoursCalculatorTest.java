@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.common.time;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

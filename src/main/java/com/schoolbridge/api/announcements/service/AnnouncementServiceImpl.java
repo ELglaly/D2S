@@ -8,6 +8,7 @@ import com.schoolbridge.api.announcements.dto.CreateAnnouncementRequest;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
 import com.schoolbridge.api.announcements.repository.AnnouncementRepository;
+import com.schoolbridge.api.attachments.AttachmentService;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.common.audit.AuditService;
@@ -41,6 +42,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
   private final AnnouncementsMapper mapper;
   private final OutboxEventRecorder outbox;
   private final AuditService auditService;
+  private final AttachmentService attachments;
 
   public AnnouncementServiceImpl(
       AnnouncementRepository announcements,
@@ -48,13 +50,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
       ParentStudentLinkRepository parentLinks,
       AnnouncementsMapper mapper,
       OutboxEventRecorder outbox,
-      AuditService auditService) {
+      AuditService auditService,
+      AttachmentService attachments) {
     this.announcements = announcements;
     this.recipients = recipients;
     this.parentLinks = parentLinks;
     this.mapper = mapper;
     this.outbox = outbox;
     this.auditService = auditService;
+    this.attachments = attachments;
   }
 
   @Override
@@ -62,6 +66,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
   public AnnouncementResponse create(
       UUID schoolId, UUID senderId, CreateAnnouncementRequest request) {
     String scopeValue = validateAndExtractScopeValue(request);
+    // attachmentKey is an attachment id, not a free string: it must exist in this school and have
+    // passed inspection before it can go out to parents.
+    attachments.requireUsableReference(schoolId, request.attachmentKey());
     AnnouncementStatus initialStatus =
         request.scheduledFor() != null ? AnnouncementStatus.SCHEDULED : AnnouncementStatus.SENT;
 

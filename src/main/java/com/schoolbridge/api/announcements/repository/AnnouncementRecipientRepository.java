@@ -1,6 +1,7 @@
 package com.schoolbridge.api.announcements.repository;
 
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +51,34 @@ public interface AnnouncementRecipientRepository
       UUID announcementId, UUID parentUserId);
 
   boolean existsByAnnouncementIdAndParentUserId(UUID announcementId, UUID parentUserId);
+
+  /**
+   * True when the parent is a recipient of some announcement carrying this attachment. Backs the
+   * download authorization check — the attachment reference lives on the announcement, not on the
+   * recipient row, so this joins rather than deriving.
+   */
+  @Query(
+      "select count(r) > 0 from AnnouncementRecipient r, Announcement a "
+          + "where r.announcementId = a.id "
+          + "  and r.parentUserId = :parentUserId "
+          + "  and a.attachmentKey = :attachmentKey")
+  boolean existsForParentAndAttachment(
+      @Param("parentUserId") UUID parentUserId, @Param("attachmentKey") String attachmentKey);
+
+  /**
+   * Deferred recipients whose quiet-hours hold has expired, across every school. Released by {@code
+   * AnnouncementDeferralSweeper}, which runs without a bound {@code TenantContext} and re-binds the
+   * tenant per row — the same shape as {@code AttendanceAlertRecipientRepository}'s equivalent.
+   *
+   * <p>The {@code messageId is null} guard is what makes a redelivery harmless: a row that already
+   * reached a provider cannot be picked up again by the release scan.
+   */
+  @Query(
+      "select r from AnnouncementRecipient r "
+          + "where r.deliveryStatus = com.schoolbridge.api.announcements.enums.DeliveryStatus.DEFERRED "
+          + "  and r.deferredUntil <= :now "
+          + "  and r.messageId is null")
+  List<AnnouncementRecipient> findDeferredReadyToDispatch(@Param("now") Instant now);
 
   /**
    * Unacknowledged recipient rows for a parent, newest first. Tenant-scoped via the active

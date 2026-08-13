@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.common.time;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -7,18 +7,21 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
- * Pure helpers for the per-school quiet-hours window. Handles both same-day windows ({@code 13:00 →
- * 15:00}) and the more common wrap-around windows ({@code 21:00 → 07:00}). All decisions are made
- * in the school-local timezone so DST transitions and Egypt's UTC+2/+3 swaps are correct out of the
- * box.
+ * Pure helpers for a quiet-hours window. Handles both same-day windows ({@code 13:00 → 15:00}) and
+ * the more common wrap-around windows ({@code 21:00 → 07:00}). All decisions are made in the
+ * school-local timezone so DST transitions and Egypt's UTC+2/+3 swaps are correct out of the box.
  *
  * <p>A zero-length window ({@code start == end}) is treated as "never in window".
+ *
+ * <p>Lives in {@code common} rather than {@code attendance} (where it was written for M8) because
+ * three modules now evaluate the same window: attendance alerts, homework reminders, and the
+ * per-user preferences resolver.
  */
 public final class QuietHoursCalculator {
 
   private QuietHoursCalculator() {}
 
-  /** Returns true if {@code now} falls inside the school's quiet window. */
+  /** Returns true if {@code now} falls inside the quiet window. */
   public static boolean isInQuietWindow(Instant now, ZoneId zone, LocalTime start, LocalTime end) {
     if (start.equals(end)) {
       return false;
