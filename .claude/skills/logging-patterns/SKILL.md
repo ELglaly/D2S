@@ -1,81 +1,250 @@
 ---
 name: logging-patterns
-description: SLF4J and structured-logging conventions already wired in SchoolBridge (logback-spring.xml, MDC keys, logstash JSON in prod). Use when adding logging, debugging via logs, or touching logback-spring.xml.
+description: Java logging best practices with SLF4J, structured logging (JSON), and MDC for request tracing. Includes AI-friendly log formats for Claude Code debugging. Use when user asks about logging, debugging application flow, or analyzing logs.
 ---
 
-# Logging Patterns (SchoolBridge)
+# Logging Patterns Skill
 
-The setup already exists — this skill is about using it correctly, not
-setting it up from scratch.
+Effective logging for Java applications with focus on structured, AI-parsable formats.
 
-## What's already configured (`src/main/resources/logback-spring.xml`)
+## When to Use
+- User says "add logging" / "improve logs" / "debug this"
+- Analyzing application flow from logs
+- Setting up structured logging (JSON)
+- Request tracing with correlation IDs
+- AI/Claude Code needs to analyze application behavior
 
-- **`local`/`test` profiles**: human-readable console pattern —
-  `%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{spanId:-}] [school=%X{schoolId:-} user=%X{userId:-}] %logger{36} - %msg%n`
-- **`prod` profile**: `LogstashEncoder` (JSON), with MDC keys `traceId`,
-  `spanId`, `schoolId`, `userId` included, plus a static `service` field.
-- **`RequestIdFilter`** (`common/web`) binds a `requestId` MDC key for the
-  duration of each request (from an inbound header or a fresh UUID), and
-  echoes it back as a response header.
+---
 
-  > **Known gap**: `requestId` is bound to MDC but is *not* in the prod
-  > `LogstashEncoder`'s `includeMdcKeyName` list, so it currently doesn't
-  > appear in production JSON logs even though it's set. Worth fixing if
-  > you're touching `logback-spring.xml` for something else — not fixing
-  > proactively as a drive-by.
-- Tracing is via Micrometer + OpenTelemetry (`traceId`/`spanId` come from
-  there, not manually set).
+## AI-Friendly Logging
 
-## SLF4J usage
+> **Key insight:** JSON logs are better for AI analysis - faster parsing, fewer tokens, direct field access.
 
-```java
-private static final Logger log = LoggerFactory.getLogger(HomeworkServiceImpl.class);
+### Why JSON for AI/Claude Code?
+
+```
+# Text format - AI must "interpret" the string
+2026-01-29 10:15:30 INFO OrderService - Order 12345 created for user-789, total: 99.99
+
+# JSON format - AI extracts fields directly
+{"timestamp":"2026-01-29T10:15:30Z","level":"INFO","orderId":12345,"userId":"user-789","total":99.99}
 ```
 
-Always parameterized, never concatenated — concatenation runs even when the
-log level is disabled:
+| Aspect | Text | JSON |
+|--------|------|------|
+| Parsing | Regex/interpretation | Direct field access |
+| Token usage | Higher (repeated patterns) | Lower (structured) |
+| Error extraction | Parse stack trace text | `exception` field |
+| Filtering | grep patterns | `jq` queries |
 
-```java
-// GOOD
-log.debug("Publishing homework {} for class {}", homeworkId, classId);
+### Recommended Setup for AI-Assisted Development
 
-// BAD — always builds the string
-log.debug("Publishing homework " + homeworkId + " for class " + classId);
+```yaml
+# application.yml - JSON by default
+logging:
+  structured:
+    format:
+      console: logstash  # Spring Boot 3.4+
+
+# When YOU need to read logs manually:
+# Option 1: Use jq
+# tail -f app.log | jq .
+
+# Option 2: Switch profile temporarily
+# java -jar app.jar --spring.profiles.active=human-logs
 ```
 
-## What never goes in a log line
+### Log Format Optimized for AI Analysis
 
-- Decrypted PII (anything behind `AesGcmAttributeConverter`) — log the
-  entity id, never the plaintext field.
-- JWTs, refresh tokens, OTPs, WhatsApp/webhook secrets.
-- Full request/response bodies for endpoints carrying the above.
+```json
+{
+  "timestamp": "2026-01-29T10:15:30.123Z",
+  "level": "INFO",
+  "logger": "com.example.OrderService",
+  "message": "Order created",
+  "requestId": "req-abc123",
+  "traceId": "trace-xyz",
+  "orderId": 12345,
+  "userId": "user-789",
+  "duration_ms": 45,
+  "step": "payment_completed"
+}
+```
 
-This is stricter than "don't log secrets" generically — SchoolBridge
-specifically encrypts certain PII at rest (`common/crypto`), and logging the
-decrypted value defeats that encryption for anyone with log access.
+**Key fields for AI debugging:**
+- `requestId` - group all logs from same request
+- `step` - track progress through flow
+- `duration_ms` - identify slow operations
+- `level` - quick filter for errors
 
-## MDC in new code
+### Reading Logs with AI/Claude Code
 
-Don't hand-roll new MDC keys for things `RequestIdFilter`/tenant context
-already provide (`requestId`, `schoolId`, `userId`, `traceId`, `spanId`).
-For a genuinely new cross-cutting field (e.g. a batch-job run id in
-`HomeworkReminderSweeper`), bind it the same way — `MDC.put` before the
-unit of work, `MDC.remove` in a `finally`, and add it to
-`logback-spring.xml`'s prod `includeMdcKeyName` list in the same change or
-it silently won't reach the JSON output (see the `requestId` gap above).
-
-## Reading structured logs
-
-In prod (JSON), pipe through `jq` rather than grep:
+When asking AI to analyze logs:
 
 ```bash
-# Errors only
-cat app.log | jq 'select(.level == "ERROR")'
+# Get recent errors
+cat app.log | jq 'select(.level == "ERROR")' | tail -20
 
-# Follow one request end-to-end
-cat app.log | jq --arg id "$REQUEST_ID" 'select(.requestId == $id)'
+# Follow specific request
+cat app.log | jq 'select(.requestId == "req-abc123")'
+
+# Find slow operations
+cat app.log | jq 'select(.duration_ms > 1000)'
 ```
 
-Locally (`local`/`test` profile), the human-readable pattern already prints
-`traceId`/`spanId`/`schoolId`/`userId` inline — no `jq` needed for
-day-to-day debugging.
+AI can then:
+1. Parse JSON directly (no guessing)
+2. Follow request flow via requestId
+3. Identify exactly where errors occurred
+4. Measure timing between steps
+
+---
+
+## Quick Setup (Spring Boot 3.4+)
+
+### Native Structured Logging
+
+Spring Boot 3.4+ has built-in support - no extra dependencies!
+
+```yaml
+# application.yml
+logging:
+  structured:
+    format:
+      console: logstash    # or "ecs" for Elastic Common Schema
+
+# Supported formats: logstash, ecs, gelf
+```
+
+### Profile-Based Switching
+
+```yaml
+# application.yml (default - JSON for AI/prod)
+spring:
+  profiles:
+    default: json-logs
+
+---
+spring:
+  config:
+    activate:
+      on-profile: json-logs
+logging:
+  structured:
+    format:
+      console: logstash
+
+---
+spring:
+  config:
+    activate:
+      on-profile: human-logs
+# No structured format = human-readable default
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+```
+
+**Usage:**
+```bash
+# Default: JSON (for AI, CI/CD, production)
+./mvnw spring-boot:run
+
+# Human-readable when needed
+./mvnw spring-boot:run -Dspring.profiles.active=human-logs
+```
+
+---
+
+## Setup for Spring Boot < 3.4
+
+### Logstash Logback Encoder
+
+**pom.xml:**
+```xml
+<dependency>
+    <groupId>net.logstash.logback</groupId>
+    <artifactId>logstash-logback-encoder</artifactId>
+    <version>7.4</version>
+</dependency>
+```
+
+**logback-spring.xml:**
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- JSON (default) -->
+    <springProfile name="!human-logs">
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdcKeyName>requestId</includeMdcKeyName>
+                <includeMdcKeyName>userId</includeMdcKeyName>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Human-readable (optional) -->
+    <springProfile name="human-logs">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+</configuration>
+```
+
+### Adding Custom Fields (Logstash Encoder)
+
+```java
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
+// Fields appear as separate JSON keys
+log.info("Order created",
+    kv("orderId", order.getId()),
+    kv("userId", user.getId()),
+    kv("total", order.getTotal()),
+    kv("step", "order_created")
+);
+
+// Output:
+// {"message":"Order created","orderId":123,"userId":"u-456","total":99.99,"step":"order_created"}
+```
+
+---
+
+## SLF4J Basics
+
+### Logger Declaration
+
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Service
+public class OrderService {
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
+    // use `log` directly for logging
+}
+```
+
+### Parameterized Logging
+
+```java
+// ✅ GOOD: Evaluated only if level enabled
+log.debug("Processing order {} for user {}", orderId, userId);
+
+// ❌ BAD: Always concatenates
+log.debug("Processing order " + orderId + " for user " + userId);
+
+// ✅ For expensive operations
+if (log.isDebugEnabled()) {

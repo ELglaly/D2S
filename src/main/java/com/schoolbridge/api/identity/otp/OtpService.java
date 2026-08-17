@@ -2,6 +2,7 @@ package com.schoolbridge.api.identity.otp;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import com.schoolbridge.api.common.error.RateLimitException;
+import groovy.util.logging.Slf4j;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Service;
  * userId|schoolId|codeHash|attempts}; tokens as {@code userId|schoolId}. Constants chosen per the
  * SRS: 6-digit OTP, 5-minute TTL, 5 attempts, parent token 24h sliding TTL.
  */
+@lombok.extern.slf4j.Slf4j
 @Service
+@Slf4j
 public class OtpService {
 
   private static final String TICKET_PREFIX = "otp:ticket:";
@@ -39,6 +42,7 @@ public class OtpService {
     String ticketId = UUID.randomUUID().toString();
     String value = userId + "|" + schoolId + "|" + sha256(code) + "|0";
     redis.opsForValue().set(TICKET_PREFIX + ticketId, value, OTP_TTL);
+    log.info("code: {}", code);
     return new IssuedOtp(ticketId, code);
   }
 

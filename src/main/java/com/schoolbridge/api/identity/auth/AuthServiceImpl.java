@@ -136,7 +136,8 @@ public class AuthServiceImpl implements AuthService {
     claims.put("role", "SUPER_ADMIN");
     String access = jwtService.issueAccess(admin.getId().toString(), claims);
     String refresh = persistRefresh(SubjectKind.PLATFORM_ADMIN, admin.getId());
-    return AuthResponse.bearer(access, refresh, Instant.now().plus(jwtService.accessTtl()));
+    return AuthResponse.bearer(
+        access, refresh, Instant.now().plus(jwtService.accessTtl()), "SUPER_ADMIN");
   }
 
   private AuthResponse issueForUser(User user) {
@@ -146,7 +147,8 @@ public class AuthServiceImpl implements AuthService {
     claims.put("schoolId", user.getSchoolId().toString());
     String access = jwtService.issueAccess(user.getId().toString(), claims);
     String refresh = persistRefresh(SubjectKind.USER, user.getId());
-    return AuthResponse.bearer(access, refresh, Instant.now().plus(jwtService.accessTtl()));
+    return AuthResponse.bearer(
+        access, refresh, Instant.now().plus(jwtService.accessTtl()), user.getRole().name());
   }
 
   private String persistRefresh(SubjectKind kind, UUID subjectId) {

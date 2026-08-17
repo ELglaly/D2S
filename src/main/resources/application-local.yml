@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/schoolbridge
+    url: jdbc:postgresql://localhost:5432/schoolbridge
     username: postgres
     password: wasla
   data:
@@ -48,6 +48,7 @@ schoolbridge:
     # Create the bucket once: docker compose exec minio mc mb /data/schoolbridge-attachments
     endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
     access-key: ${STORAGE_ACCESS_KEY:schoolbridge}
+    bucket: ${STORAGE_BUCKET:schoolbridge-attachments}
     secret-key: ${STORAGE_SECRET_KEY:schoolbridge123}
     av:
       # No ClamAV in docker-compose — uploads are scanned as SKIPPED locally. Turn this on and point

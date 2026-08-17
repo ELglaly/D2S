@@ -1,18 +1,4 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(mvn -B -ntp:*)",
-      "Bash(mvn spotless:apply)",
-      "Bash(git status:*)",
-      "Bash(git log:*)",
-      "Bash(git add:*)",
-      "Bash(git diff:*)"
-    ],
-    "deny": [
-      "Bash(git push --force:*)",
-      "Bash(git reset --hard:*)"
-    ]
-  },
   "hooks": {
     "PostToolUse": [
       {
@@ -20,13 +6,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NonInteractive -Command \"cd E:\\D2L; mvn -q spotless:apply\"",
-            "description": "Auto-apply Spotless formatting after every file write/edit"
+            "command": "powershell -NonInteractive -Command \"cd E:\\D2L; mvn -q spotless:apply\""
           },
           {
             "type": "command",
-            "command": "powershell -NonInteractive -File \"E:\\D2L\\tools\\hooks\\check-known-gotchas.ps1\"",
-            "description": "Advisory check for SchoolBridge's known gotchas (tenant findById, Map.of NPE, colon paths, RestClient factory/baseUrl, auth token trap, ResponseBodyAdvice guards) — non-blocking, surfaces a warning to Claude"
+            "command": "powershell -NonInteractive -File \"E:\\D2L\\tools\\hooks\\check-known-gotchas.ps1\""
           }
         ]
       }

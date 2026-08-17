@@ -72,6 +72,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
             .body("data.accessToken", notNullValue())
             .body("data.refreshToken", notNullValue())
             .body("data.tokenType", equalTo("Bearer"))
+            .body("data.role", equalTo("SUPER_ADMIN"))
             .extract()
             .response();
 
@@ -95,6 +96,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
             .log()
             .ifValidationFails()
             .statusCode(200)
+            .body("data.role", equalTo("TEACHER"))
             .extract()
             .response();
 

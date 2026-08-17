@@ -81,6 +81,18 @@
   }, {
     "name" : "Attendance",
     "description" : "Daily attendance marking and parent-response flow"
+  }, {
+    "name" : "Assistant",
+    "description" : "AI assistant ask/confirm/cancel endpoints. Ships dark — 404s unless schoolbridge.assistant.enabled=true."
+  }, {
+    "name" : "Conversations",
+    "description" : "Persistent assistant chat threads and streamed messages. Ships dark — 404s unless schoolbridge.assistant.enabled=true."
+  }, {
+    "name" : "Assistant Settings",
+    "description" : "Per-school assistant persona management (SCHOOL_ADMIN only). Ships dark — 404s unless schoolbridge.assistant.enabled=true."
+  }, {
+    "name" : "Assistant Knowledge",
+    "description" : "RAG knowledge document ingestion for the assistant (SCHOOL_ADMIN only). Ships dark — 404s unless schoolbridge.assistant.enabled=true."
   } ],
   "paths" : {
     "/api/v1/schools/{id}/settings" : {
@@ -5162,6 +5174,527 @@
           }
         }
       }
+    },
+    "/api/v1/assistant/ask" : {
+      "post" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Ask the assistant",
+        "description" : "Streams the answer as Server-Sent Events instead of the usual ApiResponse envelope — 'delta'/'done' frames on a normal answer, a 'confirmRequired' frame carrying an action-confirmation token when the request resolved to a destructive tool call, or an 'error' frame. Rate-limited per user.",
+        "operationId" : "ask",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "SSE stream opened",
+            "content" : {
+              "text/event-stream" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Validation error"
+          },
+          "401" : {
+            "description" : "Not authenticated"
+          },
+          "429" : {
+            "description" : "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/actions/{token}/confirm" : {
+      "post" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Confirm a pending assistant action",
+        "description" : "Executes the destructive tool call previewed by a prior /ask 'confirmRequired' frame. A typed confirmation phrase is required in the body when the school's destructive-require-typed-confirm setting is on.",
+        "operationId" : "confirm",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmActionRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "EXECUTED, TYPED_CONFIRM_NEEDED, DENIED, or INVALID — see ConfirmResult.status",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmResult"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/actions/{token}/cancel" : {
+      "post" : {
+        "tags" : [ "Assistant" ],
+        "summary" : "Cancel a pending assistant action",
+        "description" : "Discards the pending confirmation token without executing the tool call.",
+        "operationId" : "cancel",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "CANCELLED or INVALID — see ConfirmResult.status",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmResult"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/settings" : {
+      "get" : {
+        "tags" : [ "Assistant Settings" ],
+        "summary" : "Get the school's assistant persona",
+        "description" : "Returns the tenant's editable system-prompt override. usingDefault is true when no override is set — the built-in persona plus security guardrails apply.",
+        "operationId" : "get_11",
+        "responses" : {
+          "200" : {
+            "description" : "Persona returned",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Requires ASSISTANT_SETTINGS_MANAGE",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Assistant Settings" ],
+        "summary" : "Update the school's assistant persona",
+        "description" : "Replaces the tenant's system-prompt override. A null or blank systemPrompt clears the override and reverts to the default persona. Security guardrails are always appended server-side and cannot be edited here.",
+        "operationId" : "update_5",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateSettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Persona updated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Validation error",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Requires ASSISTANT_SETTINGS_MANAGE",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AssistantSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/knowledge" : {
+      "post" : {
+        "tags" : [ "Assistant Knowledge" ],
+        "summary" : "Ingest a knowledge document",
+        "description" : "Adds one document to the tenant's RAG corpus. Chunking and embedding happen synchronously with the placeholder embedder until real Vertex embeddings are wired at deploy time.",
+        "operationId" : "ingest",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/IngestDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Document ingested",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Validation error",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Requires DOCUMENT_MANAGE",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get" : {
+        "tags" : [ "Assistant Knowledge" ],
+        "summary" : "List knowledge documents",
+        "description" : "Returns every ingested document for the tenant (no chunk content, no embeddings).",
+        "operationId" : "list_7",
+        "responses" : {
+          "200" : {
+            "description" : "Document list",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Requires DOCUMENT_MANAGE",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/KnowledgeDocumentResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/knowledge/{id}" : {
+      "delete" : {
+        "tags" : [ "Assistant Knowledge" ],
+        "summary" : "Delete a knowledge document",
+        "operationId" : "delete_10",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "403" : {
+            "description" : "Requires DOCUMENT_MANAGE"
+          },
+          "204" : {
+            "description" : "Deleted"
+          },
+          "401" : {
+            "description" : "Not authenticated"
+          },
+          "404" : {
+            "description" : "Document not found"
+          }
+        }
+      }
+    },
+    "/api/v1/conversations" : {
+      "post" : {
+        "tags" : [ "Conversations" ],
+        "summary" : "Start a conversation",
+        "description" : "Creates a new chat thread owned by the caller. title is optional.",
+        "operationId" : "create_10",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateConversationRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Conversation created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Validation error",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get" : {
+        "tags" : [ "Conversations" ],
+        "summary" : "List own conversations",
+        "description" : "Returns every conversation owned by the caller within their tenant.",
+        "operationId" : "list_8",
+        "responses" : {
+          "200" : {
+            "description" : "Conversation list",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConversationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Not authenticated",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ConversationResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{id}" : {
+      "delete" : {
+        "tags" : [ "Conversations" ],
+        "summary" : "Delete a conversation",
+        "description" : "Deletes a conversation owned by the caller, including its stored messages.",
+        "operationId" : "delete_11",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Deleted"
+          },
+          "401" : {
+            "description" : "Not authenticated"
+          },
+          "404" : {
+            "description" : "Conversation not found, or not owned by the caller"
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{id}/messages" : {
+      "post" : {
+        "tags" : [ "Conversations" ],
+        "summary" : "Send a message in a conversation",
+        "description" : "Streams the assistant's reply as Server-Sent Events in the same chunk shape as POST /assistant/ask. Rate-limited per user; closing the connection cancels the in-flight LLM call.",
+        "operationId" : "send",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SendMessageRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "SSE stream opened",
+            "content" : {
+              "text/event-stream" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "422" : {
+            "description" : "Validation error"
+          },
+          "401" : {
+            "description" : "Not authenticated"
+          },
+          "404" : {
+            "description" : "Conversation not found, or not owned by the caller"
+          },
+          "429" : {
+            "description" : "Rate limit exceeded"
+          }
+        }
+      }
     }
   },
   "components" : {
@@ -7305,6 +7838,165 @@
           }
         },
         "description" : "RFC 7807 ProblemDetail — returned for all 4xx/5xx responses"
+      },
+      "AskRequest" : {
+        "required" : [ "question" ],
+        "type" : "object",
+        "properties" : {
+          "question" : {
+            "maxLength" : 500,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "language" : {
+            "maxLength" : 8,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "ConfirmActionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "confirmation" : {
+            "maxLength" : 50,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "ConfirmResult" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "EXECUTED", "CANCELLED", "TYPED_CONFIRM_NEEDED", "DENIED", "INVALID" ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "data" : {
+            "type" : "object"
+          }
+        }
+      },
+      "AssistantSettingsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "systemPrompt" : {
+            "type" : "string"
+          },
+          "usingDefault" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UpdateSettingsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "systemPrompt" : {
+            "maxLength" : 8000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "IngestDocumentRequest" : {
+        "required" : [ "content", "title", "type" ],
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "enum" : [ "KB", "FAQ", "TOOL_DOC", "GUIDE", "BUSINESS_RULE", "UPLOAD" ]
+          },
+          "title" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "lang" : {
+            "maxLength" : 8,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "content" : {
+            "maxLength" : 200000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "KnowledgeDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "KB", "FAQ", "TOOL_DOC", "GUIDE", "BUSINESS_RULE", "UPLOAD" ]
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "lang" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "INDEXED", "FAILED" ]
+          },
+          "chunkCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "CreateConversationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "title" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
+      },
+      "ConversationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "lastMessageAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "SendMessageRequest" : {
+        "required" : [ "content" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "maxLength" : 4000,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        }
       }
     },
     "securitySchemes" : {

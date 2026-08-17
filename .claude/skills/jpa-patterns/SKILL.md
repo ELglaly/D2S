@@ -1,96 +1,200 @@
-  ---
+---
 name: jpa-patterns
-description: JPA/Hibernate patterns and pitfalls (N+1, lazy loading, transactions) grounded in SchoolBridge's actual repository style. Use when diagnosing LazyInitializationException, too-many-queries, or designing a new query.
+description: JPA/Hibernate patterns and common pitfalls (N+1, lazy loading, transactions, queries). Use when user has JPA performance issues, LazyInitializationException, or asks about entity relationships and fetching strategies.
 ---
 
-# JPA Patterns (SchoolBridge)
+# JPA Patterns Skill
 
-SchoolBridge's house style is **named-parameter `@Query` (JPQL) for anything
-beyond a trivial derived-name finder** — see `HomeworkItemRepository` as the
-reference. This skill covers the pitfalls that style avoids by construction,
-plus the ones it doesn't.
+Best practices and common pitfalls for JPA/Hibernate in Spring applications.
 
-## N+1 queries
+## When to Use
+- User mentions "N+1 problem" / "too many queries"
+- LazyInitializationException errors
+- Questions about fetch strategies (EAGER vs LAZY)
+- Transaction management issues
+- Entity relationship design
+- Query optimization
 
-The #1 JPA performance killer: `findAll()` then accessing a lazy
-`@OneToMany`/`@ManyToOne` per row triggers one query per row.
+---
+
+## Quick Reference: Common Problems
+
+| Problem | Symptom | Solution |
+|---------|---------|----------|
+| N+1 queries | Many SELECT statements | JOIN FETCH, @EntityGraph |
+| LazyInitializationException | Error outside transaction | Open Session in View, DTO projection, JOIN FETCH |
+| Slow queries | Performance issues | Pagination, projections, indexes |
+| Dirty checking overhead | Slow updates | Read-only transactions, DTOs |
+| Lost updates | Concurrent modifications | Optimistic locking (@Version) |
+
+---
+
+## N+1 Problem
+
+> The #1 JPA performance killer
+
+### The Problem
 
 ```java
-// BAD: 1 + N queries
-List<HomeworkItem> items = repo.findAll();
-items.forEach(i -> i.getRecipients().size());  // N extra SELECTs
+// ❌ BAD: N+1 queries
+@Entity
+public class Author {
+    @Id private Long id;
+    private String name;
+
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Book> books;
+}
+
+// This innocent code...
+List<Author> authors = authorRepository.findAll();  // 1 query
+for (Author author : authors) {
+    System.out.println(author.getBooks().size());   // N queries!
+}
+// Result: 1 + N queries (if 100 authors = 101 queries)
 ```
 
-Fix with `JOIN FETCH` in the `@Query`, not `@EntityGraph` — stay consistent
-with the codebase's explicit-JPQL style:
+### Solution 1: JOIN FETCH (JPQL)
 
 ```java
-@Query("select h from HomeworkItem h join fetch h.recipients where h.id = :id")
-Optional<HomeworkItem> findByIdWithRecipients(@Param("id") UUID id);
+// ✅ GOOD: Single query with JOIN FETCH
+public interface AuthorRepository extends JpaRepository<Author, Long> {
+
+    @Query("SELECT a FROM Author a JOIN FETCH a.books")
+    List<Author> findAllWithBooks();
+}
+
+// Usage - single query
+List<Author> authors = authorRepository.findAllWithBooks();
 ```
 
-Detect it by enabling SQL logging locally:
+### Solution 2: @EntityGraph
+
+```java
+// ✅ GOOD: EntityGraph for declarative fetching
+public interface AuthorRepository extends JpaRepository<Author, Long> {
+
+    @EntityGraph(attributePaths = {"books"})
+    List<Author> findAll();
+
+    // Or with named graph
+    @EntityGraph(value = "Author.withBooks")
+    List<Author> findAllWithBooks();
+}
+
+// Define named graph on entity
+@Entity
+@NamedEntityGraph(
+    name = "Author.withBooks",
+    attributeNodes = @NamedAttributeNode("books")
+)
+public class Author {
+    // ...
+}
+```
+
+### Solution 3: Batch Fetching
+
+```java
+// ✅ GOOD: Batch fetching (Hibernate-specific)
+@Entity
+public class Author {
+
+    @OneToMany(mappedBy = "author")
+    @BatchSize(size = 25)  // Fetch 25 at a time
+    private List<Book> books;
+}
+
+// Or globally in application.properties
+spring.jpa.properties.hibernate.default_batch_fetch_size=25
+```
+
+### Detecting N+1
 
 ```yaml
+# Enable SQL logging to detect N+1
 spring:
   jpa:
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 ```
 
-## Lazy loading defaults
+---
 
-- `@OneToMany`/`@ManyToMany` default to `LAZY` — leave them.
-- `@ManyToOne`/`@OneToOne` default to `EAGER` — **override to `LAZY`
-  explicitly** unless the association is genuinely always needed with the
-  owning row.
-- Cross-module references in SchoolBridge are stored as raw foreign IDs
-  (`UUID classId`, `UUID teacherId` — see `HomeworkItem`), not JPA
-  associations at all. This sidesteps lazy-loading pitfalls entirely for
-  cross-module data — keep doing this rather than introducing a
-  `@ManyToOne` across module boundaries.
+## Lazy Loading
 
-## `LazyInitializationException`
+### FetchType Basics
 
-Happens when a lazy field is accessed after the transaction (and Hibernate
-session) has closed — typically: service method returns an entity, a mapper
-or controller touches a lazy collection outside `@Transactional`.
+```java
+@Entity
+public class Order {
 
-Fix at the query (`join fetch` the association you need), not by widening
-the transaction boundary into the web layer — SchoolBridge doesn't use
-Open-Session-in-View.
+    // LAZY: Load only when accessed (default for collections)
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<OrderItem> items;
 
-## Transactions
+    // EAGER: Always load immediately (default for @ManyToOne, @OneToOne)
+    @ManyToOne(fetch = FetchType.EAGER)  // ⚠️ Usually bad
+    private Customer customer;
+}
+```
 
-- Service methods are `@Transactional` for writes;
-  `@Transactional(readOnly = true)` for reads that traverse any lazy field —
-  this also lets Hibernate skip dirty-checking on the loaded entities.
-- **`@Transactional` on a method called via `this.method(...)` from another
-  method of the same bean does nothing** — the call bypasses the Spring
-  proxy entirely, silently. No compile error, no startup warning. The tell
-  is a `TransactionRequiredException` or a write that doesn't roll back on
-  failure. Move the method to a separate bean, or use `TransactionTemplate`,
-  if a wrapper method must stay non-transactional while calling a
-  transactional step.
+### Best Practice: Default to LAZY
 
-## Optimistic locking
+```java
+// ✅ GOOD: Always use LAZY, fetch when needed
+@Entity
+public class Order {
 
-For any entity multiple actors can update concurrently (attendance records,
-homework recipient status), consider `@Version` before reaching for
-`@Lock(PESSIMISTIC_WRITE)` — cheaper and sufficient unless the contention is
-a tight per-row race (a batch job settling many rows is the case where a
-pessimistic row lock in the *per-item* transaction, not the driving
-selection query, is correct — see `docs/PORTABLE_ENGINEERING_LESSONS.md`).
+    @ManyToOne(fetch = FetchType.LAZY)  // Override EAGER default
+    private Customer customer;
 
-## Schema validation (`ddl-auto: validate`)
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<OrderItem> items;
+}
+```
 
-Prod runs `ddl-auto: validate` — Hibernate compares Java types to the
-Liquibase-created columns literally. A `String` field must map to
-`varchar`, never `char`/`bpchar`, even for fixed-width values like a hex
-digest — `CHAR(n)` blank-pads on read, which also breaks string-equality
-checks. Get the column type right in the migration; don't paper over a
-mismatch with `columnDefinition` on the entity.
+### LazyInitializationException
+
+```java
+// ❌ BAD: Accessing lazy field outside transaction
+@Service
+public class OrderService {
+
+    public Order getOrder(Long id) {
+        return orderRepository.findById(id).orElseThrow();
+    }
+}
+
+// In controller (no transaction)
+Order order = orderService.getOrder(1L);
+order.getItems().size();  // 💥 LazyInitializationException!
+```
+
+### Solutions for LazyInitializationException
+
+**Solution 1: JOIN FETCH in query**
+```java
+// ✅ Fetch needed associations in query
+@Query("SELECT o FROM Order o JOIN FETCH o.items WHERE o.id = :id")
+Optional<Order> findByIdWithItems(@Param("id") Long id);
+```
+
+**Solution 2: @Transactional on service method**
+```java
+// ✅ Keep transaction open while accessing
+@Service
+public class OrderService {
+
+    @Transactional(readOnly = true)
+    public OrderDTO getOrderWithItems(Long id) {
+        Order order = orderRepository.findById(id).orElseThrow();
+        // Access within transaction
+        int itemCount = order.getItems().size();
