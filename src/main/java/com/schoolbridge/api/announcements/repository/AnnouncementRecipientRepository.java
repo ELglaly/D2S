@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.repository;
+﻿package com.schoolbridge.api.announcements.repository;
 
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
 import java.time.Instant;
@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link AnnouncementRecipient}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL — see {@code UserRepository} for rationale.
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
  */
 public interface AnnouncementRecipientRepository
     extends JpaRepository<AnnouncementRecipient, UUID> {
@@ -30,7 +30,7 @@ public interface AnnouncementRecipientRepository
 
   /**
    * Recipient counts for a whole page of announcements in one grouped query. The list endpoint used
-   * to call {@link #countByAnnouncementId} per row — 20 extra round-trips per page, against the
+   * to call {@link #countByAnnouncementId} per row â€” 20 extra round-trips per page, against the
    * largest table in the schema. Announcements with no recipients are simply absent from the
    * result, so callers must default them to zero.
    */
@@ -42,7 +42,7 @@ public interface AnnouncementRecipientRepository
       @Param("announcementIds") Collection<UUID> announcementIds);
 
   /**
-   * Every recipient row a parent holds for one announcement — one per linked child, since the table
+   * Every recipient row a parent holds for one announcement â€” one per linked child, since the table
    * is keyed {@code (announcement_id, parent_user_id, student_id)}. Acknowledgement must span all
    * of them: a parent with two children in scope sees one announcement and taps acknowledge once,
    * and the earlier {@code findFirst...} variant left the sibling rows unacknowledged forever.
@@ -54,7 +54,7 @@ public interface AnnouncementRecipientRepository
 
   /**
    * True when the parent is a recipient of some announcement carrying this attachment. Backs the
-   * download authorization check — the attachment reference lives on the announcement, not on the
+   * download authorization check â€” the attachment reference lives on the announcement, not on the
    * recipient row, so this joins rather than deriving.
    */
   @Query(
@@ -68,7 +68,7 @@ public interface AnnouncementRecipientRepository
   /**
    * Deferred recipients whose quiet-hours hold has expired, across every school. Released by {@code
    * AnnouncementDeferralSweeper}, which runs without a bound {@code TenantContext} and re-binds the
-   * tenant per row — the same shape as {@code AttendanceAlertRecipientRepository}'s equivalent.
+   * tenant per row â€” the same shape as {@code AttendanceAlertRecipientRepository}'s equivalent.
    *
    * <p>The {@code messageId is null} guard is what makes a redelivery harmless: a row that already
    * reached a provider cannot be picked up again by the release scan.
@@ -92,9 +92,10 @@ public interface AnnouncementRecipientRepository
    * Finder used by the WhatsApp delivery-status webhook. Routed through JPQL so the tenant filter
    * applies when a {@link com.schoolbridge.api.common.tenancy.TenantContext} is bound; when invoked
    * without a tenant (the webhook is unauthenticated and global), the filter stays disabled and the
-   * row is visible across schools — which is the desired behavior, since Meta only echoes statuses
+   * row is visible across schools â€” which is the desired behavior, since Meta only echoes statuses
    * for message ids we previously issued.
    */
   @Query("select r from AnnouncementRecipient r where r.messageId = :messageId")
   Optional<AnnouncementRecipient> findByMessageId(@Param("messageId") String messageId);
 }
+

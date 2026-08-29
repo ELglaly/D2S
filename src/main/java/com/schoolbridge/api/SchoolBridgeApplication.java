@@ -1,4 +1,4 @@
-package com.schoolbridge.api;
+﻿package com.schoolbridge.api;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import com.schoolbridge.api.integrations.whatsapp.WhatsAppProperties;
@@ -15,3 +15,4 @@ public class SchoolBridgeApplication {
     SpringApplication.run(SchoolBridgeApplication.class, args);
   }
 }
+

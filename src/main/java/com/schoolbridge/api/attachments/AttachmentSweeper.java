@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.attachments.storage.ObjectStorage;
 import com.schoolbridge.api.common.tenancy.TenantContext;
@@ -18,7 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <p>Two distinct leaks, one pass:
  *
  * <ul>
- *   <li><b>Abandoned uploads.</b> The API is never told when a client's PUT lands — only the client
+ *   <li><b>Abandoned uploads.</b> The API is never told when a client's PUT lands â€” only the client
  *       calling {@code complete} distinguishes "still uploading" from "gave up". So a row stuck in
  *       {@code PENDING} or {@code UPLOADED} past the abandonment window is unreferenced by
  *       construction, and its object (which may or may not exist) is paid for forever.
@@ -102,3 +102,4 @@ public class AttachmentSweeper {
     return PageRequest.of(0, properties.getSweeper().getBatchSize());
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.outbox;
+﻿package com.schoolbridge.api.common.outbox;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -93,7 +93,7 @@ public class OutboxEvent {
   }
 
   /**
-   * Records a failed delivery and schedules the retry. Exponential backoff (10s, 20s, 40s, …)
+   * Records a failed delivery and schedules the retry. Exponential backoff (10s, 20s, 40s, â€¦)
    * capped at 30 minutes; after {@link #MAX_ATTEMPTS} the row goes {@code DEAD} and stops being
    * claimed, so a poison payload cannot spin the relay forever while still leaving the evidence in
    * place for an operator.
@@ -152,3 +152,4 @@ public class OutboxEvent {
     return lastError;
   }
 }
+

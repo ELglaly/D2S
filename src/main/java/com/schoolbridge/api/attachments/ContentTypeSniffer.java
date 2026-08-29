@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import java.util.Optional;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * and declaring {@code application/pdf} is exactly the upload this exists to catch.
  *
  * <p>Only the allow-listed formats are recognised. Anything unrecognised is rejected rather than
- * passed through, so the list of things that can be stored is closed rather than open — a new
+ * passed through, so the list of things that can be stored is closed rather than open â€” a new
  * format has to be added deliberately.
  */
 @Component
@@ -61,3 +61,4 @@ public class ContentTypeSniffer {
     return true;
   }
 }
+

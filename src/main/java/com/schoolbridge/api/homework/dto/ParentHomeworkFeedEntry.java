@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework.dto;
+﻿package com.schoolbridge.api.homework.dto;
 
 import com.schoolbridge.api.homework.HomeworkDeliveryStatus;
 import com.schoolbridge.api.homework.HomeworkStatus;
@@ -23,3 +23,4 @@ public record ParentHomeworkFeedEntry(
     HomeworkDeliveryStatus deliveryStatus,
     Instant acknowledgedAt,
     Instant createdAt) {}
+

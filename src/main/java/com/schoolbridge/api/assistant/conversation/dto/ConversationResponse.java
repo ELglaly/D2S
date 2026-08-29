@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.conversation.dto;
+﻿package com.schoolbridge.api.assistant.conversation.dto;
 
 import com.schoolbridge.api.assistant.conversation.Conversation;
 import java.time.Instant;
@@ -13,3 +13,4 @@ public record ConversationResponse(
         c.getId(), c.getTitle(), c.getLastMessageAt(), c.getCreatedAt());
   }
 }
+

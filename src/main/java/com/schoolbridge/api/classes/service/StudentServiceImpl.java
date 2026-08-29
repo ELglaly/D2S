@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.service;
+﻿package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.BulkImportResult;
 import com.schoolbridge.api.classes.dto.BulkImportResult.RejectedRow;
@@ -228,3 +228,4 @@ public class StudentServiceImpl implements StudentService {
         .orElseThrow(() -> new NotFoundException("error.student.not_found", id));
   }
 }
+

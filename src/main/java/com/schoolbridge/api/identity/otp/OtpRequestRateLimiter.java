@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.otp;
+﻿package com.schoolbridge.api.identity.otp;
 
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import java.time.Duration;
@@ -12,13 +12,13 @@ import org.springframework.stereotype.Component;
  * <p>{@code OtpService} already caps verify <i>attempts</i>, but nothing capped requests: {@code
  * POST /api/v1/parents/auth/otp} is {@code permitAll} and was unlimited, so a script could drive
  * unbounded WhatsApp template and SMS sends. That is a direct monetary cost per message, degrades
- * the WhatsApp Business account's quality rating, and can get the sending number banned — the
+ * the WhatsApp Business account's quality rating, and can get the sending number banned â€” the
  * damage lands even though no account is ever compromised.
  *
  * <p>Two windows, because one is not enough: a short hourly cap stops a burst, and a daily cap
  * stops a slow drip that would otherwise sit under the hourly limit indefinitely.
  *
- * <p>Keys are the phone's blind-index hash, never the number itself — Redis should not become a
+ * <p>Keys are the phone's blind-index hash, never the number itself â€” Redis should not become a
  * plaintext directory of every parent phone number in the platform.
  */
 @Component
@@ -50,7 +50,7 @@ public class OtpRequestRateLimiter {
   }
 
   /**
-   * Counts a dispatched OTP against both windows. Call this only when a message is actually sent —
+   * Counts a dispatched OTP against both windows. Call this only when a message is actually sent â€”
    * counting unknown numbers too would let an attacker exhaust a real parent's budget by guessing.
    */
   public void recordRequest(String phone) {
@@ -71,3 +71,4 @@ public class OtpRequestRateLimiter {
     }
   }
 }
+

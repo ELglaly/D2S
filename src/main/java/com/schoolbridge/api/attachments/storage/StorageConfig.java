@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments.storage;
+﻿package com.schoolbridge.api.attachments.storage;
 
 import com.schoolbridge.api.attachments.StorageProperties;
 import java.net.URI;
@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
  * S3 client and presigner.
  *
  * <p>Both beans are built eagerly but connect lazily, so a profile with no reachable storage (the
- * default test profile) still starts — the failure surfaces on the first attachment call rather
+ * default test profile) still starts â€” the failure surfaces on the first attachment call rather
  * than at boot, which is the right trade for a subsystem most tests never touch.
  *
  * <p>When no static access key is configured the SDK's default provider chain takes over, so an
@@ -71,3 +71,4 @@ public class StorageConfig {
     return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
   }
 }
+

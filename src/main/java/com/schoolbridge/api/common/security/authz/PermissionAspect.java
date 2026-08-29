@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import com.schoolbridge.api.identity.UserRole;
 import java.lang.reflect.Method;
@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
  * on the {@link Authentication}, looks up that role's cached permissions, and allows or denies.
  *
  * <ul>
- *   <li>No / anonymous authentication → {@link AuthenticationCredentialsNotFoundException} (→ 401).
- *   <li>Authenticated but missing the required permission(s) → {@link AccessDeniedException} (→
+ *   <li>No / anonymous authentication â†’ {@link AuthenticationCredentialsNotFoundException} (â†’ 401).
+ *   <li>Authenticated but missing the required permission(s) â†’ {@link AccessDeniedException} (â†’
  *       403, via {@code GlobalExceptionHandler}).
  * </ul>
  */
@@ -99,3 +99,4 @@ public class PermissionAspect {
     return null;
   }
 }
+

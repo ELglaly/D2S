@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations;
+﻿package com.schoolbridge.api.integrations;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import java.util.List;
  * Which outbound channel a {@link com.schoolbridge.api.integrations.NotificationDispatcher} used,
  * or may use.
  *
- * <p>The declaration order is not the send order — {@link #DEFAULT_ORDER} is, and a user's stored
+ * <p>The declaration order is not the send order â€” {@link #DEFAULT_ORDER} is, and a user's stored
  * preference overrides even that.
  */
 public enum NotificationChannel {
@@ -21,3 +21,4 @@ public enum NotificationChannel {
    */
   public static final List<NotificationChannel> DEFAULT_ORDER = List.of(PUSH, WHATSAPP, SMS);
 }
+

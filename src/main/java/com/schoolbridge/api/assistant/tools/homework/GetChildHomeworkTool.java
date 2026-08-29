@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.homework;
+﻿package com.schoolbridge.api.assistant.tools.homework;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -9,7 +9,6 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.ParentHomeworkFeedEntry;
 import java.time.LocalDate;
@@ -19,7 +18,7 @@ import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** PARENT — a child's homework feed. Mirrors {@code GET /homework?childId=}. */
+/** PARENT â€” a child's homework feed. Mirrors {@code GET /homework?childId=}. */
 @Component
 public class GetChildHomeworkTool implements ReadTool {
 
@@ -72,3 +71,4 @@ public class GetChildHomeworkTool implements ReadTool {
     return ToolResult.ok(feed);
   }
 }
+

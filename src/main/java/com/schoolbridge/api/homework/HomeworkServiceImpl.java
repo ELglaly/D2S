@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.attachments.AttachmentService;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;
@@ -287,3 +287,4 @@ public class HomeworkServiceImpl implements HomeworkService {
             "recipientCount", String.valueOf(recipientCount)));
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import java.util.List;
@@ -29,3 +29,4 @@ public class DocumentChunker {
     return splitter.apply(List.of(new Document(text))).stream().map(Document::getText).toList();
   }
 }
+

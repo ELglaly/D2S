@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 /** Lifecycle of an ingested document. */
 public enum IngestStatus {
@@ -6,3 +6,4 @@ public enum IngestStatus {
   INDEXED,
   FAILED
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import java.util.UUID;
 
@@ -10,3 +10,4 @@ public interface HomeworkReminderService {
   /** Releases a single DEFERRED recipient once the quiet window has closed. */
   void releaseDeferred(UUID recipientId);
 }
+

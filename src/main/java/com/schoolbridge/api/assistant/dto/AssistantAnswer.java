@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.dto;
+﻿package com.schoolbridge.api.assistant.dto;
 
 import java.util.Map;
 
@@ -28,3 +28,4 @@ public record AssistantAnswer(
     return new AssistantAnswer(Outcome.CONFIRM_REQUIRED, text, pendingAction, metadata);
   }
 }
+

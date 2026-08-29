@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.integrations.NotificationChannel;
 import java.time.Instant;
@@ -9,9 +9,9 @@ import java.util.List;
  * outcomes applies, in this order:
  *
  * <ol>
- *   <li>{@code suppressed} — the user opted out; do not send, do not queue.
- *   <li>{@code deferUntil != null} — inside the quiet window; hold the recipient row until then.
- *   <li>otherwise — send now, trying {@code channels} in order.
+ *   <li>{@code suppressed} â€” the user opted out; do not send, do not queue.
+ *   <li>{@code deferUntil != null} â€” inside the quiet window; hold the recipient row until then.
+ *   <li>otherwise â€” send now, trying {@code channels} in order.
  * </ol>
  *
  * <p>{@code channels} is populated in every case, including the suppressed one, so a caller that
@@ -40,3 +40,4 @@ public record NotificationDecision(
     return deferUntil != null;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,7 +14,6 @@ import com.schoolbridge.api.attendance.AttendanceStatus;
 import com.schoolbridge.api.attendance.dto.AttendanceHistoryEntry;
 import com.schoolbridge.api.attendance.dto.ParentResponseRequest;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +23,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * PARENT — reply to an absence/late/excused alert. Mirrors {@code POST
+ * PARENT â€” reply to an absence/late/excused alert. Mirrors {@code POST
  * /attendance/{id}/parent-response}.
  */
 @Component
@@ -113,3 +112,4 @@ public class RespondToAbsenceAlertTool extends AbstractActionTool {
             recordId, ctx.userId(), new ParentResponseRequest(response)));
   }
 }
+

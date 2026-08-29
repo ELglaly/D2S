@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /**
  * Builds the object-storage key for an attachment. One place decides what a key looks like, and
- * that place takes a school id and an attachment id — never anything the client supplied.
+ * that place takes a school id and an attachment id â€” never anything the client supplied.
  *
  * <pre>{@code {schoolId}/{yyyy}/{MM}/{attachmentId}}</pre>
  *
@@ -15,7 +15,7 @@ import java.util.UUID;
  * key can choose another school's prefix, and the presigned PUT would sign it. It would also make
  * traversal-style keys ({@code ../}) worth trying against backends that normalise paths.
  *
- * <p>The school prefix is not only for isolation — it makes bucket policy, lifecycle rules, and
+ * <p>The school prefix is not only for isolation â€” it makes bucket policy, lifecycle rules, and
  * per-tenant export or erasure expressible without reading the database.
  */
 public final class AttachmentKeys {
@@ -41,3 +41,4 @@ public final class AttachmentKeys {
     return key != null && key.startsWith(schoolId + "/");
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.web;
+﻿package com.schoolbridge.api.common.web;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  *   <li>Single resource: {@code { "data": {...}, "meta": null }}
  *   <li>Paginated list: {@code { "data": [...], "meta": { "page", "size", "totalElements",
  *       "totalPages" } }}
- *   <li>Error: RFC 7807 {@code ProblemDetail} — not wrapped, distinguished by the presence of a
+ *   <li>Error: RFC 7807 {@code ProblemDetail} â€” not wrapped, distinguished by the presence of a
  *       {@code "type"} URI field.
  *   <li>Empty (204): no body.
  * </ul>
@@ -30,3 +30,4 @@ public record ApiResponse<T>(T data, PageMeta meta) {
     return new ApiResponse<>(page.content(), meta);
   }
 }
+

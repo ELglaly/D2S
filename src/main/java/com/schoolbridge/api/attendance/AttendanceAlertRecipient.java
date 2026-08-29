@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -14,7 +14,7 @@ import java.util.UUID;
  * / excused) student, created by {@code AttendanceAlertService} when the M8 consumer drains an
  * {@code attendance.*_alert} event from RabbitMQ.
  *
- * <p>The row carries delivery-tracking state — the future webhook M7 path can locate it by {@link
+ * <p>The row carries delivery-tracking state â€” the future webhook M7 path can locate it by {@link
  * #getMessageId()} to update SENT/DELIVERED/READ without joining back to {@link AttendanceRecord}.
  * {@code deferredUntil} carries quiet-hours holds; {@code AttendanceSweeper} releases them once the
  * school-local quiet window closes.
@@ -117,3 +117,4 @@ public class AttendanceAlertRecipient extends TenantEntity {
     return value.length() <= 256 ? value : value.substring(0, 256);
   }
 }
+

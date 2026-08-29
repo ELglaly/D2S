@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant;
+﻿package com.schoolbridge.api.assistant;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Service;
 /**
  * Read-orchestration loop. Each iteration asks the model; if it returns text we answer (and cache),
  * if it calls a read tool we execute it and feed the result back, up to {@code
- * max-tool-iterations}. The model never reaches the database — only the role-scoped tool catalog
+ * max-tool-iterations}. The model never reaches the database â€” only the role-scoped tool catalog
  * and structured results. Action (mutating) tools are handled by the confirm gate added in Phase 3.
  */
 @Service
@@ -248,3 +248,4 @@ public class AssistantServiceImpl implements AssistantService {
     return meta;
   }
 }
+

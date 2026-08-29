@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.student;
+﻿package com.schoolbridge.api.assistant.tools.student;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,14 +13,13 @@ import com.schoolbridge.api.classes.StudentStatus;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.dto.UpdateStudentRequest;
 import com.schoolbridge.api.classes.service.StudentService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — update a student record. Mirrors {@code PATCH /students/{id}}. */
+/** ADMIN â€” update a student record. Mirrors {@code PATCH /students/{id}}. */
 @Component
 public class UpdateStudentTool extends AbstractActionTool {
 
@@ -106,3 +105,4 @@ public class UpdateStudentTool extends AbstractActionTool {
     return ToolResult.ok(students.update(uuid(resolvedArgs, "studentId"), request));
   }
 }
+

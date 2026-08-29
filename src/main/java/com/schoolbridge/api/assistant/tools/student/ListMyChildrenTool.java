@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.student;
+﻿package com.schoolbridge.api.assistant.tools.student;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -6,11 +6,10 @@ import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.service.ParentChildrenService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-/** PARENT — lists the caller's linked children. Mirrors {@code GET /parents/me/children}. */
+/** PARENT â€” lists the caller's linked children. Mirrors {@code GET /parents/me/children}. */
 @Component
 public class ListMyChildrenTool implements ReadTool {
 
@@ -45,3 +44,4 @@ public class ListMyChildrenTool implements ReadTool {
     return ToolResult.ok(parentChildren.listChildren(ctx.userId()));
   }
 }
+

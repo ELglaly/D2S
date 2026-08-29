@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.dto;
+﻿package com.schoolbridge.api.assistant.dto;
 
 /**
  * Result of a confirm/cancel call. {@code status} is one of EXECUTED, CANCELLED,
@@ -27,3 +27,4 @@ public record ConfirmResult(String status, String message, Object data) {
     return new ConfirmResult("INVALID", message, null);
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import com.schoolbridge.api.identity.UserRole;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Admin operations on role→permission mappings. Every mutation evicts the affected role's cached
+ * Admin operations on roleâ†’permission mappings. Every mutation evicts the affected role's cached
  * permission set so the change takes effect immediately (see {@link EffectivePermissionService}).
  */
 @Service
@@ -58,3 +58,4 @@ public class RolePermissionAdminService {
     effectivePermissions.evictRole(role);
   }
 }
+

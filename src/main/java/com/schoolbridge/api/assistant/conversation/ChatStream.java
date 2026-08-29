@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.conversation;
+﻿package com.schoolbridge.api.assistant.conversation;
 
 /**
  * Sink for the Anthropic-style SSE frames of one streamed reply. The HTTP controller backs this
@@ -13,7 +13,7 @@ public interface ChatStream {
   void messageStart(String messageId);
 
   /**
-   * Signals that tenant-scoped RAG retrieval is starting for this turn. Additive event — existing
+   * Signals that tenant-scoped RAG retrieval is starting for this turn. Additive event â€” existing
    * consumers ignore unknown SSE event types, so the default no-op keeps non-HTTP sinks unchanged.
    */
   default void retrievalStarted() {}
@@ -32,3 +32,4 @@ public interface ChatStream {
 
   void error(String message);
 }
+

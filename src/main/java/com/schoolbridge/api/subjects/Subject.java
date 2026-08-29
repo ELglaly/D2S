@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects;
+﻿package com.schoolbridge.api.subjects;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -58,3 +58,4 @@ public class Subject extends TenantEntity {
     return status;
   }
 }
+

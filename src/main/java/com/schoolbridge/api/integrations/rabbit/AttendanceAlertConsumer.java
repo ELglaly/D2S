@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.rabbit;
+﻿package com.schoolbridge.api.integrations.rabbit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,10 +28,10 @@ import org.springframework.stereotype.Component;
  *       [[feedback-outbox-audit-mapof-npe]]);
  *   <li>restores the producer-side {@code traceId} into MDC so the consumer-side log lines
  *       correlate with the original {@code POST /attendance/mark} span;
- *   <li>binds {@link TenantContext#runAs} so {@code @Filter} applies during recipient loads — the
+ *   <li>binds {@link TenantContext#runAs} so {@code @Filter} applies during recipient loads â€” the
  *       cross-tenant safety guarantee mirrored from M7's announcement consumer;
- *   <li>records {@code attendance.alert.latency} ({@code markedAt} → "consumer finished
- *       dispatching") which is the NFR-P2 SLA dashboard metric — explicitly bucketed to make the 60
+ *   <li>records {@code attendance.alert.latency} ({@code markedAt} â†’ "consumer finished
+ *       dispatching") which is the NFR-P2 SLA dashboard metric â€” explicitly bucketed to make the 60
  *       s p95 threshold visible.
  * </ol>
  *
@@ -124,3 +124,4 @@ public class AttendanceAlertConsumer {
     }
   }
 }
+

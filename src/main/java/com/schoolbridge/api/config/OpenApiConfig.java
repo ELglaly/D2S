@@ -1,4 +1,4 @@
-package com.schoolbridge.api.config;
+﻿package com.schoolbridge.api.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
@@ -25,13 +25,13 @@ import org.springframework.context.annotation.Configuration;
  * <pre>
  * Single resource:  { "data": &lt;T&gt;,    "meta": null }
  * Paginated list:   { "data": &lt;T[]&gt;,  "meta": { "page", "size", "totalElements", "totalPages" } }
- * Error (4xx/5xx): RFC 7807 ProblemDetail — { "type", "title", "detail", "status", "traceId" }
+ * Error (4xx/5xx): RFC 7807 ProblemDetail â€” { "type", "title", "detail", "status", "traceId" }
  * Empty (204):     no body
  * </pre>
  *
  * <p>Authentication: send the token in the {@code Authorization: Bearer <token>} header. Staff and
  * platform-admins use the JWT issued by {@code POST /api/v1/auth/login}. Parents use the opaque
- * token issued by {@code POST /api/v1/parents/auth/verify-otp}. Tenancy is embedded in the token —
+ * token issued by {@code POST /api/v1/parents/auth/verify-otp}. Tenancy is embedded in the token â€”
  * no tenant header is required or accepted.
  */
 @Configuration
@@ -45,7 +45,7 @@ import org.springframework.context.annotation.Configuration;
                     + "All 2xx responses (except 204) are wrapped: "
                     + "{ \"data\": T, \"meta\": PageMeta | null }. "
                     + "Errors use RFC 7807 ProblemDetail. "
-                    + "Tenancy is carried by the bearer token — no tenant header is required.",
+                    + "Tenancy is carried by the bearer token â€” no tenant header is required.",
             contact = @Contact(name = "SchoolBridge Engineering")),
     servers = {@Server(url = "/", description = "Default")},
     security = {@SecurityRequirement(name = "BearerJWT")})
@@ -72,7 +72,7 @@ public class OpenApiConfig {
     Schema<?> problemDetail =
         new Schema<>()
             .type("object")
-            .description("RFC 7807 ProblemDetail — returned for all 4xx/5xx responses")
+            .description("RFC 7807 ProblemDetail â€” returned for all 4xx/5xx responses")
             .addProperty("type", new StringSchema().example("about:blank"))
             .addProperty("title", new StringSchema().example("Unprocessable Entity"))
             .addProperty("status", new IntegerSchema().example(422))
@@ -88,3 +88,4 @@ public class OpenApiConfig {
     };
   }
 }
+

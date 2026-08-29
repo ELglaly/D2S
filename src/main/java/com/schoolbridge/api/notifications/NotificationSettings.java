@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * <p>A null {@code quietHoursStart}/{@code quietHoursEnd} means "inherit the school window" from
  * {@code SchoolSettings}, so a school that retimes its window does not leave every user pinned to
- * the old one. The absence of a row entirely means defaults — never "muted".
+ * the old one. The absence of a row entirely means defaults â€” never "muted".
  */
 @Entity
 @Table(name = "notification_settings")
@@ -72,3 +72,4 @@ public class NotificationSettings extends TenantEntity {
     return quietHoursEnd;
   }
 }
+

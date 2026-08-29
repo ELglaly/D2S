@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant;
+﻿package com.schoolbridge.api.assistant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.assistant.audit.AssistantAuditRecorder;
@@ -40,10 +40,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Assistant endpoints (loaded only when {@code schoolbridge.assistant.enabled=true}):
  *
  * <ul>
- *   <li>{@code POST /ask} — the answer is computed synchronously (so tenant + security
+ *   <li>{@code POST /ask} â€” the answer is computed synchronously (so tenant + security
  *       thread-locals stay valid) and the SSE frames are written straight to the response. Writing
  *       raw frames means the Jackson-based {@code ApiResponseBodyAdvice} never wraps them.
- *   <li>{@code POST /actions/{token}/confirm} and {@code /cancel} — normal wrapped JSON.
+ *   <li>{@code POST /actions/{token}/confirm} and {@code /cancel} â€” normal wrapped JSON.
  * </ul>
  */
 @RestController
@@ -171,3 +171,4 @@ public class AssistantController {
     return value == null ? "" : value;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.dto;
+﻿package com.schoolbridge.api.identity.dto;
 
 import com.schoolbridge.api.identity.UserRole;
 import jakarta.validation.constraints.Email;
@@ -12,3 +12,4 @@ public record CreateUserRequest(
     @Email @Size(max = 255) String email,
     @Size(max = 30) String phone,
     @Size(min = 8, max = 128) String password) {}
+

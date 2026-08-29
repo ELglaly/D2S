@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
 import java.util.Set;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 /**
  * The single authorization boundary for assistant tools. A caller may see and run a {@link Tool}
  * iff their role holds at least one of the tool's {@link Tool#permissions()} in the DB-backed
- * {@code role_permissions} grants (via {@link EffectivePermissionService}, cached by role) — so
+ * {@code role_permissions} grants (via {@link EffectivePermissionService}, cached by role) â€” so
  * re-mapping permissions at runtime constrains the assistant without a redeploy.
  *
  * <p>Used by {@link ToolRegistry} at catalog build, and inherited by the execution path through
@@ -39,3 +39,4 @@ public class ToolAuthorizer {
     return tool.permissions().stream().map(Enum::name).anyMatch(granted::contains);
   }
 }
+

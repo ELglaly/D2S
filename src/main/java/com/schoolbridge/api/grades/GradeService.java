@@ -1,4 +1,4 @@
-package com.schoolbridge.api.grades;
+﻿package com.schoolbridge.api.grades;
 
 import com.schoolbridge.api.grades.dto.CreateGradeRequest;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
@@ -22,3 +22,4 @@ public interface GradeService {
 
   void delete(UUID id);
 }
+

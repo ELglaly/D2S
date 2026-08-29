@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.crypto;
+﻿package com.schoolbridge.api.common.crypto;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -8,3 +8,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("schoolbridge.crypto")
 public record CryptoProperties(String aesKey, String blindIndexKey) {}
+

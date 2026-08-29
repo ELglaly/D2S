@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security;
+﻿package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import com.schoolbridge.api.identity.UserRole;
@@ -109,3 +109,4 @@ public class BearerAuthenticationFilter extends OncePerRequestFilter {
         List.of(new SimpleGrantedAuthority("ROLE_PARENT")));
   }
 }
+

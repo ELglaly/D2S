@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.service;
+﻿package com.schoolbridge.api.subjects.service;
 
 import com.schoolbridge.api.classes.entity.SchoolClass;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
@@ -156,3 +156,4 @@ public class TeacherSubjectAssignmentServiceImpl implements TeacherSubjectAssign
                 m -> List.copyOf(m.values())));
   }
 }
+

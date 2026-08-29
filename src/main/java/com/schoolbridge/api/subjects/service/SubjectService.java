@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.service;
+﻿package com.schoolbridge.api.subjects.service;
 
 import com.schoolbridge.api.subjects.dto.CreateSubjectRequest;
 import com.schoolbridge.api.subjects.dto.SubjectResponse;
@@ -19,3 +19,4 @@ public interface SubjectService {
 
   void delete(UUID id);
 }
+

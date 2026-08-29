@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import com.schoolbridge.api.integrations.NotificationChannel;
@@ -16,8 +16,8 @@ import org.hibernate.type.SqlTypes;
  * One row per (user, category): whether the user wants the category at all, and in which channel
  * order they want it.
  *
- * <p>The {@code channels} list is ordered and the order <em>is</em> the preference — {@code [PUSH,
- * WHATSAPP, SMS]} means try push first and fall through — so it is stored as a JSONB array rather
+ * <p>The {@code channels} list is ordered and the order <em>is</em> the preference â€” {@code [PUSH,
+ * WHATSAPP, SMS]} means try push first and fall through â€” so it is stored as a JSONB array rather
  * than normalised into a set, which would lose exactly the information that matters.
  *
  * <p>An empty channel list is not the way to opt out; {@code enabled = false} is. The distinction
@@ -80,3 +80,4 @@ public class NotificationPreference extends TenantEntity {
     return channels == null ? List.of() : List.copyOf(channels);
   }
 }
+

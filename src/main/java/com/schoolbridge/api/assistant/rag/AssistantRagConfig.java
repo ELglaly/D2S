@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -22,3 +22,4 @@ public class AssistantRagConfig {
     return new PlaceholderEmbeddingModel(properties.getRag().getEmbeddingDim());
   }
 }
+

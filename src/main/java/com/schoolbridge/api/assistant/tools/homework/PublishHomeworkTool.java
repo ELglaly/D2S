@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.homework;
+﻿package com.schoolbridge.api.assistant.tools.homework;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,7 +11,6 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.HomeworkResponse;
 import java.util.LinkedHashMap;
@@ -21,7 +20,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * TEACHER(author)/ADMIN — publish homework (fans out to parents). Mirrors {@code POST
+ * TEACHER(author)/ADMIN â€” publish homework (fans out to parents). Mirrors {@code POST
  * /homework/{id}/publish}.
  */
 @Component
@@ -101,3 +100,4 @@ public class PublishHomeworkTool extends AbstractActionTool {
     return ToolResult.ok(homework.publish(homeworkId));
   }
 }
+

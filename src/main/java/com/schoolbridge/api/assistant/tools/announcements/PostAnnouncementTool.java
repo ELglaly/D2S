@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.announcements;
+﻿package com.schoolbridge.api.assistant.tools.announcements;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,7 +15,6 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -24,7 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — post an announcement at any scope. Mirrors {@code POST /announcements}. */
+/** ADMIN â€” post an announcement at any scope. Mirrors {@code POST /announcements}. */
 @Component
 public class PostAnnouncementTool extends AbstractActionTool {
 
@@ -151,3 +150,4 @@ public class PostAnnouncementTool extends AbstractActionTool {
     }
   }
 }
+

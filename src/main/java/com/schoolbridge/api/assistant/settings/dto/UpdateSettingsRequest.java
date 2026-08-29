@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.settings.dto;
+﻿package com.schoolbridge.api.assistant.settings.dto;
 
 import jakarta.validation.constraints.Size;
 
@@ -7,3 +7,4 @@ import jakarta.validation.constraints.Size;
  * and reverts the tenant to the default persona.
  */
 public record UpdateSettingsRequest(@Size(max = 8000) String systemPrompt) {}
+

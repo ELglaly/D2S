@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.student;
+﻿package com.schoolbridge.api.assistant.tools.student;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,14 +11,13 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.StudentService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
- * ADMIN — delete a student (destructive; cascades enrollments + parent links). Mirrors {@code
+ * ADMIN â€” delete a student (destructive; cascades enrollments + parent links). Mirrors {@code
  * DELETE /students/{id}}.
  */
 @Component
@@ -81,3 +80,4 @@ public class DeleteStudentTool extends AbstractActionTool {
     return ToolResult.ok(Map.of("deleted", true));
   }
 }
+

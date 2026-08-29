@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant;
+﻿package com.schoolbridge.api.assistant;
 
 import com.schoolbridge.api.assistant.llm.DisabledLlmGateway;
 import com.schoolbridge.api.assistant.llm.LlmGateway;
@@ -20,3 +20,4 @@ public class AssistantConfig {
     return new DisabledLlmGateway();
   }
 }
+

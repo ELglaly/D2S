@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag.dto;
+﻿package com.schoolbridge.api.assistant.rag.dto;
 
 import com.schoolbridge.api.assistant.rag.DocType;
 import jakarta.validation.constraints.NotBlank;
@@ -11,3 +11,4 @@ public record IngestDocumentRequest(
     @NotBlank @Size(max = 300) String title,
     @Size(max = 8) String lang,
     @NotBlank @Size(max = 200_000) String content) {}
+

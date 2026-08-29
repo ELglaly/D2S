@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.attachments.dto.AttachmentDownloadTicket;
 import com.schoolbridge.api.attachments.dto.AttachmentResponse;
@@ -19,7 +19,7 @@ public interface AttachmentService {
   /**
    * Called by the client once its PUT succeeded. Verifies the object exists at the expected size,
    * sniffs its real type, scans it, and moves it to a terminal state. Objects that fail inspection
-   * are deleted from storage here rather than left for the sweeper — an unsafe object should not
+   * are deleted from storage here rather than left for the sweeper â€” an unsafe object should not
    * outlive the request that identified it.
    */
   AttachmentResponse complete(UUID attachmentId);
@@ -40,3 +40,4 @@ public interface AttachmentService {
    */
   void requireUsableReference(UUID schoolId, String attachmentReference);
 }
+

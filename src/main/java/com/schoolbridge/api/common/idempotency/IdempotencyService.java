@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.idempotency;
+﻿package com.schoolbridge.api.common.idempotency;
 
 import java.time.Duration;
 import java.util.Base64;
@@ -41,7 +41,7 @@ public class IdempotencyService {
       Boolean acquired = redis.opsForValue().setIfAbsent(LOCK_PREFIX + key, "1", ttl);
       return Boolean.TRUE.equals(acquired);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — idempotency lock skipped for key {}", key);
+      log.warn("Redis unavailable â€” idempotency lock skipped for key {}", key);
       return true;
     }
   }
@@ -50,7 +50,7 @@ public class IdempotencyService {
     try {
       redis.delete(LOCK_PREFIX + key);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — idempotency lock release skipped for key {}", key);
+      log.warn("Redis unavailable â€” idempotency lock release skipped for key {}", key);
     }
   }
 
@@ -59,7 +59,7 @@ public class IdempotencyService {
       String value = redis.opsForValue().get(RESP_PREFIX + key);
       return Optional.ofNullable(value).map(CachedResponse::decode);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — idempotency cache miss forced for key {}", key);
+      log.warn("Redis unavailable â€” idempotency cache miss forced for key {}", key);
       return Optional.empty();
     }
   }
@@ -68,7 +68,7 @@ public class IdempotencyService {
     try {
       redis.opsForValue().set(RESP_PREFIX + key, CachedResponse.encode(status, body), ttl);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — idempotency response not cached for key {}", key);
+      log.warn("Redis unavailable â€” idempotency response not cached for key {}", key);
     }
   }
 
@@ -87,3 +87,4 @@ public class IdempotencyService {
     }
   }
 }
+

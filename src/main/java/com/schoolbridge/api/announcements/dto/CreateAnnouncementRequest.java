@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.dto;
+﻿package com.schoolbridge.api.announcements.dto;
 
 import com.schoolbridge.api.announcements.enums.AnnouncementScope;
 import com.schoolbridge.api.announcements.enums.Language;
@@ -35,3 +35,4 @@ public record CreateAnnouncementRequest(
     @Size(max = 512) String attachmentKey,
     boolean requiresAck,
     Instant scheduledFor) {}
+

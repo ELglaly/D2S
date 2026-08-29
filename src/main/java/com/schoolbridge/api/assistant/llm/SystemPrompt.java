@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import java.util.Locale;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Builds the system prompt for a request: the caller's role, the answer language, and the hard
- * guardrails — most importantly that the model may <em>propose</em> actions but can never execute
+ * guardrails â€” most importantly that the model may <em>propose</em> actions but can never execute
  * them (the server owns the confirm gate) and must refer to people and classes by name, never id.
  */
 @Component
@@ -48,7 +48,7 @@ public class SystemPrompt {
   }
 
   /**
-   * Composes the default persona with the guardrails — the prompt used by the one-shot {@code
+   * Composes the default persona with the guardrails â€” the prompt used by the one-shot {@code
    * /ask}.
    */
   public String build(ToolContext ctx) {
@@ -79,3 +79,4 @@ public class SystemPrompt {
     return fallback;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.device;
+﻿package com.schoolbridge.api.identity.device;
 
 import com.schoolbridge.api.common.error.NotFoundException;
 import com.schoolbridge.api.identity.device.dto.DeviceTokenResponse;
@@ -52,3 +52,4 @@ public class DeviceTokenService {
     token.deactivate();
   }
 }
+

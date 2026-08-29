@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant.dto;
+﻿package com.schoolbridge.api.tenant.dto;
 
 import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolSettings;
@@ -54,3 +54,4 @@ public class SchoolMapper {
         request.rosterDueByLocalTime());
   }
 }
+

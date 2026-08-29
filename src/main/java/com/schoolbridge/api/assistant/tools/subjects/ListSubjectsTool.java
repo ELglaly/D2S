@@ -1,17 +1,16 @@
-package com.schoolbridge.api.assistant.tools.subjects;
+﻿package com.schoolbridge.api.assistant.tools.subjects;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.subjects.service.SubjectService;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — list subjects in the school. Mirrors {@code GET /subjects}. */
+/** ADMIN â€” list subjects in the school. Mirrors {@code GET /subjects}. */
 @Component
 public class ListSubjectsTool implements ReadTool {
 
@@ -48,3 +47,4 @@ public class ListSubjectsTool implements ReadTool {
     return ToolResult.ok(subjects.list(ctx.schoolId(), PageRequest.of(0, MAX)).getContent());
   }
 }
+

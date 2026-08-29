@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance.dto;
+﻿package com.schoolbridge.api.attendance.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -9,3 +9,4 @@ import java.util.UUID;
  * with status PRESENT for {@code date} is upserted to PRESENT. Already-PRESENT rows are skipped.
  */
 public record MarkAllPresentRequest(@NotNull UUID classId, @NotNull LocalDate date) {}
+

@@ -1,6 +1,6 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
-/** Thrown when a request conflicts with current resource state (→ 409). */
+/** Thrown when a request conflicts with current resource state (â†’ 409). */
 public class ConflictException extends ApplicationException {
 
   public ConflictException(String messageKey, Object... args) {
@@ -11,3 +11,4 @@ public class ConflictException extends ApplicationException {
     super(ErrorType.CONFLICT, ErrorType.CONFLICT.defaultMessageKey());
   }
 }
+

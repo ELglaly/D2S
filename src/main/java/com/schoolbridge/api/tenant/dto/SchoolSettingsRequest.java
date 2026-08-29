@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant.dto;
+﻿package com.schoolbridge.api.tenant.dto;
 
 import com.schoolbridge.api.tenant.Language;
 import jakarta.validation.constraints.Max;
@@ -21,3 +21,4 @@ public record SchoolSettingsRequest(
     boolean smsFallbackEnabled,
     boolean alertsRespectQuietHours,
     @NotNull LocalTime rosterDueByLocalTime) {}
+

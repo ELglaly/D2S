@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.student;
+﻿package com.schoolbridge.api.assistant.tools.student;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,13 +10,12 @@ import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.CreateStudentRequest;
 import com.schoolbridge.api.classes.service.StudentService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — add a student to the school. Mirrors {@code POST /students}. */
+/** ADMIN â€” add a student to the school. Mirrors {@code POST /students}. */
 @Component
 public class AddStudentTool extends AbstractActionTool {
 
@@ -83,3 +82,4 @@ public class AddStudentTool extends AbstractActionTool {
     return ToolResult.ok(students.create(ctx.schoolId(), request));
   }
 }
+

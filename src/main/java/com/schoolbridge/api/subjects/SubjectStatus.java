@@ -1,6 +1,7 @@
-package com.schoolbridge.api.subjects;
+﻿package com.schoolbridge.api.subjects;
 
 public enum SubjectStatus {
   ACTIVE,
   INACTIVE
 }
+

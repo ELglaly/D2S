@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.support;
+﻿package com.schoolbridge.api.assistant.tools.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
@@ -45,3 +45,4 @@ public final class Args {
     return n == null || n.isNull() ? def : n.asBoolean(def);
   }
 }
+

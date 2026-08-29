@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant.dto;
+﻿package com.schoolbridge.api.tenant.dto;
 
 import com.schoolbridge.api.tenant.Language;
 import java.time.LocalTime;
@@ -15,3 +15,4 @@ public record SchoolSettingsResponse(
     boolean smsFallbackEnabled,
     boolean alertsRespectQuietHours,
     LocalTime rosterDueByLocalTime) {}
+

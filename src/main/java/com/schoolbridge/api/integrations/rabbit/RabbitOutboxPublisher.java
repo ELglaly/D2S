@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.rabbit;
+﻿package com.schoolbridge.api.integrations.rabbit;
 
 import com.schoolbridge.api.common.outbox.OutboxEvent;
 import com.schoolbridge.api.common.outbox.OutboxPublisher;
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
  * Routes outbox events to topic exchanges based on the event-type prefix:
  *
  * <ul>
- *   <li>{@code announcement.*} → {@code schoolbridge.announcements}
- *   <li>{@code otp.*} → {@code schoolbridge.otp} (reserved; M7 keeps OTP in-process per the
+ *   <li>{@code announcement.*} â†’ {@code schoolbridge.announcements}
+ *   <li>{@code otp.*} â†’ {@code schoolbridge.otp} (reserved; M7 keeps OTP in-process per the
  *       handoff)
  * </ul>
  *
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
  * OutboxEventRecorder}) is the body. Tenant and aggregate ids are included as message headers so
  * consumers can index without parsing the body.
  *
- * <p>Only loaded when the relay is enabled — keeps test slices clean.
+ * <p>Only loaded when the relay is enabled â€” keeps test slices clean.
  */
 @Component
 @ConditionalOnProperty(name = "schoolbridge.outbox.relay.enabled", havingValue = "true")
@@ -69,3 +69,4 @@ public class RabbitOutboxPublisher implements OutboxPublisher {
     };
   }
 }
+

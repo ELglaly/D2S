@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity;
+﻿package com.schoolbridge.api.identity;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -8,3 +8,4 @@ public interface PlatformAdminRepository extends JpaRepository<PlatformAdmin, UU
 
   Optional<PlatformAdmin> findByEmail(String email);
 }
+

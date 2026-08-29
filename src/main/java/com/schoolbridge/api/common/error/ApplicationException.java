@@ -1,7 +1,7 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
 /**
- * Base type for all domain/application errors. Carries an {@link ErrorType} (→ HTTP status) and an
+ * Base type for all domain/application errors. Carries an {@link ErrorType} (â†’ HTTP status) and an
  * i18n message key with arguments so the global handler can localize the detail per request locale.
  */
 public abstract class ApplicationException extends RuntimeException {
@@ -29,3 +29,4 @@ public abstract class ApplicationException extends RuntimeException {
     return args.clone();
   }
 }
+

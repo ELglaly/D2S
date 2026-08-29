@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.grades;
+﻿package com.schoolbridge.api.assistant.tools.grades;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -9,13 +9,12 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.StudentResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** TEACHER/ADMIN — a student's grades. Mirrors {@code GET /grades?studentId}. */
+/** TEACHER/ADMIN â€” a student's grades. Mirrors {@code GET /grades?studentId}. */
 @Component
 public class GetStudentGradesTool implements ReadTool {
 
@@ -57,3 +56,4 @@ public class GetStudentGradesTool implements ReadTool {
     return ToolResult.ok(grades.listByStudent(studentId));
   }
 }
+

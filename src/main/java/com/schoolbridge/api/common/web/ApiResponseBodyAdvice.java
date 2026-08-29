@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.web;
+﻿package com.schoolbridge.api.common.web;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -17,9 +17,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  * <p>Skips:
  *
  * <ul>
- *   <li>{@link ProblemDetail} — errors keep their RFC 7807 shape.
- *   <li>Null bodies — 204 No Content responses stay empty.
- *   <li>Already-wrapped {@link ApiResponse} bodies — prevents double-wrapping.
+ *   <li>{@link ProblemDetail} â€” errors keep their RFC 7807 shape.
+ *   <li>Null bodies â€” 204 No Content responses stay empty.
+ *   <li>Already-wrapped {@link ApiResponse} bodies â€” prevents double-wrapping.
  * </ul>
  *
  * <p>{@link PageResponse} bodies are unwrapped: their {@code content} list becomes {@code data} and
@@ -63,3 +63,4 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
     return ApiResponse.of(body);
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.otp;
+﻿package com.schoolbridge.api.identity.otp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,3 +33,4 @@ public class LoggingOtpDispatcher implements OtpDispatcher {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
+

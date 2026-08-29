@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.support;
+﻿package com.schoolbridge.api.assistant.tools.support;
 
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
@@ -119,3 +119,4 @@ public class AssistantResolvers {
     return PageRequest.of(0, MAX_CANDIDATES);
   }
 }
+

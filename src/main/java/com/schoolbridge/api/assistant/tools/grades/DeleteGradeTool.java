@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.grades;
+﻿package com.schoolbridge.api.assistant.tools.grades;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +12,6 @@ import com.schoolbridge.api.assistant.tools.support.NameMatching.MatchResult;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.StudentResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
 import java.util.LinkedHashMap;
@@ -21,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — delete a grade (destructive). Mirrors {@code DELETE /grades/{id}}. */
+/** ADMIN â€” delete a grade (destructive). Mirrors {@code DELETE /grades/{id}}. */
 @Component
 public class DeleteGradeTool extends AbstractActionTool {
 
@@ -110,3 +109,4 @@ public class DeleteGradeTool extends AbstractActionTool {
     return ToolResult.ok(Map.of("deleted", true));
   }
 }
+

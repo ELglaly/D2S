@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.common.crypto.AesGcmAttributeConverter;
 import com.schoolbridge.api.common.tenancy.TenantEntity;
@@ -19,7 +19,7 @@ import java.util.UUID;
  * <p>{@code parentResponse} is AES-GCM encrypted at rest via {@link AesGcmAttributeConverter}; the
  * column is 1024 bytes to keep symmetry with {@code User.name} / {@code Student.fullName}. {@code
  * alertSentAt} is set once <em>every</em> linked-parent {@code AttendanceAlertRecipient} has
- * reached a terminal state (SENT or FAILED) — that is what closes the NFR-P2 latency window.
+ * reached a terminal state (SENT or FAILED) â€” that is what closes the NFR-P2 latency window.
  */
 @Entity
 @Table(name = "attendance_records")
@@ -133,3 +133,4 @@ public class AttendanceRecord extends TenantEntity {
     return alertSentAt;
   }
 }
+

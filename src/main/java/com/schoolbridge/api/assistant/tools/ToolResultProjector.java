@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,10 +20,10 @@ import org.springframework.stereotype.Component;
  * server-side):
  *
  * <ul>
- *   <li><b>Identifier stripping</b> — drops {@code id}/{@code *Id}/{@code *Ids} fields and any
+ *   <li><b>Identifier stripping</b> â€” drops {@code id}/{@code *Id}/{@code *Ids} fields and any
  *       UUID-valued field at every depth. This trims tokens and enforces the system-prompt
  *       guarantee that the model never sees internal identifiers (today's raw DTOs leak them).
- *   <li><b>Collection capping</b> — caps arrays at {@code tool-result-max-items}, appending a short
+ *   <li><b>Collection capping</b> â€” caps arrays at {@code tool-result-max-items}, appending a short
  *       marker so the model knows to narrow its query rather than miscount a truncated list.
  * </ul>
  */
@@ -75,7 +75,7 @@ public class ToolResultProjector {
         out.add(prune(node.get(i)));
       }
       if (node.size() > cap) {
-        out.add(TextNode.valueOf("…and " + (node.size() - cap) + " more; narrow your query"));
+        out.add(TextNode.valueOf("â€¦and " + (node.size() - cap) + " more; narrow your query"));
       }
       return out;
     }
@@ -93,3 +93,4 @@ public class ToolResultProjector {
     return value.isTextual() && UUID_PATTERN.matcher(value.asText()).matches();
   }
 }
+

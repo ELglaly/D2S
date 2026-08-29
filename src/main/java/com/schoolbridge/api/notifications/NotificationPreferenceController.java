@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.tenancy.TenantContext;
@@ -45,7 +45,7 @@ public class NotificationPreferenceController {
   @Operation(
       summary = "Get the caller's notification preferences",
       description =
-          "Returns every category, including ones the user has never configured — those come back "
+          "Returns every category, including ones the user has never configured â€” those come back "
               + "with their defaults, so the client never has to distinguish stored from default. "
               + "Attendance is always returned enabled: it cannot be switched off.")
   @ApiResponses({
@@ -88,3 +88,4 @@ public class NotificationPreferenceController {
     };
   }
 }
+

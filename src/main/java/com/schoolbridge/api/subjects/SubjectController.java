@@ -1,7 +1,5 @@
-package com.schoolbridge.api.subjects;
+﻿package com.schoolbridge.api.subjects;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -42,7 +40,7 @@ public class SubjectController {
   }
 
   @PostMapping
-  @RequirePermission(Permission.SUBJECT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(summary = "Create a subject")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Subject created"),
@@ -85,7 +83,7 @@ public class SubjectController {
   }
 
   @PatchMapping("/{id}")
-  @RequirePermission(Permission.SUBJECT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(summary = "Update a subject")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Updated"),
@@ -101,7 +99,7 @@ public class SubjectController {
   }
 
   @DeleteMapping("/{id}")
-  @RequirePermission(Permission.SUBJECT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(summary = "Delete a subject")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Deleted"),
@@ -114,3 +112,4 @@ public class SubjectController {
     return ResponseEntity.noContent().build();
   }
 }
+

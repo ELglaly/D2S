@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import java.util.List;
 
@@ -11,3 +11,4 @@ public record LlmRequest(
     List<LlmToolSpec> tools,
     String model,
     long maxTokens) {}
+

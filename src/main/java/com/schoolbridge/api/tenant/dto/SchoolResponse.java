@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant.dto;
+﻿package com.schoolbridge.api.tenant.dto;
 
 import com.schoolbridge.api.tenant.SchoolStatus;
 import com.schoolbridge.api.tenant.SubscriptionTier;
@@ -16,3 +16,4 @@ public record SchoolResponse(
     SchoolSettingsResponse settings,
     Instant createdAt,
     Instant updatedAt) {}
+

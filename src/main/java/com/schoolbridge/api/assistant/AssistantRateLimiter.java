@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant;
+﻿package com.schoolbridge.api.assistant;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import java.time.Duration;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Per-user fixed-window rate limit on assistant requests (mirrors {@code LoginRateLimiter}). Fails
- * open if Redis is unavailable — availability of the assistant is preferred over strict limiting.
+ * open if Redis is unavailable â€” availability of the assistant is preferred over strict limiting.
  */
 @Component
 public class AssistantRateLimiter {
@@ -38,3 +38,4 @@ public class AssistantRateLimiter {
     }
   }
 }
+

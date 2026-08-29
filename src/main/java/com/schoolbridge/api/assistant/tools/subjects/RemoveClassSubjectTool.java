@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.subjects;
+﻿package com.schoolbridge.api.assistant.tools.subjects;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,7 +10,6 @@ import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.subjects.dto.ClassSubjectResponse;
 import com.schoolbridge.api.subjects.dto.SubjectResponse;
 import com.schoolbridge.api.subjects.service.ClassSubjectService;
@@ -22,7 +21,7 @@ import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — remove a subject from a class. Mirrors {@code DELETE /class-subjects/{id}}. */
+/** ADMIN â€” remove a subject from a class. Mirrors {@code DELETE /class-subjects/{id}}. */
 @Component
 public class RemoveClassSubjectTool extends AbstractActionTool {
 
@@ -99,3 +98,4 @@ public class RemoveClassSubjectTool extends AbstractActionTool {
     return ToolResult.ok(Map.of("removed", true));
   }
 }
+

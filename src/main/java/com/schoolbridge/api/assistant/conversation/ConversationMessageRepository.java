@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.conversation;
+﻿package com.schoolbridge.api.assistant.conversation;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +31,7 @@ public interface ConversationMessageRepository extends JpaRepository<Conversatio
   List<ConversationMessage> findRecent(
       @Param("conversationId") UUID conversationId, Pageable pageable);
 
-  /** The single newest assistant turn — used to find a pending confirmation. */
+  /** The single newest assistant turn â€” used to find a pending confirmation. */
   @Query(
       "select m from ConversationMessage m where m.conversationId = :conversationId "
           + "and m.role = com.schoolbridge.api.assistant.conversation.MessageRole.ASSISTANT "
@@ -39,3 +39,4 @@ public interface ConversationMessageRepository extends JpaRepository<Conversatio
   List<ConversationMessage> findLatestAssistant(
       @Param("conversationId") UUID conversationId, Pageable pageable);
 }
+

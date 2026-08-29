@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity;
+﻿package com.schoolbridge.api.identity;
 
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.common.error.ConflictException;
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     // Bound to the target school for the same reason list() and findById() are: this endpoint is
     // SUPER_ADMIN-only and a platform admin carries no school-scoped principal, so TenantContext is
-    // empty here. Without the binding the changelog-017 WITH CHECK rejects the INSERT outright —
+    // empty here. Without the binding the changelog-017 WITH CHECK rejects the INSERT outright â€”
     // an unbound tenant GUC fails closed, which is correct behaviour and the wrong outcome for a
     // caller who has told us exactly which school they mean.
     return TenantContext.runAs(schoolId, () -> createInSchool(schoolId, request));
@@ -110,3 +110,4 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("error.user.not_found")));
   }
 }
+

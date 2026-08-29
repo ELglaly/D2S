@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments.dto;
+﻿package com.schoolbridge.api.attachments.dto;
 
 import java.time.Instant;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.UUID;
  * and one where that 403 is the client's first clue.
  *
  * @param attachmentId pass this to {@code /attachments/{id}/complete} once the PUT succeeds
- * @param uploadUrl presigned target — the bytes go here, not to this API
+ * @param uploadUrl presigned target â€” the bytes go here, not to this API
  * @param method HTTP method the URL was signed for
  * @param requiredHeaders headers the PUT must carry verbatim
  * @param expiresAt after this the URL is dead and a new one must be requested
@@ -24,3 +24,4 @@ public record AttachmentUploadTicket(
     String method,
     Map<String, String> requiredHeaders,
     Instant expiresAt) {}
+

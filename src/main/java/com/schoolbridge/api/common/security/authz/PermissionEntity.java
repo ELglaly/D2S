@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,3 +42,4 @@ public class PermissionEntity {
     return description;
   }
 }
+

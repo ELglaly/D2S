@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -10,14 +10,13 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * TEACHER/ADMIN — attendance roster for a class on a date. Mirrors {@code GET /attendance/roster}.
+ * TEACHER/ADMIN â€” attendance roster for a class on a date. Mirrors {@code GET /attendance/roster}.
  */
 @Component
 public class GetClassAttendanceTool implements ReadTool {
@@ -70,3 +69,4 @@ public class GetClassAttendanceTool implements ReadTool {
     return ToolResult.ok(attendance.roster(classId, date));
   }
 }
+

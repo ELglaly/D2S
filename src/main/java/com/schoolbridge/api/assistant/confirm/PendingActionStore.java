@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.confirm;
+﻿package com.schoolbridge.api.assistant.confirm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Redis-backed store for pending actions. {@link #consume(String)} uses an atomic GETDEL so a
- * double-tapped confirm or a replay can never run the action twice — exactly one caller wins the
+ * double-tapped confirm or a replay can never run the action twice â€” exactly one caller wins the
  * delete, the rest see an empty result. Entries also expire on their own TTL.
  */
 @Component
@@ -32,7 +32,7 @@ public class PendingActionStore {
     try {
       redis.opsForValue().set(PREFIX + action.token(), serialize(action), ttl);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — pending action not stored");
+      log.warn("Redis unavailable â€” pending action not stored");
     }
   }
 
@@ -41,7 +41,7 @@ public class PendingActionStore {
     try {
       return Optional.ofNullable(redis.opsForValue().get(PREFIX + token)).map(this::deserialize);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — pending action lookup failed");
+      log.warn("Redis unavailable â€” pending action lookup failed");
       return Optional.empty();
     }
   }
@@ -52,7 +52,7 @@ public class PendingActionStore {
       return Optional.ofNullable(redis.opsForValue().getAndDelete(PREFIX + token))
           .map(this::deserialize);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — pending action consume failed");
+      log.warn("Redis unavailable â€” pending action consume failed");
       return Optional.empty();
     }
   }
@@ -73,3 +73,4 @@ public class PendingActionStore {
     }
   }
 }
+

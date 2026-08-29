@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.confirm;
+﻿package com.schoolbridge.api.assistant.confirm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
@@ -20,3 +20,4 @@ public record PendingAction(
     boolean destructive,
     Instant createdAt,
     Instant expiresAt) {}
+

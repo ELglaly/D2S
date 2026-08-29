@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,7 +23,7 @@ public interface HomeworkItemRepository extends JpaRepository<HomeworkItem, UUID
   @Query("select h from HomeworkItem h where h.id = :id")
   Optional<HomeworkItem> findById(@Param("id") UUID id);
 
-  /** Teacher list view — filtered by class, status, and date range. Caller may pass null params. */
+  /** Teacher list view â€” filtered by class, status, and date range. Caller may pass null params. */
   @Query(
       "select h from HomeworkItem h "
           + "where (:classId is null or h.classId = :classId) "
@@ -42,13 +42,13 @@ public interface HomeworkItemRepository extends JpaRepository<HomeworkItem, UUID
   @Query("select count(h) from HomeworkItem h where h.attachmentKey = :attachmentKey")
   long countReferencingAttachment(@Param("attachmentKey") String attachmentKey);
 
-  /** Teacher own-history query — items they authored, newest first. */
+  /** Teacher own-history query â€” items they authored, newest first. */
   @Query("select h from HomeworkItem h where h.teacherId = :teacherId order by h.createdAt desc")
   Page<HomeworkItem> findByTeacherId(@Param("teacherId") UUID teacherId, Pageable pageable);
 
   /**
    * Sweeper scan: PUBLISHED items whose dueDate is on or before {@code horizon} and whose reminder
-   * has not yet been sent. The ±window check is done in Java after this query returns.
+   * has not yet been sent. The Â±window check is done in Java after this query returns.
    */
   @Query(
       "select h from HomeworkItem h "
@@ -66,3 +66,4 @@ public interface HomeworkItemRepository extends JpaRepository<HomeworkItem, UUID
   boolean existsRecipientForParent(
       @Param("homeworkId") UUID homeworkId, @Param("parentUserId") UUID parentUserId);
 }
+

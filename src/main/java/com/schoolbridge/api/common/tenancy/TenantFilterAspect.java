@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.tenancy;
+﻿package com.schoolbridge.api.common.tenancy;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -20,7 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * <p>When {@link TenantContext} is empty (admin maintenance code, the unauthenticated parent OTP
  * lookup, infrastructure repositories like {@code OutboxRepository}/{@code AuditLogRepository}),
- * the filter stays disabled — those repos query without tenant scoping, which is what we want.
+ * the filter stays disabled â€” those repos query without tenant scoping, which is what we want.
  *
  * <p>The same branch also publishes the tenant to PostgreSQL via {@link TenantSessionBinder} for
  * the changelog-017 RLS policies. Both controls hang off one condition on purpose: if the Hibernate
@@ -41,7 +41,7 @@ public class TenantFilterAspect {
   }
 
   // Target the Spring Data root interface so we catch methods declared in SimpleJpaRepository
-  // (findById, findAll, save, …) — they're not in our package and a pointcut on
+  // (findById, findAll, save, â€¦) â€” they're not in our package and a pointcut on
   // `com.schoolbridge.api..*Repository+` would silently miss every inherited finder.
   @Around("execution(* org.springframework.data.repository.Repository+.*(..))")
   public Object enableTenantFilter(ProceedingJoinPoint pjp) throws Throwable {
@@ -58,3 +58,4 @@ public class TenantFilterAspect {
     return pjp.proceed();
   }
 }
+

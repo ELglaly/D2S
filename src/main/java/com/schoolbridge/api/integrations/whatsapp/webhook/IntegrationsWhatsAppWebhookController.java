@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.whatsapp.webhook;
+﻿package com.schoolbridge.api.integrations.whatsapp.webhook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
@@ -38,10 +38,10 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>GET = subscribe handshake (verify-token equality, 200 + challenge / 403). POST = delivery and
  * read receipts; the body is HMAC-SHA256-verified against {@code X-Hub-Signature-256} using {@code
- * WHATSAPP_APP_SECRET} (constant-time, on the raw bytes — see {@link WebhookSignatureVerifier}).
+ * WHATSAPP_APP_SECRET} (constant-time, on the raw bytes â€” see {@link WebhookSignatureVerifier}).
  *
  * <p>Idempotency: Meta does not supply an {@code Idempotency-Key}, so we use a dedicated Redis key
- * {@code idempotency:whatsapp:{messageId}:{status}} (TTL 24h) to drop duplicate deliveries —
+ * {@code idempotency:whatsapp:{messageId}:{status}} (TTL 24h) to drop duplicate deliveries â€”
  * tighter than the generic {@code IdempotencyFilter}.
  */
 @RestController
@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
     name = "WhatsApp Webhook",
     description =
         "Meta Cloud API webhook for delivery receipts and status updates. "
-            + "No bearer token is required — requests are authenticated by HMAC-SHA256 signature.")
+            + "No bearer token is required â€” requests are authenticated by HMAC-SHA256 signature.")
 public class IntegrationsWhatsAppWebhookController {
 
   private static final Logger log =
@@ -203,8 +203,8 @@ public class IntegrationsWhatsAppWebhookController {
 
   private static int rank(DeliveryStatus status) {
     return switch (status) {
-      // Pre-provider states. Unreachable in practice — a row in either carries no messageId, and
-      // the webhook matches rows by messageId — but ranked below QUEUED so that if one ever were
+      // Pre-provider states. Unreachable in practice â€” a row in either carries no messageId, and
+      // the webhook matches rows by messageId â€” but ranked below QUEUED so that if one ever were
       // matched, a real provider status would still advance it rather than being dropped.
       case DEFERRED, SUPPRESSED -> -1;
       case QUEUED -> 0;
@@ -237,3 +237,4 @@ public class IntegrationsWhatsAppWebhookController {
     return list == null ? List.of() : list;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework.dto;
+﻿package com.schoolbridge.api.homework.dto;
 
 import com.schoolbridge.api.homework.HomeworkItem;
 import com.schoolbridge.api.homework.HomeworkRecipient;
@@ -54,3 +54,4 @@ public class HomeworkMapper {
         r.getCreatedAt());
   }
 }
+

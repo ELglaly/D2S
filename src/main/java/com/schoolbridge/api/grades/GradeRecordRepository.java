@@ -1,4 +1,4 @@
-package com.schoolbridge.api.grades;
+﻿package com.schoolbridge.api.grades;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,3 +32,4 @@ public interface GradeRecordRepository extends JpaRepository<GradeRecord, UUID> 
   Optional<GradeRecord> findByStudentIdAndClassIdAndSubjectAndPeriod(
       UUID studentId, UUID classId, String subject, String period);
 }
+

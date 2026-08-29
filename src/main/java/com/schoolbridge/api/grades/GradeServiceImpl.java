@@ -1,4 +1,4 @@
-package com.schoolbridge.api.grades;
+﻿package com.schoolbridge.api.grades;
 
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
 import com.schoolbridge.api.classes.repository.StudentRepository;
@@ -134,3 +134,4 @@ public class GradeServiceImpl implements GradeService {
         .orElseThrow(() -> new NotFoundException("error.grade.not_found", id));
   }
 }
+

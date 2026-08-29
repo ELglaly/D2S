@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import org.springframework.ai.document.Document;
 
@@ -14,3 +14,4 @@ public record RetrievedChunk(String content, String type, String title) {
         title == null ? null : title.toString());
   }
 }
+

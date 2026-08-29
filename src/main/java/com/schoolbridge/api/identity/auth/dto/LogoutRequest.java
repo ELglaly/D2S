@@ -1,5 +1,6 @@
-package com.schoolbridge.api.identity.auth.dto;
+﻿package com.schoolbridge.api.identity.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
 public record LogoutRequest(@NotBlank String refreshToken) {}
+

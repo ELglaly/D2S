@@ -1,6 +1,6 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
-/** Thrown when a requested resource does not exist (→ 404). */
+/** Thrown when a requested resource does not exist (â†’ 404). */
 public class NotFoundException extends ApplicationException {
 
   public NotFoundException(String messageKey, Object... args) {
@@ -11,3 +11,4 @@ public class NotFoundException extends ApplicationException {
     super(ErrorType.NOT_FOUND, ErrorType.NOT_FOUND.defaultMessageKey());
   }
 }
+

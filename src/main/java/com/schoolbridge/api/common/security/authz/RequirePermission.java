@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  *
  * <p>Works on controllers and services alike because both are Spring beans and therefore proxied.
  * Self-invocation (a bean calling its own annotated method) bypasses the proxy and is NOT
- * intercepted — call across beans.
+ * intercepted â€” call across beans.
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -28,3 +28,4 @@ public @interface RequirePermission {
     ANY
   }
 }
+

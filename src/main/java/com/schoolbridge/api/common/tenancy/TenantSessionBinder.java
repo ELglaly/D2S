@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.tenancy;
+﻿package com.schoolbridge.api.common.tenancy;
 
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Both statements pass {@code is_local = true}, which scopes the setting to the surrounding
  * transaction and resets it on commit or rollback. That is the property that makes this safe behind
- * a connection pool — a session-scoped {@code SET} would leave one request's tenant bound on the
+ * a connection pool â€” a session-scoped {@code SET} would leave one request's tenant bound on the
  * connection for whoever borrows it next, which is the exact leak RLS is meant to prevent.
  *
  * <p>The {@link JdbcTemplate} participates in the surrounding Spring transaction, so the GUC lands
@@ -44,7 +44,7 @@ public class TenantSessionBinder {
    * <p>This exists for exactly two reads, both on {@code users}, both of which resolve <em>who the
    * caller is</em> and therefore cannot know a tenant yet: staff login by email, and the parent OTP
    * flow by phone hash. Both run with {@link TenantContext} empty, so neither the Hibernate filter
-   * nor the tenant GUC is bound — and an unbound GUC fails closed, which would mean every login
+   * nor the tenant GUC is bound â€” and an unbound GUC fails closed, which would mean every login
    * resolves to zero rows.
    *
    * <p>Note what does <em>not</em> need this: any path that knows its school can simply bind it
@@ -52,12 +52,12 @@ public class TenantSessionBinder {
    * the correct answer nearly everywhere; reach for a bypass only when there is genuinely no tenant
    * to bind.
    *
-   * <p>The scope is deliberately narrow — reset happens in a {@code finally} so the rest of the
+   * <p>The scope is deliberately narrow â€” reset happens in a {@code finally} so the rest of the
    * transaction (including any INSERT) is still governed by {@code WITH CHECK}. Keeping every use
    * behind this one method is what makes the exemptions greppable and reviewable.
    *
-   * <p>This is not a hole in the control. RLS here defends against an <em>application</em> bug — a
-   * missed filter, a native query, a {@code findById} that skipped its JPQL override — and a bug
+   * <p>This is not a hole in the control. RLS here defends against an <em>application</em> bug â€” a
+   * missed filter, a native query, a {@code findById} that skipped its JPQL override â€” and a bug
    * does not call this method. Anyone able to set the GUC arbitrarily already has arbitrary SQL
    * execution, at which point RLS was never the thing standing in their way.
    */
@@ -74,3 +74,4 @@ public class TenantSessionBinder {
     jdbcTemplate.queryForObject(SET_BYPASS_SQL, String.class, value);
   }
 }
+

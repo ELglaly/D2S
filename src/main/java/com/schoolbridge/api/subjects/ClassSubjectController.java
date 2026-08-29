@@ -1,7 +1,5 @@
-package com.schoolbridge.api.subjects;
+﻿package com.schoolbridge.api.subjects;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.subjects.dto.AssignSubjectToClassRequest;
@@ -39,7 +37,7 @@ public class ClassSubjectController {
   }
 
   @PostMapping("/classes/{classId}/subjects")
-  @RequirePermission(Permission.SUBJECT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(summary = "Assign a subject to a class")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Subject assigned to class"),
@@ -58,7 +56,7 @@ public class ClassSubjectController {
   }
 
   @GetMapping("/classes/{classId}/subjects")
-  @RequirePermission(Permission.SUBJECT_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
   @Operation(summary = "List subjects in a class")
@@ -75,7 +73,7 @@ public class ClassSubjectController {
   }
 
   @DeleteMapping("/class-subjects/{id}")
-  @RequirePermission(Permission.SUBJECT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(summary = "Remove a subject from a class")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Removed"),
@@ -91,3 +89,4 @@ public class ClassSubjectController {
     return ResponseEntity.noContent().build();
   }
 }
+

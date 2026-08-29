@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import java.util.Comparator;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Holds every {@link Tool} bean and exposes the permission-filtered subset for a request. A tool is
- * visible to a caller iff {@link ToolAuthorizer#canUseTool} allows it — i.e. the caller's role
+ * visible to a caller iff {@link ToolAuthorizer#canUseTool} allows it â€” i.e. the caller's role
  * holds one of the tool's permissions in the DB-backed {@code role_permissions} grants. The
  * registry itself performs no role or permission logic; it delegates to the authorizer and only
  * adds the actions kill-switch and deterministic ordering.
@@ -61,3 +61,4 @@ public class ToolRegistry {
     return tools;
   }
 }
+

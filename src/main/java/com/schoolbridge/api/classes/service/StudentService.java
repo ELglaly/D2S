@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.service;
+﻿package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.BulkImportResult;
 import com.schoolbridge.api.classes.dto.CreateStudentRequest;
@@ -31,3 +31,4 @@ public interface StudentService {
    */
   BulkImportResult bulkImport(UUID schoolId, InputStream csvStream);
 }
+

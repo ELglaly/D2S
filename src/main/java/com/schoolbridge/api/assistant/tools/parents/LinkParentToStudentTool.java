@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.parents;
+﻿package com.schoolbridge.api.assistant.tools.parents;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,7 +13,6 @@ import com.schoolbridge.api.classes.RelationshipType;
 import com.schoolbridge.api.classes.dto.CreateParentLinkRequest;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.ParentStudentLinkService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.dto.UserResponse;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — link a parent to a student. Mirrors {@code POST /parent-links}. */
+/** ADMIN â€” link a parent to a student. Mirrors {@code POST /parent-links}. */
 @Component
 public class LinkParentToStudentTool extends AbstractActionTool {
 
@@ -118,3 +117,4 @@ public class LinkParentToStudentTool extends AbstractActionTool {
     }
   }
 }
+

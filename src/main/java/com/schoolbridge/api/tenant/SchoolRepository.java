@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant;
+﻿package com.schoolbridge.api.tenant;
 
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -9,3 +9,4 @@ public interface SchoolRepository extends JpaRepository<School, UUID> {
 
   Page<School> findByStatus(SchoolStatus status, Pageable pageable);
 }
+

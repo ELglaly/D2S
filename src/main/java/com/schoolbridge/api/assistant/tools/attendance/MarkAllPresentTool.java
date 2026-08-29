@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,7 +13,6 @@ import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.attendance.dto.MarkAllPresentRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +21,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * TEACHER/ADMIN — mark every enrolled student present. Mirrors {@code POST
+ * TEACHER/ADMIN â€” mark every enrolled student present. Mirrors {@code POST
  * /attendance/mark-all-present}.
  */
 @Component
@@ -108,3 +107,4 @@ public class MarkAllPresentTool extends AbstractActionTool {
             ctx.userId(), new MarkAllPresentRequest(classId, localDate(resolvedArgs, "date"))));
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.jwt;
+﻿package com.schoolbridge.api.identity.jwt;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import io.jsonwebtoken.Claims;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Issues and verifies RS256 access tokens; mints and hashes opaque refresh tokens. If no keypair is
- * configured, an ephemeral one is generated at startup — tokens then stop verifying after restart,
+ * configured, an ephemeral one is generated at startup â€” tokens then stop verifying after restart,
  * which is exactly what you want in dev but never in prod.
  */
 @Service
@@ -92,7 +92,7 @@ public class JwtService {
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 
-  /** SHA-256 hex of a refresh token — what we actually store. */
+  /** SHA-256 hex of a refresh token â€” what we actually store. */
   public String hashRefresh(String token) {
     try {
       java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
@@ -113,7 +113,7 @@ public class JwtService {
     }
     log.warn(
         "schoolbridge.jwt.{private-key,public-key} not configured; generating an ephemeral RSA"
-            + " keypair (DEV ONLY — tokens stop verifying after restart).");
+            + " keypair (DEV ONLY â€” tokens stop verifying after restart).");
     try {
       KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
       gen.initialize(2048);
@@ -153,3 +153,4 @@ public class JwtService {
         .replaceAll("\\s", "");
   }
 }
+

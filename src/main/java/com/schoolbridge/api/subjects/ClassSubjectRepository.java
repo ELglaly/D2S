@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects;
+﻿package com.schoolbridge.api.subjects;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,3 +38,4 @@ public interface ClassSubjectRepository extends JpaRepository<ClassSubject, UUID
 
   boolean existsBySubjectId(UUID subjectId);
 }
+

@@ -1,17 +1,17 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 /**
  * Lifecycle of an attachment. Only {@link #CLEAN} is downloadable.
  *
  * <pre>
- * PENDING ──complete──&gt; UPLOADED ──scan──&gt; CLEAN
- *    │                      │                 │
- *    │                      ├──&gt; REJECTED  (size / MIME / checksum)
- *    │                      └──&gt; INFECTED  (AV positive)
- *    └── swept when abandoned
+ * PENDING â”€â”€completeâ”€â”€&gt; UPLOADED â”€â”€scanâ”€â”€&gt; CLEAN
+ *    â”‚                      â”‚                 â”‚
+ *    â”‚                      â”œâ”€â”€&gt; REJECTED  (size / MIME / checksum)
+ *    â”‚                      â””â”€â”€&gt; INFECTED  (AV positive)
+ *    â””â”€â”€ swept when abandoned
  * </pre>
  *
- * <p>{@code PENDING} means an upload URL was issued and the bytes may or may not exist yet — the
+ * <p>{@code PENDING} means an upload URL was issued and the bytes may or may not exist yet â€” the
  * API is not told when the client's PUT lands, so nothing but the client calling {@code complete}
  * distinguishes "still uploading" from "gave up". That ambiguity is why the sweeper deletes
  * long-abandoned rows rather than trying to reconcile them.
@@ -38,8 +38,9 @@ public enum AttachmentStatus {
     return this == CLEAN;
   }
 
-  /** True once the object has been inspected — no further transition is possible. */
+  /** True once the object has been inspected â€” no further transition is possible. */
   public boolean isTerminal() {
     return this == CLEAN || this == REJECTED || this == INFECTED;
   }
 }
+

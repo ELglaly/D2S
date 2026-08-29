@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import java.time.Instant;
 import java.util.List;
@@ -11,8 +11,8 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link AttendanceAlertRecipient}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL — see {@code UserRepository} for rationale.
- * The webhook lookup {@link #findByMessageId} is intentionally global (no tenant binding) — Meta
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
+ * The webhook lookup {@link #findByMessageId} is intentionally global (no tenant binding) â€” Meta
  * only echoes statuses for message ids we issued, mirroring M7's announcement-webhook pattern.
  */
 public interface AttendanceAlertRecipientRepository
@@ -34,7 +34,8 @@ public interface AttendanceAlertRecipientRepository
           + "  and r.messageId is null")
   List<AttendanceAlertRecipient> findDeferredReadyToDispatch(@Param("now") Instant now);
 
-  /** Webhook lookup — see class doc. */
+  /** Webhook lookup â€” see class doc. */
   @Query("select r from AttendanceAlertRecipient r where r.messageId = :messageId")
   Optional<AttendanceAlertRecipient> findByMessageId(@Param("messageId") String messageId);
 }
+

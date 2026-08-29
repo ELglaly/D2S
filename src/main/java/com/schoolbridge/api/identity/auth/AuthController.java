@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth;
+﻿package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.identity.auth.dto.AuthResponse;
 import com.schoolbridge.api.identity.auth.dto.LoginRequest;
@@ -63,7 +63,7 @@ public class AuthController {
   @SecurityRequirements
   @Operation(
       summary = "Logout",
-      description = "Revokes the refresh token. Idempotent — unknown tokens succeed silently.")
+      description = "Revokes the refresh token. Idempotent â€” unknown tokens succeed silently.")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Logged out (or token was already invalid)"),
     @ApiResponse(responseCode = "422", description = "Validation error")
@@ -73,3 +73,4 @@ public class AuthController {
     return ResponseEntity.noContent().build();
   }
 }
+

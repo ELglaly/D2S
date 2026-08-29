@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.tenancy;
+﻿package com.schoolbridge.api.common.tenancy;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import java.util.Optional;
@@ -52,3 +52,4 @@ public final class TenantContext {
     }
   }
 }
+

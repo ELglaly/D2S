@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.dto;
+﻿package com.schoolbridge.api.announcements.dto;
 
 import com.schoolbridge.api.announcements.enums.DeliveryStatus;
 import java.time.Instant;
@@ -13,3 +13,4 @@ public record AnnouncementRecipientResponse(
     Instant acknowledgedAt,
     String messageId,
     Instant createdAt) {}
+

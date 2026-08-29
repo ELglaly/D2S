@@ -1,6 +1,6 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
-/** Thrown when authentication is missing or invalid (→ 401). */
+/** Thrown when authentication is missing or invalid (â†’ 401). */
 public class AuthenticationException extends ApplicationException {
 
   public AuthenticationException(String messageKey, Object... args) {
@@ -11,3 +11,4 @@ public class AuthenticationException extends ApplicationException {
     super(ErrorType.AUTHENTICATION, ErrorType.AUTHENTICATION.defaultMessageKey());
   }
 }
+

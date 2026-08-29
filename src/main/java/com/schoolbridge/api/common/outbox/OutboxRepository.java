@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.outbox;
+﻿package com.schoolbridge.api.common.outbox;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
@@ -20,12 +20,12 @@ public interface OutboxRepository extends JpaRepository<OutboxEvent, UUID> {
    * Claims a batch of due events for this relay instance only.
    *
    * <p>{@code PESSIMISTIC_WRITE} + {@code javax.persistence.lock.timeout = -2} compiles to {@code
-   * SELECT … FOR UPDATE SKIP LOCKED}. Without {@code SKIP LOCKED}, two app instances polling the
+   * SELECT â€¦ FOR UPDATE SKIP LOCKED}. Without {@code SKIP LOCKED}, two app instances polling the
    * same table either publish the same event twice (no lock) or serialise behind each other (plain
    * {@code FOR UPDATE}); with it, each instance takes a disjoint slice and the relay scales
    * horizontally. This is what makes running more than one pod safe.
    *
-   * <p>{@code FAILED} is included because failures are retryable — the row is re-claimed once its
+   * <p>{@code FAILED} is included because failures are retryable â€” the row is re-claimed once its
    * backoff has elapsed. {@code DEAD} rows are excluded and stay put for an operator.
    */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -38,6 +38,7 @@ public interface OutboxRepository extends JpaRepository<OutboxEvent, UUID> {
           + "order by e.nextAttemptAt asc")
   List<OutboxEvent> claimDue(@Param("now") Instant now, Pageable pageable);
 
-  /** Backs the {@code outbox_dead} gauge — a non-zero value means delivery was permanently lost. */
+  /** Backs the {@code outbox_dead} gauge â€” a non-zero value means delivery was permanently lost. */
   long countByStatus(OutboxStatus status);
 }
+

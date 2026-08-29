@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.whatsapp;
+﻿package com.schoolbridge.api.integrations.whatsapp;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.common.i18n.MessageResolver;
@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
  * parent_otp_v1} template, with SMS fallback handled by {@link NotificationDispatcher}.
  *
  * <p>Replaces {@link com.schoolbridge.api.identity.otp.LoggingOtpDispatcher} in non-test profiles.
- * Language defaults to AR for the MENA-first MVP — a per-user preference field can wire here later.
+ * Language defaults to AR for the MENA-first MVP â€” a per-user preference field can wire here later.
  *
  * <p>OTP send stays in-process per open-question (1) / recommendation: the OTP latency budget is
- * tight and the existing {@code OtpService.issue(...)} → {@code OtpDispatcher.dispatch(...)} hook
+ * tight and the existing {@code OtpService.issue(...)} â†’ {@code OtpDispatcher.dispatch(...)} hook
  * is the simplest path. Outbox migration for OTP is deferred to M14.
  */
 @Component
@@ -73,3 +73,4 @@ public class WhatsAppOtpDispatcher implements OtpDispatcher {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
+

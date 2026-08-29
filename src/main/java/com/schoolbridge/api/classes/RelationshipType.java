@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes;
+﻿package com.schoolbridge.api.classes;
 
 /** Relationship of a parent (or guardian) to a student. */
 public enum RelationshipType {
@@ -6,3 +6,4 @@ public enum RelationshipType {
   FATHER,
   GUARDIAN
 }
+

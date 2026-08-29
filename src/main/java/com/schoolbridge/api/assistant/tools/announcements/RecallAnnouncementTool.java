@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.announcements;
+﻿package com.schoolbridge.api.assistant.tools.announcements;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,14 +11,13 @@ import com.schoolbridge.api.assistant.tools.action.ActionSupport;
 import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
- * ADMIN — recall an announcement (destructive). Mirrors {@code POST /announcements/{id}/recall}.
+ * ADMIN â€” recall an announcement (destructive). Mirrors {@code POST /announcements/{id}/recall}.
  */
 @Component
 public class RecallAnnouncementTool extends AbstractActionTool {
@@ -84,6 +83,7 @@ public class RecallAnnouncementTool extends AbstractActionTool {
     if (body == null) {
       return "";
     }
-    return body.length() <= 40 ? body : body.substring(0, 40) + "…";
+    return body.length() <= 40 ? body : body.substring(0, 40) + "â€¦";
   }
 }
+

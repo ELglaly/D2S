@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements;
+﻿package com.schoolbridge.api.announcements;
 
 import com.schoolbridge.api.announcements.dto.AnnouncementRecipientResponse;
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;
@@ -6,8 +6,6 @@ import com.schoolbridge.api.announcements.dto.CreateAnnouncementRequest;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -49,7 +47,7 @@ public class AnnouncementController {
   }
 
   @PostMapping
-  @RequirePermission(Permission.ANNOUNCEMENT_SEND)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN')"
           + " or (hasRole('TEACHER')"
@@ -83,7 +81,7 @@ public class AnnouncementController {
   }
 
   @GetMapping
-  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "List announcements",
       description =
@@ -104,7 +102,7 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}")
-  @RequirePermission(Permission.ANNOUNCEMENT_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.isAnnouncementSender(#id)")
   @Operation(summary = "Get announcement", description = "Returns a single announcement by ID.")
   @ApiResponses({
@@ -118,7 +116,7 @@ public class AnnouncementController {
   }
 
   @PostMapping("/{id}/recall")
-  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "Recall announcement",
       description =
@@ -138,12 +136,12 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}/recipients")
-  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "List recipients",
       description =
           "Returns the materialized recipient rows for an announcement, including per-recipient "
-              + "delivery status (QUEUED→SENT→DELIVERED→READ) and acknowledgment timestamp.")
+              + "delivery status (QUEUEDâ†’SENTâ†’DELIVEREDâ†’READ) and acknowledgment timestamp.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated recipient list"),
     @ApiResponse(responseCode = "401", description = "Not authenticated"),
@@ -163,7 +161,7 @@ public class AnnouncementController {
       summary = "Acknowledge announcement",
       description =
           "Records a parent's acknowledgment for an announcement where requiresAck=true. "
-              + "Idempotent — re-acknowledging the same announcement is a no-op.")
+              + "Idempotent â€” re-acknowledging the same announcement is a no-op.")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Acknowledged"),
     @ApiResponse(responseCode = "401", description = "Not authenticated"),
@@ -194,3 +192,4 @@ public class AnnouncementController {
     return parent;
   }
 }
+

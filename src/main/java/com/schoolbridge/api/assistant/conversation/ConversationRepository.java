@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.conversation;
+﻿package com.schoolbridge.api.assistant.conversation;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -27,3 +27,4 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
           + "order by coalesce(c.lastMessageAt, c.createdAt) desc")
   Page<Conversation> findByOwner(@Param("ownerUserId") UUID ownerUserId, Pageable pageable);
 }
+

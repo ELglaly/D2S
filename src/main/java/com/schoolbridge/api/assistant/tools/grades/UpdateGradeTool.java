@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.grades;
+﻿package com.schoolbridge.api.assistant.tools.grades;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +12,6 @@ import com.schoolbridge.api.assistant.tools.support.NameMatching.MatchResult;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.StudentResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
 import com.schoolbridge.api.grades.dto.UpdateGradeRequest;
@@ -24,8 +23,8 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
- * TEACHER/ADMIN — change an existing grade. Mirrors {@code PATCH /grades/{id}} which is
- * role-guarded only; per §11.4 we re-derive the grade's class and re-run {@code teacherTeaches}
+ * TEACHER/ADMIN â€” change an existing grade. Mirrors {@code PATCH /grades/{id}} which is
+ * role-guarded only; per Â§11.4 we re-derive the grade's class and re-run {@code teacherTeaches}
  * before mutating.
  */
 @Component
@@ -144,3 +143,4 @@ public class UpdateGradeTool extends AbstractActionTool {
     return ToolResult.ok(grades.update(uuid(resolvedArgs, "gradeId"), ctx.userId(), request));
   }
 }
+

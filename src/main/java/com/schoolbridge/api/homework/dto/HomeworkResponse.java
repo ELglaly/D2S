@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework.dto;
+﻿package com.schoolbridge.api.homework.dto;
 
 import com.schoolbridge.api.homework.HomeworkStatus;
 import java.time.Instant;
@@ -21,3 +21,4 @@ public record HomeworkResponse(
     Instant reminderSentAt,
     Instant createdAt,
     Instant updatedAt) {}
+

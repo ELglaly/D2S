@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -85,3 +85,4 @@ public class KnowledgeDocument extends TenantEntity {
     return chunkCount;
   }
 }
+

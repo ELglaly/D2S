@@ -1,9 +1,9 @@
-package com.schoolbridge.api.assistant.tools.support;
+﻿package com.schoolbridge.api.assistant.tools.support;
 
 import java.util.List;
 import java.util.function.Function;
 
-/** Case-insensitive name → entity matching with exact-before-substring priority. */
+/** Case-insensitive name â†’ entity matching with exact-before-substring priority. */
 public final class NameMatching {
 
   private NameMatching() {}
@@ -48,3 +48,4 @@ public final class NameMatching {
     }
   }
 }
+

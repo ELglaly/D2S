@@ -1,7 +1,6 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 
 /**
@@ -10,7 +9,7 @@ import java.util.Set;
  * <p>{@link #permissions()} is the permission this tool requires and mirrors the backing endpoint's
  * {@code @RequirePermission}. A tool is offered to a caller iff the caller's role holds at least
  * one of these permissions in the DB-backed {@code role_permissions} grants (see {@link
- * ToolAuthorizer}) — the single source of truth. Fine-grained scope checks (e.g. {@code
+ * ToolAuthorizer}) â€” the single source of truth. Fine-grained scope checks (e.g. {@code
  * teacherTeaches}, parent-link) run <em>inside</em> the tool at execution time, never here.
  */
 public interface Tool {
@@ -37,3 +36,4 @@ public interface Tool {
     return ToolDomain.fromPackage(getClass());
   }
 }
+

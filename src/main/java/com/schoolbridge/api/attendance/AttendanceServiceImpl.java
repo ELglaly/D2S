@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.attendance.dto.AttendanceHistoryEntry;
 import com.schoolbridge.api.attendance.dto.AttendanceMapper;
@@ -39,14 +39,14 @@ import org.springframework.transaction.annotation.Transactional;
  *       attendance.late_alert} / {@code attendance.excused_alert}) in the same transaction so the
  *       relay can pick it up and the M8 consumer can fan out to parents. Transitions back to
  *       PRESENT write {@code attendance.marked} only (no alert).
- *   <li>Write an audit log entry (unconditional — audit ≠ outbox).
+ *   <li>Write an audit log entry (unconditional â€” audit â‰  outbox).
  * </ol>
  *
  * <p>Same-status re-marks are no-ops: the original row is returned and no new outbox event is
  * written, so an accidental teacher re-submit cannot re-fire alerts. Bulk mark-all-present writes a
  * single aggregated {@code attendance.bulk_marked} event with the list of transitions per OQ4.
  *
- * <p>All outbox payload maps use {@link HashMap} per {@code feedback-outbox-audit-mapof-npe} —
+ * <p>All outbox payload maps use {@link HashMap} per {@code feedback-outbox-audit-mapof-npe} â€”
  * {@code traceId} from MDC is nullable and {@code Map.of} would NPE.
  */
 @Service
@@ -102,7 +102,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             .orElse(null);
 
     if (existing != null && existing.getStatus() == request.status()) {
-      // Same-status replay — idempotent no-op. OQ5.
+      // Same-status replay â€” idempotent no-op. OQ5.
       return mapper.toResponse(existing);
     }
 
@@ -308,3 +308,4 @@ public class AttendanceServiceImpl implements AttendanceService {
     };
   }
 }
+

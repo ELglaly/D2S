@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,3 +22,4 @@ public interface NotificationSettingsRepository extends JpaRepository<Notificati
   @Query("select s from NotificationSettings s where s.userId = :userId")
   Optional<NotificationSettings> findByUserId(@Param("userId") UUID userId);
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.persistence;
+﻿package com.schoolbridge.api.common.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
@@ -59,3 +59,4 @@ public abstract class BaseEntity {
     return getClass().hashCode();
   }
 }
+

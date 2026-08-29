@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant;
+﻿package com.schoolbridge.api.tenant;
 
 import com.schoolbridge.api.tenant.dto.CreateSchoolRequest;
 import com.schoolbridge.api.tenant.dto.SchoolResponse;
@@ -30,3 +30,4 @@ public interface SchoolService {
   /** Reactivates a suspended school; 409 if already active. */
   void reactivate(UUID id);
 }
+

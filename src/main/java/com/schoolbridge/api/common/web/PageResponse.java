@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.web;
+﻿package com.schoolbridge.api.common.web;
 
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -16,3 +16,4 @@ public record PageResponse<T>(
         page.getTotalPages());
   }
 }
+

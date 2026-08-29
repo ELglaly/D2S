@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes;
+﻿package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.classes.service.ParentChildrenService;
@@ -53,3 +53,4 @@ public class ParentChildrenController {
     return parent;
   }
 }
+

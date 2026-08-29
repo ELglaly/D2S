@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security;
+﻿package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.announcements.enums.AnnouncementScope;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * <pre>{@code @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#classId)")}</pre>
  *
  * <p>All methods return {@code false} (deny) when the security context does not contain the
- * expected principal type — this is the safe default.
+ * expected principal type â€” this is the safe default.
  */
 @Component("perms")
 public class PermissionsHelper {
@@ -181,7 +181,7 @@ public class PermissionsHelper {
    * announcement that carries this attachment. Used in SpEL: {@code
    * @perms.parentCanReadAttachment(#id)}.
    *
-   * <p>The {@code ATTACHMENT_READ} grant on the PARENT role is deliberately coarse — it says a
+   * <p>The {@code ATTACHMENT_READ} grant on the PARENT role is deliberately coarse â€” it says a
    * parent may open attachments, not <em>which</em> ones. This is the part that answers "which",
    * and without it any parent in a school could download any other family's uploaded photo by id.
    * Note it grants nothing for an attachment that is not yet attached to anything, which is the
@@ -218,3 +218,4 @@ public class PermissionsHelper {
         || announcementRecipients.existsForParentAndAttachment(parent.userId(), reference);
   }
 }
+

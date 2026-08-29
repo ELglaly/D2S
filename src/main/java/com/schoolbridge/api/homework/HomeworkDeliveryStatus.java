@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 public enum HomeworkDeliveryStatus {
   PENDING,
@@ -12,3 +12,4 @@ public enum HomeworkDeliveryStatus {
   SENT,
   FAILED
 }
+

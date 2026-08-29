@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.dto;
+﻿package com.schoolbridge.api.subjects.dto;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,3 +11,4 @@ public record ClassSubjectResponse(
     String subjectName,
     String subjectCode,
     Instant createdAt) {}
+

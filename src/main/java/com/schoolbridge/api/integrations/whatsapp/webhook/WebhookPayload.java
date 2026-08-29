@@ -1,10 +1,10 @@
-package com.schoolbridge.api.integrations.whatsapp.webhook;
+﻿package com.schoolbridge.api.integrations.whatsapp.webhook;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * Minimal Meta Cloud API webhook envelope — only the fields the M7 delivery-status consumer cares
+ * Minimal Meta Cloud API webhook envelope â€” only the fields the M7 delivery-status consumer cares
  * about. {@code @JsonIgnoreProperties(ignoreUnknown = true)} keeps us forward-compatible if Meta
  * adds new fields (which they regularly do for messages/contacts/errors).
  */
@@ -23,3 +23,4 @@ public record WebhookPayload(String object, List<Entry> entry) {
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record Status(String id, String status, String timestamp, String recipient_id) {}
 }
+

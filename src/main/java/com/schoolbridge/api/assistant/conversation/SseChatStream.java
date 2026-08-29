@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.conversation;
+﻿package com.schoolbridge.api.assistant.conversation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,3 +110,4 @@ final class SseChatStream implements ChatStream {
     }
   }
 }
+

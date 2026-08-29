@@ -1,7 +1,5 @@
-package com.schoolbridge.api.tenant;
+﻿package com.schoolbridge.api.tenant;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.tenant.dto.CreateSchoolRequest;
 import com.schoolbridge.api.tenant.dto.SchoolResponse;
@@ -30,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/schools")
-@RequirePermission(Permission.SCHOOL_MANAGE)
+@PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
 @Tag(
     name = "Schools",
     description = "Platform-admin school (tenant) management. All endpoints require SUPER_ADMIN.")
@@ -152,3 +150,4 @@ public class SchoolController {
     return ResponseEntity.noContent().build();
   }
 }
+

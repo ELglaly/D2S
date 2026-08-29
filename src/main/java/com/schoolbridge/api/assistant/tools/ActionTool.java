@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * A mutating tool. Two-phase by contract:
  *
  * <ol>
- *   <li>{@link #preview} validates scope, resolves names→ids, computes a human impact, and stores a
+ *   <li>{@link #preview} validates scope, resolves namesâ†’ids, computes a human impact, and stores a
  *       single-use pending action. It NEVER mutates. Returns a {@link PreviewOutcome}: a prepared
  *       confirmation, or a denied/clarify rejection fed back to the model.
  *   <li>{@link #execute} is reachable only via {@code /confirm} with a valid token. It re-validates
@@ -30,3 +30,4 @@ public interface ActionTool extends Tool {
     return false;
   }
 }
+

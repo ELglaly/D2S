@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.time;
+﻿package com.schoolbridge.api.common.time;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -7,8 +7,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
- * Pure helpers for a quiet-hours window. Handles both same-day windows ({@code 13:00 → 15:00}) and
- * the more common wrap-around windows ({@code 21:00 → 07:00}). All decisions are made in the
+ * Pure helpers for a quiet-hours window. Handles both same-day windows ({@code 13:00 â†’ 15:00}) and
+ * the more common wrap-around windows ({@code 21:00 â†’ 07:00}). All decisions are made in the
  * school-local timezone so DST transitions and Egypt's UTC+2/+3 swaps are correct out of the box.
  *
  * <p>A zero-length window ({@code start == end}) is treated as "never in window".
@@ -37,7 +37,7 @@ public final class QuietHoursCalculator {
 
   /**
    * Returns the next instant when the quiet window closes, assuming {@code now} is inside the
-   * window. If {@code now} is outside the window, returns {@code now} unchanged (defensive — the
+   * window. If {@code now} is outside the window, returns {@code now} unchanged (defensive â€” the
    * caller should not have invoked this path).
    */
   public static Instant nextEndOfWindow(Instant now, ZoneId zone, LocalTime start, LocalTime end) {
@@ -61,3 +61,4 @@ public final class QuietHoursCalculator {
     return ZonedDateTime.of(endDate, end, zone).toInstant();
   }
 }
+

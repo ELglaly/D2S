@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.repository;
+﻿package com.schoolbridge.api.classes.repository;
 
 import com.schoolbridge.api.classes.entity.SchoolClass;
 import java.util.List;
@@ -31,7 +31,7 @@ public interface SchoolClassRepository extends JpaRepository<SchoolClass, UUID> 
   Page<SchoolClass> findAllByHomeroomTeacherId(UUID homeroomTeacherId, Pageable pageable);
 
   /**
-   * Returns all classes for a teacher — homeroom or formally assigned via TeacherAssignment. Uses
+   * Returns all classes for a teacher â€” homeroom or formally assigned via TeacherAssignment. Uses
    * an EXISTS subquery rather than a join to avoid duplicates when a teacher is both homeroom
    * teacher and has an assignment row for the same class.
    */
@@ -63,3 +63,4 @@ public interface SchoolClassRepository extends JpaRepository<SchoolClass, UUID> 
           + "     ))")
   boolean existsByIdAndTeacher(@Param("classId") UUID classId, @Param("uid") UUID teacherUserId);
 }
+
