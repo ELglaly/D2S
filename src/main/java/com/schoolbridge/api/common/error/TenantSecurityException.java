@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 /**
  * Thrown when a cross-tenant access attempt is detected (â†’ 403). The global handler writes a

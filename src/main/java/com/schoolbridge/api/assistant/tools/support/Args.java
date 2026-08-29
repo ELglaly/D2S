@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.tools.support;
+package com.schoolbridge.api.assistant.tools.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;

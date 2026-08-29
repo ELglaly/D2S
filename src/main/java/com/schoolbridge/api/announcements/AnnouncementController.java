@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.announcements;
+package com.schoolbridge.api.announcements;
 
 import com.schoolbridge.api.announcements.dto.AnnouncementRecipientResponse;
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;
@@ -6,11 +6,14 @@ import com.schoolbridge.api.announcements.dto.CreateAnnouncementRequest;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.AuthorizationPolicy;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,18 +43,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnnouncementController {
 
   private final AnnouncementService service;
+  private final AuthorizationPolicy authorization;
 
-  public AnnouncementController(AnnouncementService service) {
+  public AnnouncementController(AnnouncementService service, AuthorizationPolicy authorization) {
     this.service = service;
+    this.authorization = authorization;
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')"
-          + " or (hasRole('TEACHER')"
-          + " and #request.scopeType().name() == 'CLASS'"
-          + " and @perms.teacherTeaches(#request.classId()))")
+  @RequirePermission(Permission.ANNOUNCEMENT_SEND)
   @Operation(
       summary = "Create announcement",
       description =
@@ -73,6 +72,7 @@ public class AnnouncementController {
   public ResponseEntity<AnnouncementResponse> create(
       @Valid @RequestBody CreateAnnouncementRequest request, Authentication authentication) {
     UUID schoolId = TenantContext.require();
+    authorization.requireAnnouncementScope(request.scopeType(), request.classId());
     UUID senderId = requireStaff(authentication).userId();
     AnnouncementResponse created = service.create(schoolId, senderId, request);
     return ResponseEntity.created(
@@ -81,7 +81,7 @@ public class AnnouncementController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
   @Operation(
       summary = "List announcements",
       description =
@@ -102,8 +102,7 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.isAnnouncementSender(#id)")
+  @RequirePermission(Permission.ANNOUNCEMENT_SEND)
   @Operation(summary = "Get announcement", description = "Returns a single announcement by ID.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Announcement found"),
@@ -112,11 +111,12 @@ public class AnnouncementController {
     @ApiResponse(responseCode = "404", description = "Announcement not found")
   })
   public ResponseEntity<AnnouncementResponse> get(@PathVariable UUID id) {
+    authorization.requireAnnouncementAccess(id);
     return ResponseEntity.ok(service.findById(id));
   }
 
   @PostMapping("/{id}/recall")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
   @Operation(
       summary = "Recall announcement",
       description =
@@ -136,12 +136,12 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}/recipients")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ANNOUNCEMENT_MANAGE)
   @Operation(
       summary = "List recipients",
       description =
           "Returns the materialized recipient rows for an announcement, including per-recipient "
-              + "delivery status (QUEUEDâ†’SENTâ†’DELIVEREDâ†’READ) and acknowledgment timestamp.")
+              + "delivery status (QUEUEDÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢SENTÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢DELIVEREDÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢READ) and acknowledgment timestamp.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated recipient list"),
     @ApiResponse(responseCode = "401", description = "Not authenticated"),
@@ -156,12 +156,12 @@ public class AnnouncementController {
   }
 
   @PostMapping("/{id}/acknowledge")
-  @PreAuthorize("hasRole('PARENT') and @perms.parentReceivedAnnouncement(#id)")
+  @RequirePermission(Permission.ANNOUNCEMENT_READ)
   @Operation(
       summary = "Acknowledge announcement",
       description =
           "Records a parent's acknowledgment for an announcement where requiresAck=true. "
-              + "Idempotent â€” re-acknowledging the same announcement is a no-op.")
+              + "Idempotent ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â re-acknowledging the same announcement is a no-op.")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Acknowledged"),
     @ApiResponse(responseCode = "401", description = "Not authenticated"),
@@ -171,6 +171,7 @@ public class AnnouncementController {
     @ApiResponse(responseCode = "404", description = "Announcement not found")
   })
   public ResponseEntity<Void> acknowledge(@PathVariable UUID id, Authentication authentication) {
+    authorization.requireAnnouncementRecipient(id);
     UUID parentUserId = requireParent(authentication).userId();
     service.acknowledge(id, parentUserId);
     return ResponseEntity.noContent().build();

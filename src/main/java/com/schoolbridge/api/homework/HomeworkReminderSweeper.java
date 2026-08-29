@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.homework;
+package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.tenant.School;

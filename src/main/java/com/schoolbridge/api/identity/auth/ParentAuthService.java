@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.auth;
+package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.common.error.RateLimitException;

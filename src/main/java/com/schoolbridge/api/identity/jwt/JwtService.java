@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.jwt;
+package com.schoolbridge.api.identity.jwt;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import io.jsonwebtoken.Claims;

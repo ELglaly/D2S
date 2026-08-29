@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.announcements;
+package com.schoolbridge.api.announcements;
 
 import com.schoolbridge.api.announcements.enums.AnnouncementScope;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;

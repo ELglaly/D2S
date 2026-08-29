@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 import org.springframework.http.HttpStatus;
 

@@ -1,4 +1,6 @@
-﻿package com.schoolbridge.api.assistant.tools.attendance;
+package com.schoolbridge.api.assistant.tools.attendance;
+
+import com.schoolbridge.api.common.security.authz.Permission;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;

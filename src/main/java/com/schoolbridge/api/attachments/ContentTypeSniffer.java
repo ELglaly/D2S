@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments;
+package com.schoolbridge.api.attachments;
 
 import java.util.Optional;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.audit;
+package com.schoolbridge.api.assistant.audit;
 
 import com.schoolbridge.api.assistant.dto.AssistantAnswer;
 import com.schoolbridge.api.assistant.tools.ToolContext;

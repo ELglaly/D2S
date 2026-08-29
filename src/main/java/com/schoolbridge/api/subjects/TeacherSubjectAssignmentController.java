@@ -1,10 +1,12 @@
-﻿package com.schoolbridge.api.subjects;
+package com.schoolbridge.api.subjects;
 
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.subjects.dto.AssignTeacherToSubjectRequest;
 import com.schoolbridge.api.subjects.dto.StudentSubjectResponse;
 import com.schoolbridge.api.subjects.dto.TeacherSubjectAssignmentResponse;
 import com.schoolbridge.api.subjects.service.TeacherSubjectAssignmentService;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +39,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @PostMapping("/classes/{classId}/subjects/{subjectId}/teachers")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Assign a teacher to a subject in a class")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Teacher assigned"),
@@ -60,7 +62,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @GetMapping("/classes/{classId}/subjects/{subjectId}/teachers")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "List teachers assigned to a subject in a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Assignment list"),
@@ -73,7 +75,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @GetMapping("/classes/{classId}/teacher-subject-assignments")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "List all teacher-subject assignments for a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Assignment list"),
@@ -86,7 +88,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @DeleteMapping("/teacher-subject-assignments/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Remove a teacher-subject assignment")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Removed"),
@@ -100,8 +102,7 @@ public class TeacherSubjectAssignmentController {
   }
 
   @GetMapping("/students/{studentId}/subjects")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')" + " or (hasRole('PARENT') and @perms.parentLinkedTo(#studentId))")
+  @RequirePermission(Permission.SUBJECT_READ)
   @Operation(
       summary = "Get subjects available to a student",
       description =

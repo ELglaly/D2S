@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.subjects.dto;
+package com.schoolbridge.api.subjects.dto;
 
 import com.schoolbridge.api.subjects.SubjectStatus;
 import java.time.Instant;

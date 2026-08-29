@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp;
+package com.schoolbridge.api.integrations.whatsapp;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

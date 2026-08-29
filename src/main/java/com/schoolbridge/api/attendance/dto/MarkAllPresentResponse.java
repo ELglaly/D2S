@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance.dto;
+package com.schoolbridge.api.attendance.dto;
 
 import java.time.LocalDate;
 import java.util.UUID;

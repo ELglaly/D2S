@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications.dto;
+package com.schoolbridge.api.notifications.dto;
 
 import com.schoolbridge.api.integrations.NotificationChannel;
 import com.schoolbridge.api.notifications.NotificationCategory;

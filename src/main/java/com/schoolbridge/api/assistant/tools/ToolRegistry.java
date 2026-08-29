@@ -1,4 +1,6 @@
-﻿package com.schoolbridge.api.assistant.tools;
+package com.schoolbridge.api.assistant.tools;
+
+import com.schoolbridge.api.common.security.authz.Permission;
 
 import java.util.Comparator;
 import java.util.List;

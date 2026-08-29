@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm.springai;
+package com.schoolbridge.api.assistant.llm.springai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.subjects;
+package com.schoolbridge.api.subjects;
 
 import java.util.List;
 import java.util.Optional;

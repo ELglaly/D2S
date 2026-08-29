@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.grades;
+package com.schoolbridge.api.grades;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;

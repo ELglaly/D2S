@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.rabbit;
+package com.schoolbridge.api.integrations.rabbit;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;

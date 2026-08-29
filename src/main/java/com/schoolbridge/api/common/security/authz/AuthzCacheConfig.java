@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security.authz;
+package com.schoolbridge.api.common.security.authz;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;

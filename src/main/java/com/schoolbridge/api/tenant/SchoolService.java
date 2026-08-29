@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.tenant;
+package com.schoolbridge.api.tenant;
 
 import com.schoolbridge.api.tenant.dto.CreateSchoolRequest;
 import com.schoolbridge.api.tenant.dto.SchoolResponse;

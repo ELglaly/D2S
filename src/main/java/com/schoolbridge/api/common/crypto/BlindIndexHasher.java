@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.crypto;
+package com.schoolbridge.api.common.crypto;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

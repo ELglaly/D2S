@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.conversation;
+package com.schoolbridge.api.assistant.conversation;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.homework;
+package com.schoolbridge.api.homework;
 
 import java.time.Instant;
 import java.util.List;

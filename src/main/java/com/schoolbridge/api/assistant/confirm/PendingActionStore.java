@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.confirm;
+package com.schoolbridge.api.assistant.confirm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;

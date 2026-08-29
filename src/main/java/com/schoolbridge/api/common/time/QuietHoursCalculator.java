@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.time;
+package com.schoolbridge.api.common.time;
 
 import java.time.Instant;
 import java.time.LocalDate;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.classes.entity.SchoolClass;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;

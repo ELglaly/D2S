@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.tenant;
+package com.schoolbridge.api.tenant;
 
 public enum SubscriptionTier {
   BASIC,

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.tenant.dto;
+package com.schoolbridge.api.tenant.dto;
 
 import com.schoolbridge.api.tenant.SubscriptionTier;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.tools.support;
+package com.schoolbridge.api.assistant.tools.support;
 
 import java.util.List;
 import java.util.function.Function;

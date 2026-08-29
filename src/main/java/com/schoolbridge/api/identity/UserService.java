@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity;
+package com.schoolbridge.api.identity;
 
 import com.schoolbridge.api.identity.dto.CreateUserRequest;
 import com.schoolbridge.api.identity.dto.UserResponse;

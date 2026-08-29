@@ -1,9 +1,11 @@
-﻿package com.schoolbridge.api.integrations.whatsapp;
+package com.schoolbridge.api.integrations.whatsapp;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.integrations.DispatchRequest;
 import com.schoolbridge.api.integrations.DispatchResult;
 import com.schoolbridge.api.integrations.NotificationDispatcher;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ import org.springframework.web.client.RestClient;
  */
 @RestController
 @RequestMapping("/integrations/whatsapp/diagnostics")
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequirePermission(Permission.WHATSAPP_DIAGNOSTICS)
 @Tag(
     name = "WhatsApp Diagnostics",
     description = "WhatsApp integration status and credential check (SUPER_ADMIN only)")
@@ -60,8 +62,8 @@ public class WhatsAppDiagnosticsController {
     return new StatusResponse(
         isLive,
         isLive
-            ? "MetaCloudWhatsAppClient (LIVE â€” real sends)"
-            : "LoggingWhatsAppClient (STUB â€” logs only, no real sends)",
+            ? "MetaCloudWhatsAppClient (LIVE Ã¢â‚¬â€ real sends)"
+            : "LoggingWhatsAppClient (STUB Ã¢â‚¬â€ logs only, no real sends)",
         missing,
         mask(properties.getPhoneNumberId()),
         new TemplateNames(
@@ -85,7 +87,7 @@ public class WhatsAppDiagnosticsController {
     if (isBlank(properties.getAccessToken()) || isBlank(properties.getPhoneNumberId())) {
       return new PingResponse(
           false,
-          "Credentials not configured â€” set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID first",
+          "Credentials not configured Ã¢â‚¬â€ set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID first",
           null);
     }
     try {
@@ -117,7 +119,7 @@ public class WhatsAppDiagnosticsController {
           info.verified_name());
       return new PingResponse(
           true,
-          "Connected â€” phone: "
+          "Connected Ã¢â‚¬â€ phone: "
               + info.display_phone_number()
               + " | name: "
               + info.verified_name()
@@ -156,7 +158,7 @@ public class WhatsAppDiagnosticsController {
           result.accepted(),
           result.channel().name(),
           result.messageId(),
-          result.accepted() ? "Message dispatched" : "Dispatch failed â€” check logs");
+          result.accepted() ? "Message dispatched" : "Dispatch failed Ã¢â‚¬â€ check logs");
     } catch (Exception ex) {
       log.warn("whatsapp_diagnostics_test_send_failed phone={} cause={}", phone, ex.getMessage());
       return new TestSendResponse(false, "ERROR", null, ex.getMessage());

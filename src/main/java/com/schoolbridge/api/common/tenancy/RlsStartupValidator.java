@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.tenancy;
+package com.schoolbridge.api.common.tenancy;
 
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;

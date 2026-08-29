@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.homework;
+package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.identity.User;

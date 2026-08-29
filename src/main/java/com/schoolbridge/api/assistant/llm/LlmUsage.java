@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 /** Token accounting for one model turn. */
 public record LlmUsage(long inputTokens, long outputTokens) {

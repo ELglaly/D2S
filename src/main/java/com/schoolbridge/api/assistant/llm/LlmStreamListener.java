@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 /**
  * Receives incremental text as the model streams a single turn. The orchestrator implements this to

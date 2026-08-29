@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.homework;
+package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.homework.dto.CreateHomeworkRequest;
 import com.schoolbridge.api.homework.dto.HomeworkRecipientResponse;

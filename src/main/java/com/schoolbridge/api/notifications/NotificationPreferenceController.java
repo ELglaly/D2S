@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications;
+package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.tenancy.TenantContext;

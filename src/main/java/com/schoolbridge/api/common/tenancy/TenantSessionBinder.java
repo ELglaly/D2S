@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.tenancy;
+package com.schoolbridge.api.common.tenancy;
 
 import java.util.UUID;
 import java.util.function.Supplier;

@@ -1,10 +1,12 @@
-﻿package com.schoolbridge.api.subjects;
+package com.schoolbridge.api.subjects;
 
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.subjects.dto.AssignSubjectToClassRequest;
 import com.schoolbridge.api.subjects.dto.ClassSubjectResponse;
 import com.schoolbridge.api.subjects.service.ClassSubjectService;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -16,7 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +39,7 @@ public class ClassSubjectController {
   }
 
   @PostMapping("/classes/{classId}/subjects")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Assign a subject to a class")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Subject assigned to class"),
@@ -56,9 +58,7 @@ public class ClassSubjectController {
   }
 
   @GetMapping("/classes/{classId}/subjects")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
+  @RequirePermission(Permission.SUBJECT_READ)
   @Operation(summary = "List subjects in a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated list of class subjects"),
@@ -73,7 +73,7 @@ public class ClassSubjectController {
   }
 
   @DeleteMapping("/class-subjects/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Remove a subject from a class")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Removed"),

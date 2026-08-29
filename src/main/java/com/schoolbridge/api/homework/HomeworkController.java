@@ -1,6 +1,7 @@
-﻿package com.schoolbridge.api.homework;
+package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.AuthorizationPolicy;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -11,6 +12,8 @@ import com.schoolbridge.api.homework.dto.ParentHomeworkFeedEntry;
 import com.schoolbridge.api.homework.dto.UpdateHomeworkRequest;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +30,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,16 +47,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class HomeworkController {
 
   private final HomeworkService service;
+  private final AuthorizationPolicy authorization;
 
-  public HomeworkController(HomeworkService service) {
+  public HomeworkController(HomeworkService service, AuthorizationPolicy authorization) {
     this.service = service;
+    this.authorization = authorization;
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')"
-          + " or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
+  @RequirePermission(Permission.HOMEWORK_CREATE)
   @Operation(
       summary = "Create homework item",
       description =
@@ -70,6 +71,7 @@ public class HomeworkController {
   public ResponseEntity<HomeworkResponse> create(
       @Valid @RequestBody CreateHomeworkRequest request, Authentication authentication) {
     UUID schoolId = TenantContext.require();
+    authorization.requireClassAccess(request.classId());
     UUID actorId = requireStaff(authentication).userId();
     HomeworkResponse created = service.create(schoolId, actorId, request);
     return ResponseEntity.created(URI.create(ApiConstants.API_V1 + "/homework/" + created.id()))
@@ -77,9 +79,7 @@ public class HomeworkController {
   }
 
   @PostMapping("/{id}/publish")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
+  @RequirePermission(Permission.HOMEWORK_PUBLISH)
   @Operation(
       summary = "Publish homework item",
       description =
@@ -93,14 +93,12 @@ public class HomeworkController {
     @ApiResponse(responseCode = "409", description = "Already published or archived")
   })
   public ResponseEntity<HomeworkResponse> publish(@PathVariable UUID id) {
+    authorization.requireHomeworkAccess(id);
     return ResponseEntity.ok(service.publish(id));
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')"
-          + " or (hasRole('TEACHER') and (#classId == null or @perms.teacherTeaches(#classId)))")
+  @RequirePermission(Permission.HOMEWORK_UPDATE)
   @Operation(
       summary = "List homework items (staff)",
       description = "Returns paginated homework items filtered by classId, status, and date range.")
@@ -118,12 +116,13 @@ public class HomeworkController {
           LocalDate dueDateTo,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
           Pageable pageable) {
+    if (classId != null) authorization.requireClassRead(classId);
     return ResponseEntity.ok(
         PageResponse.from(service.list(classId, status, dueDateFrom, dueDateTo, pageable)));
   }
 
   @GetMapping(params = "childId")
-  @PreAuthorize("hasRole('PARENT')")
+  @RequirePermission(Permission.HOMEWORK_READ)
   @Operation(
       summary = "Parent homework feed",
       description =
@@ -148,7 +147,7 @@ public class HomeworkController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
+  @RequirePermission(Permission.HOMEWORK_READ)
   @Operation(
       summary = "Get homework item",
       description =
@@ -170,9 +169,7 @@ public class HomeworkController {
   }
 
   @GetMapping("/{id}/recipients")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
+  @RequirePermission(Permission.HOMEWORK_UPDATE)
   @Operation(
       summary = "List homework recipients",
       description =
@@ -186,13 +183,12 @@ public class HomeworkController {
     @ApiResponse(responseCode = "404", description = "Homework item not found")
   })
   public ResponseEntity<List<HomeworkRecipientResponse>> listRecipients(@PathVariable UUID id) {
+    authorization.requireHomeworkAccess(id);
     return ResponseEntity.ok(service.listRecipients(id));
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
+  @RequirePermission(Permission.HOMEWORK_UPDATE)
   @Operation(
       summary = "Update homework item",
       description =
@@ -207,13 +203,12 @@ public class HomeworkController {
   })
   public ResponseEntity<HomeworkResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateHomeworkRequest request) {
+    authorization.requireHomeworkAccess(id);
     return ResponseEntity.ok(service.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN')" + " or (hasRole('TEACHER') and @perms.isHomeworkAuthor(#id))")
+  @RequirePermission(Permission.HOMEWORK_DELETE)
   @Operation(
       summary = "Archive homework item",
       description =
@@ -226,12 +221,13 @@ public class HomeworkController {
     @ApiResponse(responseCode = "404", description = "Homework item not found")
   })
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    authorization.requireHomeworkAccess(id);
     service.archive(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/acknowledge")
-  @PreAuthorize("hasRole('PARENT')")
+  @RequirePermission(Permission.HOMEWORK_ACK)
   @Operation(
       summary = "Acknowledge homework item",
       description =

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant;
+package com.schoolbridge.api.assistant;
 
 import com.schoolbridge.api.assistant.dto.AskRequest;
 import com.schoolbridge.api.assistant.dto.AssistantAnswer;

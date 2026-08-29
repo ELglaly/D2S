@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.classes.service;
+package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.EnrollStudentRequest;
 import com.schoolbridge.api.classes.dto.EnrollmentResponse;

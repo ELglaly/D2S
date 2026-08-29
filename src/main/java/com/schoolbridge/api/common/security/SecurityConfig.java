@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security;
+package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.identity.jwt.JwtService;
 import com.schoolbridge.api.identity.otp.OtpService;
@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,11 +26,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * the request.
  *
  * <p>Swagger UI and API-docs paths are conditionally included in the public allow-list based on
- * {@code springdoc.api-docs.enabled} â€” set to {@code false} in prod to remove docs exposure.
+ * {@code springdoc.api-docs.enabled} Ã¢â‚¬â€ set to {@code false} in prod to remove docs exposure.
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
   private static final String[] ALWAYS_PUBLIC_PATHS = {

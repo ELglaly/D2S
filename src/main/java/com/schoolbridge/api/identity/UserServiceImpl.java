@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity;
+package com.schoolbridge.api.identity;
 
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.common.error.ConflictException;

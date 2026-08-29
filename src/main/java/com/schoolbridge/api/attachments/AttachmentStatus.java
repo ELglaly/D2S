@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments;
+package com.schoolbridge.api.attachments;
 
 /**
  * Lifecycle of an attachment. Only {@link #CLEAN} is downloadable.

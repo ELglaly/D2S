@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.auth;
+package com.schoolbridge.api.identity.auth;
 
 import java.time.Duration;
 import org.springframework.data.redis.core.StringRedisTemplate;

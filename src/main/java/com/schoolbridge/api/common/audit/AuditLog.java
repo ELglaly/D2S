@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.audit;
+package com.schoolbridge.api.common.audit;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.sms;
+package com.schoolbridge.api.integrations.sms;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.integrations.whatsapp.MessageSendResult;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.i18n;
+package com.schoolbridge.api.common.i18n;
 
 import java.util.Locale;
 import org.springframework.context.MessageSource;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.conversation.dto;
+package com.schoolbridge.api.assistant.conversation.dto;
 
 import jakarta.validation.constraints.Size;
 

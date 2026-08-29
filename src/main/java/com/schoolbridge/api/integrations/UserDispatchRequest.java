@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations;
+package com.schoolbridge.api.integrations;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.rag.dto;
+package com.schoolbridge.api.assistant.rag.dto;
 
 import com.schoolbridge.api.assistant.rag.DocType;
 import com.schoolbridge.api.assistant.rag.IngestStatus;

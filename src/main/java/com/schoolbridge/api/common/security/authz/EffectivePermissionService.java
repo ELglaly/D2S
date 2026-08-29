@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security.authz;
+package com.schoolbridge.api.common.security.authz;
 
 import com.schoolbridge.api.identity.UserRole;
 import java.util.Set;

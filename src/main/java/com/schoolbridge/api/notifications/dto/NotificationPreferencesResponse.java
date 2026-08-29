@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications.dto;
+package com.schoolbridge.api.notifications.dto;
 
 import java.time.LocalTime;
 import java.util.List;

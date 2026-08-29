@@ -1,6 +1,7 @@
-﻿package com.schoolbridge.api.grades;
+package com.schoolbridge.api.grades;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.AuthorizationPolicy;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -8,6 +9,8 @@ import com.schoolbridge.api.grades.dto.CreateGradeRequest;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
 import com.schoolbridge.api.grades.dto.UpdateGradeRequest;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,14 +40,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class GradesController {
 
   private final GradeService service;
+  private final AuthorizationPolicy authorization;
 
-  public GradesController(GradeService service) {
+  public GradesController(GradeService service, AuthorizationPolicy authorization) {
     this.service = service;
+    this.authorization = authorization;
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#request.classId())")
+  @RequirePermission(Permission.GRADE_CREATE)
   @Operation(summary = "Create grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Grade record created"),
@@ -58,6 +61,7 @@ public class GradesController {
   public ResponseEntity<GradeRecordResponse> create(
       @Valid @RequestBody CreateGradeRequest request, Authentication authentication) {
     UUID schoolId = TenantContext.require();
+    authorization.requireClassAccess(request.classId());
     UUID actorId = requireStaff(authentication).userId();
     GradeRecordResponse created = service.create(schoolId, actorId, request);
     return ResponseEntity.created(URI.create(ApiConstants.API_V1 + "/grades/" + created.id()))
@@ -65,8 +69,7 @@ public class GradesController {
   }
 
   @GetMapping(params = "studentId")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'TEACHER') or @perms.parentLinkedTo(#studentId)")
+  @RequirePermission(Permission.GRADE_READ)
   @Operation(
       summary = "List grades for a student",
       description =
@@ -78,12 +81,12 @@ public class GradesController {
     @ApiResponse(responseCode = "403", description = "Insufficient permissions")
   })
   public ResponseEntity<List<GradeRecordResponse>> listByStudent(@RequestParam UUID studentId) {
+    authorization.requireStudentRead(studentId);
     return ResponseEntity.ok(service.listByStudent(studentId));
   }
 
   @GetMapping(params = "classId")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#classId)")
+  @RequirePermission(Permission.GRADE_READ)
   @Operation(summary = "List grades for a class")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated grade list"),
@@ -94,11 +97,12 @@ public class GradesController {
       @RequestParam UUID classId,
       @PageableDefault(size = 20, sort = "period", direction = Sort.Direction.ASC)
           Pageable pageable) {
+    authorization.requireClassRead(classId);
     return ResponseEntity.ok(PageResponse.from(service.listByClass(classId, pageable)));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
+  @RequirePermission(Permission.GRADE_READ)
   @Operation(summary = "Get a single grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Grade record found"),
@@ -110,7 +114,7 @@ public class GradesController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
+  @RequirePermission(Permission.GRADE_UPDATE)
   @Operation(summary = "Update a grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Updated"),
@@ -128,7 +132,7 @@ public class GradesController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
+  @RequirePermission(Permission.GRADE_DELETE)
   @Operation(summary = "Delete a grade record")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Deleted"),

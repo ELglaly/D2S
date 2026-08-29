@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications;
+package com.schoolbridge.api.notifications;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.jwt;
+package com.schoolbridge.api.identity.jwt;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;

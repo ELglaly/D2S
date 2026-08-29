@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp;
+package com.schoolbridge.api.integrations.whatsapp;
 
 /**
  * A single positional parameter passed to a Meta-approved WhatsApp template. The parameter type is

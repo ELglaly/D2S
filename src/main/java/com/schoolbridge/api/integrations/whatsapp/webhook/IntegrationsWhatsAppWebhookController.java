@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp.webhook;
+package com.schoolbridge.api.integrations.whatsapp.webhook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.announcements.AnnouncementRecipient;

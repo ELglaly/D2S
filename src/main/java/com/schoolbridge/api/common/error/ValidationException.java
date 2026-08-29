@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 /** Thrown when a request fails business validation (â†’ 422). */
 public class ValidationException extends ApplicationException {

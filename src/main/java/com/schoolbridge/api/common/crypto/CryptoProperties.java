@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.crypto;
+package com.schoolbridge.api.common.crypto;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations;
+package com.schoolbridge.api.integrations;
 
 import com.schoolbridge.api.integrations.sms.LoggingSmsClient;
 import com.schoolbridge.api.integrations.sms.SmsClient;

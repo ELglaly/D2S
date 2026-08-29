@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.rag;
+package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.assistant.rag.dto.IngestDocumentRequest;
 import com.schoolbridge.api.assistant.rag.dto.KnowledgeDocumentResponse;

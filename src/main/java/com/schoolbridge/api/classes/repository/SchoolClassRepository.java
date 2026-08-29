@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.classes.repository;
+package com.schoolbridge.api.classes.repository;
 
 import com.schoolbridge.api.classes.entity.SchoolClass;
 import java.util.List;

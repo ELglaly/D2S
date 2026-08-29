@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.config;
+package com.schoolbridge.api.config;
 
 import com.schoolbridge.api.attachments.StorageProperties;
 import com.schoolbridge.api.common.crypto.CryptoProperties;

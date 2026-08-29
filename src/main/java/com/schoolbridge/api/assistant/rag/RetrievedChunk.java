@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.rag;
+package com.schoolbridge.api.assistant.rag;
 
 import org.springframework.ai.document.Document;
 

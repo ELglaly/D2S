@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.classes.service;
+package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.CreateSchoolClassRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;

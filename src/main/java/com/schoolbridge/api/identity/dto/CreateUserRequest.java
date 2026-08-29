@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.dto;
+package com.schoolbridge.api.identity.dto;
 
 import com.schoolbridge.api.identity.UserRole;
 import jakarta.validation.constraints.Email;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.settings.dto;
+package com.schoolbridge.api.assistant.settings.dto;
 
 /**
  * The tenant's editable assistant persona. {@code systemPrompt} is null when the tenant uses the

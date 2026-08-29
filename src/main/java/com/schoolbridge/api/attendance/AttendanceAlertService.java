@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;

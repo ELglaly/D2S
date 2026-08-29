@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.web;
+package com.schoolbridge.api.common.web;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;

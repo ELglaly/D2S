@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.confirm;
+package com.schoolbridge.api.assistant.confirm;
 
 import java.util.Locale;
 import java.util.Set;

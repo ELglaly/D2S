@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 /** Thrown when an authenticated principal lacks permission for an action (â†’ 403). */
 public class AuthorizationException extends ApplicationException {

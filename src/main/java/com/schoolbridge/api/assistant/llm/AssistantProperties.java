@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;

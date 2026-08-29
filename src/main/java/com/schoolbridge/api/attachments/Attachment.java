@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments;
+package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;

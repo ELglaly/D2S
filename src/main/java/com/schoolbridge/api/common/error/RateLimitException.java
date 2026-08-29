@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 /** Thrown when a caller exceeds an allowed request rate (â†’ 429). */
 public class RateLimitException extends ApplicationException {

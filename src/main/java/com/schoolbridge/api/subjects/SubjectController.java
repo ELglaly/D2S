@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.subjects;
+package com.schoolbridge.api.subjects;
 
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
@@ -7,6 +7,8 @@ import com.schoolbridge.api.subjects.dto.CreateSubjectRequest;
 import com.schoolbridge.api.subjects.dto.SubjectResponse;
 import com.schoolbridge.api.subjects.dto.UpdateSubjectRequest;
 import com.schoolbridge.api.subjects.service.SubjectService;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,7 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,7 +42,7 @@ public class SubjectController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Create a subject")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Subject created"),
@@ -57,7 +59,7 @@ public class SubjectController {
   }
 
   @GetMapping
-  @PreAuthorize("isAuthenticated()")
+  @RequirePermission(Permission.SUBJECT_READ)
   @Operation(summary = "List all subjects")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated subject list"),
@@ -71,7 +73,7 @@ public class SubjectController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("isAuthenticated()")
+  @RequirePermission(Permission.SUBJECT_READ)
   @Operation(summary = "Get a subject by ID")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Subject found"),
@@ -83,7 +85,7 @@ public class SubjectController {
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Update a subject")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Updated"),
@@ -99,7 +101,7 @@ public class SubjectController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.SUBJECT_MANAGE)
   @Operation(summary = "Delete a subject")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Deleted"),

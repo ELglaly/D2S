@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security.authz;
+package com.schoolbridge.api.common.security.authz;
 
 /**
  * Compile-time catalog of fine-grained permissions. Each value mirrors a row in the {@code
@@ -7,7 +7,7 @@
  *
  * <p>Use in {@link RequirePermission} on controller/service methods. {@code MANAGE_ROLES} and
  * {@code MANAGE_PERMISSIONS} gate the authz-management endpoints themselves and are seeded to
- * SUPER_ADMIN only â€” no other role may alter roleâ†’permission mappings.
+ * SUPER_ADMIN only Ã¢â‚¬â€ no other role may alter roleÃ¢â€ â€™permission mappings.
  */
 public enum Permission {
   // grades
@@ -26,6 +26,7 @@ public enum Permission {
 
   // attendance
   ATTENDANCE_RECORD,
+  ATTENDANCE_RESPOND,
   ATTENDANCE_READ,
 
   // classes / subjects / enrollment / students

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp;
+package com.schoolbridge.api.integrations.whatsapp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.schoolbridge.api.announcements.enums.Language;
