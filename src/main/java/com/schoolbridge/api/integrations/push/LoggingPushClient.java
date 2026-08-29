@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.push;
+﻿package com.schoolbridge.api.integrations.push;
 
 import java.util.Map;
 import org.slf4j.Logger;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * development gets observable output without requiring Firebase credentials.
  *
  * <p>Reports the send as <b>not accepted</b>, because it was not: nothing left the process. That
- * matters now that push is first in {@code NotificationChannel.DEFAULT_ORDER} — the dispatcher
+ * matters now that push is first in {@code NotificationChannel.DEFAULT_ORDER} â€” the dispatcher
  * stops at the first channel that accepts, so a stub claiming success would end the walk and
  * swallow every notification for any user with a registered device, in exactly the deployment where
  * FCM has not been configured yet. Returning false lets the walk fall through to WhatsApp, and
@@ -40,3 +40,4 @@ public class LoggingPushClient implements PushNotificationClient {
     return "****" + token.substring(token.length() - 4);
   }
 }
+

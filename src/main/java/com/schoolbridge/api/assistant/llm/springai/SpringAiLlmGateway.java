@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm.springai;
+﻿package com.schoolbridge.api.assistant.llm.springai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -31,7 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 /**
- * {@link LlmGateway} backed by a Spring AI {@link ChatModel} — the only real gateway in the
+ * {@link LlmGateway} backed by a Spring AI {@link ChatModel} â€” the only real gateway in the
  * codebase (ADR-007). Loaded when {@code schoolbridge.assistant.enabled=true}; otherwise {@code
  * AssistantConfig} supplies {@code DisabledLlmGateway}. The concrete provider behind the {@code
  * ChatModel} is selected by Spring AI auto-config via {@code spring.ai.model.chat} + the provider's
@@ -39,9 +39,9 @@ import org.springframework.stereotype.Component;
  *
  * <p><b>Tool execution stays external.</b> Tools are advertised to the model as {@link
  * ToolCallback} definitions, but {@code internalToolExecutionEnabled=false} stops Spring AI from
- * ever invoking them — the model's tool-call requests are returned in the {@link ChatResponse} and
+ * ever invoking them â€” the model's tool-call requests are returned in the {@link ChatResponse} and
  * handed back to the existing orchestrator, which keeps the role/permission checks and the
- * preview→confirm→execute gate intact. The advertised callbacks therefore throw if called.
+ * previewâ†’confirmâ†’execute gate intact. The advertised callbacks therefore throw if called.
  *
  * <p>Streaming uses the {@link LlmGateway#converseStreaming default} chunked implementation for now
  * (one blocking turn, then text chunked to the SSE sink); true token streaming over {@code
@@ -77,7 +77,7 @@ public class SpringAiLlmGateway implements LlmGateway {
         ToolCallingChatOptions.builder()
             .model(request.model())
             .maxTokens((int) request.maxTokens())
-            // Orchestrator owns execution → never let Spring AI run a tool (preserves confirm
+            // Orchestrator owns execution â†’ never let Spring AI run a tool (preserves confirm
             // gate).
             .internalToolExecutionEnabled(false)
             .toolCallbacks(toToolCallbacks(request.tools()))
@@ -86,7 +86,7 @@ public class SpringAiLlmGateway implements LlmGateway {
   }
 
   /**
-   * One internal message → one or more Spring AI messages (mirrors the OpenAI/DeepSeek fan-out).
+   * One internal message â†’ one or more Spring AI messages (mirrors the OpenAI/DeepSeek fan-out).
    */
   private List<Message> toMessages(LlmMessage message) {
     if (message.role() == LlmMessage.Role.ASSISTANT) {
@@ -232,3 +232,4 @@ public class SpringAiLlmGateway implements LlmGateway {
     }
   }
 }
+

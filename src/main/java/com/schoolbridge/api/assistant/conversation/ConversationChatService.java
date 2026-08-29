@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.conversation;
+﻿package com.schoolbridge.api.assistant.conversation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -284,7 +284,7 @@ public class ConversationChatService {
 
   // --- streaming helpers ----------------------------------------------------
 
-  /** A whole message (start → one text block → stop) for deterministic, non-model replies. */
+  /** A whole message (start â†’ one text block â†’ stop) for deterministic, non-model replies. */
   private void streamWholeMessage(ChatStream sink, String text, String stopReason, String token) {
     sink.messageStart(newMessageId());
     streamInlineBlock(sink, 0, text);
@@ -382,3 +382,4 @@ public class ConversationChatService {
     }
   }
 }
+

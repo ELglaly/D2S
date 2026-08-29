@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * <p>There is no {@code engine} or {@code provider} property and no API key here. Spring AI is the
  * only engine (ADR-007) and the provider and its credentials are configured under {@code
- * spring.ai.*} — keeping exactly one home for the key, so there is only one place a secret can be
+ * spring.ai.*} â€” keeping exactly one home for the key, so there is only one place a secret can be
  * committed by accident.
  */
 @ConfigurationProperties(prefix = "schoolbridge.assistant")
@@ -136,7 +136,7 @@ public class AssistantProperties {
     return rag;
   }
 
-  /** Action-layer (mutation) settings — a second kill-switch plus the confirmation gate knobs. */
+  /** Action-layer (mutation) settings â€” a second kill-switch plus the confirmation gate knobs. */
   public static class Actions {
 
     private boolean enabled = false;
@@ -250,3 +250,4 @@ public class AssistantProperties {
     }
   }
 }
+

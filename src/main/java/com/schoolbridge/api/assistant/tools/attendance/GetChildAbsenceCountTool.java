@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -12,7 +12,6 @@ import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.attendance.AttendanceStatus;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
@@ -22,7 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** PARENT — count of a child's absences within a month (defaults to the current month). */
+/** PARENT â€” count of a child's absences within a month (defaults to the current month). */
 @Component
 public class GetChildAbsenceCountTool implements ReadTool {
 
@@ -96,3 +95,4 @@ public class GetChildAbsenceCountTool implements ReadTool {
     }
   }
 }
+

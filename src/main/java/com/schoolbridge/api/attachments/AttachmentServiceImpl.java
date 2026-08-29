@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.announcements.repository.AnnouncementRepository;
 import com.schoolbridge.api.attachments.av.AvScanner;
@@ -71,7 +71,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
     String declaredType = normalizeContentType(request.contentType());
     if (!properties.getAllowedContentTypes().contains(declaredType)) {
-      // Rejecting the declaration early is convenience, not security — the binding check happens
+      // Rejecting the declaration early is convenience, not security â€” the binding check happens
       // against the sniffed type at completion. Doing it here saves the client an upload it was
       // always going to lose.
       throw new ValidationException("error.attachment.type_not_allowed", declaredType);
@@ -80,7 +80,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     Instant now = Instant.now();
     // The object id is generated here rather than reusing the entity id, which Hibernate does not
     // assign until persist. The key is immutable (updatable=false), so it has to be right on the
-    // first save — a placeholder followed by an update is not an option, and a flush-then-update
+    // first save â€” a placeholder followed by an update is not an option, and a flush-then-update
     // dance would be one more thing to get wrong. What matters is that the value is server-side and
     // unguessable, not that it equals the row id; storage_key is uniquely indexed for lookups.
     String key = AttachmentKeys.forAttachment(schoolId, UUID.randomUUID(), now);
@@ -304,3 +304,4 @@ public class AttachmentServiceImpl implements AttachmentService {
     return base.trim().toLowerCase(java.util.Locale.ROOT);
   }
 }
+

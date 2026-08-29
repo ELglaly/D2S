@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.dto;
+﻿package com.schoolbridge.api.identity.dto;
 
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.UserStatus;
@@ -14,3 +14,4 @@ public record UserResponse(
     UserStatus status,
     Instant createdAt,
     Instant updatedAt) {}
+

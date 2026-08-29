@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
 import org.springframework.http.HttpStatus;
 
@@ -35,3 +35,4 @@ public enum ErrorType {
     return "https://schoolbridge.app/errors/" + name().toLowerCase().replace('_', '-');
   }
 }
+

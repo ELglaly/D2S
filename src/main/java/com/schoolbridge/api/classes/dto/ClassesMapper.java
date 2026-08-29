@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.dto;
+﻿package com.schoolbridge.api.classes.dto;
 
 import com.schoolbridge.api.classes.entity.Enrollment;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;
@@ -67,3 +67,4 @@ public class ClassesMapper {
         classes);
   }
 }
+

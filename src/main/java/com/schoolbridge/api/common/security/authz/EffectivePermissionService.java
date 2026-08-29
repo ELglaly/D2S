@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import com.schoolbridge.api.identity.UserRole;
 import java.util.Set;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Cache hits avoid the DB entirely. Mutations to {@code role_permissions} (via {@link
  * RolePermissionAdminService}) call {@link #evictRole}/{@link #evictAll} so changes take effect
- * without re-login. NOTE: caching works through the Spring proxy only — never self-invoke these
+ * without re-login. NOTE: caching works through the Spring proxy only â€” never self-invoke these
  * methods from within this class.
  */
 @Service
@@ -41,3 +41,4 @@ public class EffectivePermissionService {
     // Eviction handled by the annotation; body intentionally empty.
   }
 }
+

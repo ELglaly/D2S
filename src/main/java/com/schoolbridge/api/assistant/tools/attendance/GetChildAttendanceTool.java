@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -11,13 +11,12 @@ import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** PARENT — a child's attendance over a date range. Mirrors {@code GET /attendance/history}. */
+/** PARENT â€” a child's attendance over a date range. Mirrors {@code GET /attendance/history}. */
 @Component
 public class GetChildAttendanceTool implements ReadTool {
 
@@ -80,3 +79,4 @@ public class GetChildAttendanceTool implements ReadTool {
     return ToolResult.ok(attendance.history(studentId, from, to));
   }
 }
+

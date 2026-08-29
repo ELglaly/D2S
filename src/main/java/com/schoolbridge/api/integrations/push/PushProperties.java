@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.push;
+﻿package com.schoolbridge.api.integrations.push;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -36,3 +36,4 @@ public class PushProperties {
     }
   }
 }
+

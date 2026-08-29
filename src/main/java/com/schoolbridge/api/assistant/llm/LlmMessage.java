@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import java.util.List;
 
@@ -22,3 +22,4 @@ public record LlmMessage(Role role, List<LlmContent> content) {
     return new LlmMessage(Role.ASSISTANT, content);
   }
 }
+

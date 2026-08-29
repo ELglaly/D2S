@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -12,3 +12,4 @@ public interface ReadTool extends Tool {
     return ToolKind.READ;
   }
 }
+

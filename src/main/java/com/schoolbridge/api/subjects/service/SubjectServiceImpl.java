@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.service;
+﻿package com.schoolbridge.api.subjects.service;
 
 import com.schoolbridge.api.common.audit.AuditService;
 import com.schoolbridge.api.common.error.ConflictException;
@@ -104,3 +104,4 @@ public class SubjectServiceImpl implements SubjectService {
     return value == null ? null : value.trim();
   }
 }
+

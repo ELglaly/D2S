@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations;
+﻿package com.schoolbridge.api.integrations;
 
 import com.schoolbridge.api.announcements.Announcement;
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
@@ -91,7 +91,7 @@ public class AnnouncementSendService {
       page = recipients.findAllByAnnouncementId(announcementId, pageable);
       for (AnnouncementRecipient recipient : page.getContent()) {
         if (recipient.getMessageId() != null) {
-          // Already dispatched in a previous attempt; redelivery — skip.
+          // Already dispatched in a previous attempt; redelivery â€” skip.
           continue;
         }
         DeliveryStatus status = recipient.getDeliveryStatus();
@@ -177,7 +177,7 @@ public class AnnouncementSendService {
       for (AnnouncementRecipient recipient : page.getContent()) {
         DeliveryStatus status = recipient.getDeliveryStatus();
         if (status == DeliveryStatus.DELIVERED || status == DeliveryStatus.READ) {
-          // Already in the parent's inbox — recall does not unsend per OQ4 / option (b).
+          // Already in the parent's inbox â€” recall does not unsend per OQ4 / option (b).
           continue;
         }
         if (status == DeliveryStatus.SUPPRESSED) {
@@ -219,7 +219,7 @@ public class AnnouncementSendService {
             whatsAppProperties.getTemplate().getAnnouncementName(),
             List.of(TemplateParam.of(body)),
             body);
-    // HashMap, not Map.of — the announcement id is the only guaranteed-present entry and this map
+    // HashMap, not Map.of â€” the announcement id is the only guaranteed-present entry and this map
     // grows deep-link fields that are routinely null.
     Map<String, String> pushData = new HashMap<>();
     pushData.put("type", "announcement");
@@ -256,3 +256,4 @@ public class AnnouncementSendService {
     }
   }
 }
+

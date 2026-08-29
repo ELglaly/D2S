@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.attendance.dto.AttendanceRosterEntry;
 import java.time.LocalDate;
@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link AttendanceRecord}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL — see {@code UserRepository} for rationale.
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
  */
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, UUID> {
 
@@ -27,7 +27,7 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
   /**
    * One row per enrolled student in the class, with their attendance row for the date when one
    * exists (nullable). Drives {@code GET /attendance/roster}. Ordered by encrypted full-name's
-   * stored ciphertext — fine because all students in one school share the same key, so the order is
+   * stored ciphertext â€” fine because all students in one school share the same key, so the order is
    * stable per school; clients should rely on the explicit display-name field, not the row order.
    */
   @Query(
@@ -51,8 +51,9 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
       @Param("fromDate") LocalDate fromDate,
       @Param("toDate") LocalDate toDate);
 
-  /** All rows for one class on one date — used by {@code mark-all-present} to compute the delta. */
+  /** All rows for one class on one date â€” used by {@code mark-all-present} to compute the delta. */
   @Query("select r from AttendanceRecord r where r.classId = :classId and r.date = :date")
   List<AttendanceRecord> findAllByClassIdAndDate(
       @Param("classId") UUID classId, @Param("date") LocalDate date);
 }
+

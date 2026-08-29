@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.repository;
+﻿package com.schoolbridge.api.classes.repository;
 
 import com.schoolbridge.api.classes.entity.Student;
 import java.util.Optional;
@@ -27,3 +27,4 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
   boolean existsByExternalId(String externalId);
 }
+

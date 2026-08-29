@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.dto;
+﻿package com.schoolbridge.api.subjects.dto;
 
 import com.schoolbridge.api.subjects.SubjectStatus;
 import jakarta.validation.constraints.NotBlank;
@@ -10,3 +10,4 @@ public record UpdateSubjectRequest(
     @Size(max = 50) String code,
     @Size(max = 1024) String description,
     @NotNull SubjectStatus status) {}
+

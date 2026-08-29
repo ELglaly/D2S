@@ -1,11 +1,11 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import java.time.Duration;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Typed binding for {@code schoolbridge.storage.*} — the object store behind the attachment
+ * Typed binding for {@code schoolbridge.storage.*} â€” the object store behind the attachment
  * pipeline, plus the two controls that make an upload safe to serve back (the MIME allow-list and
  * AV scanning).
  *
@@ -40,7 +40,7 @@ public class StorageProperties {
   /**
    * Hard cap on a single object, enforced twice: the declared size is rejected here before a URL is
    * ever minted, and the same value is signed into the PUT as {@code Content-Length} so the object
-   * store rejects a body that disagrees. See {@code docs/PLAN_FILE_UPLOAD.md} section 2.2 — a
+   * store rejects a body that disagrees. See {@code docs/PLAN_FILE_UPLOAD.md} section 2.2 â€” a
    * presigned PUT cannot carry a content-length-range condition, so signing the exact length is the
    * enforcement mechanism.
    */
@@ -57,7 +57,7 @@ public class StorageProperties {
 
   /**
    * Content types a client may upload. Enforced against the type sniffed from the stored bytes, not
-   * against the client's declaration — the declaration only has to agree with it.
+   * against the client's declaration â€” the declaration only has to agree with it.
    */
   private List<String> allowedContentTypes =
       List.of("image/jpeg", "image/png", "image/webp", "application/pdf");
@@ -272,3 +272,4 @@ public class StorageProperties {
     }
   }
 }
+

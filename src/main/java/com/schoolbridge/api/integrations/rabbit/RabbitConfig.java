@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.rabbit;
+﻿package com.schoolbridge.api.integrations.rabbit;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Wires the topic exchanges, queues, bindings, and DLQ skeleton for outbox-published events. Only
- * loaded when the outbox relay is enabled — that gates the prod profile and lets test slices opt in
+ * loaded when the outbox relay is enabled â€” that gates the prod profile and lets test slices opt in
  * via {@code @DynamicPropertySource} without polluting unrelated context loads.
  */
 @Configuration
@@ -216,7 +216,7 @@ public class RabbitConfig {
   }
 
   /**
-   * Jackson converter for both the outbound publisher and the inbound listener container — Spring
+   * Jackson converter for both the outbound publisher and the inbound listener container â€” Spring
    * AMQP wires both sides off this bean automatically.
    */
   @Bean
@@ -224,3 +224,4 @@ public class RabbitConfig {
     return new Jackson2JsonMessageConverter();
   }
 }
+

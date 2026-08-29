@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.grades;
+﻿package com.schoolbridge.api.assistant.tools.grades;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -9,7 +9,6 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
 import java.math.BigDecimal;
@@ -26,7 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 /**
- * TEACHER/ADMIN — per-subject grade summary (count + average score) for a class. Aggregates the
+ * TEACHER/ADMIN â€” per-subject grade summary (count + average score) for a class. Aggregates the
  * same rows {@code get_class_grades} returns, so the model can answer "how did 7A do in Math"
  * without reasoning over every grade.
  */
@@ -102,3 +101,4 @@ public class GetClassGradeSummaryTool implements ReadTool {
     return ToolResult.ok(summary);
   }
 }
+

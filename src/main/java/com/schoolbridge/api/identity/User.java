@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity;
+﻿package com.schoolbridge.api.identity;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -62,7 +62,7 @@ public class User extends TenantEntity {
     this.status = UserStatus.ACTIVE;
   }
 
-  /** Staff factory — email + password required. */
+  /** Staff factory â€” email + password required. */
   public static User staff(
       UUID schoolId, UserRole role, String name, String email, String passwordHash) {
     if (role == UserRole.PARENT) {
@@ -71,7 +71,7 @@ public class User extends TenantEntity {
     return new User(schoolId, role, name, email, null, null, passwordHash);
   }
 
-  /** Parent factory — phone + blind index required; no password. */
+  /** Parent factory â€” phone + blind index required; no password. */
   public static User parent(UUID schoolId, String name, String phone, String phoneHash) {
     return new User(schoolId, UserRole.PARENT, name, null, phone, phoneHash, null);
   }
@@ -116,3 +116,4 @@ public class User extends TenantEntity {
     return status;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -17,3 +17,4 @@ public sealed interface LlmContent {
   /** The server's reply to a {@link ToolUse}, fed back to the model. */
   record ToolResult(String toolUseId, String content, boolean error) implements LlmContent {}
 }
+

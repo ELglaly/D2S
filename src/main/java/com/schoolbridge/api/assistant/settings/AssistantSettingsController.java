@@ -1,11 +1,9 @@
-package com.schoolbridge.api.assistant.settings;
+﻿package com.schoolbridge.api.assistant.settings;
 
 import com.schoolbridge.api.assistant.AssistantContextFactory;
 import com.schoolbridge.api.assistant.settings.dto.AssistantSettingsResponse;
 import com.schoolbridge.api.assistant.settings.dto.UpdateSettingsRequest;
 import com.schoolbridge.api.assistant.tools.ToolContext;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * SCHOOL_ADMIN-only management of the tenant's editable assistant persona. The immutable security
- * guardrails are never exposed or editable here — they are always appended at prompt-build time.
+ * guardrails are never exposed or editable here â€” they are always appended at prompt-build time.
  */
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/assistant/settings")
@@ -36,7 +34,7 @@ public class AssistantSettingsController {
   }
 
   @GetMapping
-  @RequirePermission(Permission.ASSISTANT_SETTINGS_MANAGE)
+  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
   public AssistantSettingsResponse get(Authentication authentication) {
     ToolContext ctx =
         contextFactory.fromAuthentication(authentication, LocaleContextHolder.getLocale());
@@ -45,7 +43,7 @@ public class AssistantSettingsController {
   }
 
   @PutMapping
-  @RequirePermission(Permission.ASSISTANT_SETTINGS_MANAGE)
+  @PreAuthorize("hasRole('SCHOOL_ADMIN')")
   public AssistantSettingsResponse update(
       @Valid @RequestBody UpdateSettingsRequest request, Authentication authentication) {
     ToolContext ctx =
@@ -55,3 +53,4 @@ public class AssistantSettingsController {
     return new AssistantSettingsResponse(persona, persona == null || persona.isBlank());
   }
 }
+

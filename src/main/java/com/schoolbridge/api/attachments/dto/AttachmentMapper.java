@@ -1,8 +1,8 @@
-package com.schoolbridge.api.attachments.dto;
+﻿package com.schoolbridge.api.attachments.dto;
 
 import com.schoolbridge.api.attachments.Attachment;
 
-/** Entity → response projection. */
+/** Entity â†’ response projection. */
 public final class AttachmentMapper {
 
   private AttachmentMapper() {}
@@ -21,3 +21,4 @@ public final class AttachmentMapper {
         attachment.getCompletedAt());
   }
 }
+

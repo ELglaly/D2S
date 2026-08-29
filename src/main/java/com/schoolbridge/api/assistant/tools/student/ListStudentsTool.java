@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.student;
+﻿package com.schoolbridge.api.assistant.tools.student;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -10,13 +10,12 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.StudentService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — list students, or look one up by name. Mirrors {@code GET /students}. */
+/** ADMIN â€” list students, or look one up by name. Mirrors {@code GET /students}. */
 @Component
 public class ListStudentsTool implements ReadTool {
 
@@ -64,3 +63,4 @@ public class ListStudentsTool implements ReadTool {
     return ToolResult.ok(page);
   }
 }
+

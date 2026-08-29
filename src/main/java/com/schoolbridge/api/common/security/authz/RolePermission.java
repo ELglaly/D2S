@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import com.schoolbridge.api.identity.UserRole;
 import jakarta.persistence.Column;
@@ -15,7 +15,7 @@ import java.util.UUID;
 
 /**
  * Join row mapping one {@link UserRole} to one {@link PermissionEntity}. The pair is unique. Global
- * (non-tenant): the same role→permission map applies to every school.
+ * (non-tenant): the same roleâ†’permission map applies to every school.
  */
 @Entity
 @Table(
@@ -53,3 +53,4 @@ public class RolePermission {
     return permission;
   }
 }
+

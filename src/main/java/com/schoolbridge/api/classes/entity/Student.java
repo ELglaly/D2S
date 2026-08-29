@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.entity;
+﻿package com.schoolbridge.api.classes.entity;
 
 import com.schoolbridge.api.classes.StudentStatus;
 import com.schoolbridge.api.common.crypto.AesGcmAttributeConverter;
@@ -70,3 +70,4 @@ public class Student extends TenantEntity {
     return status;
   }
 }
+

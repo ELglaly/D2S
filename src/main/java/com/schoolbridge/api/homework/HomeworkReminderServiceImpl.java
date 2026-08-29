@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.identity.User;
@@ -43,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>Quiet hours and opt-out are decided <em>per parent</em> by {@link
  *       NotificationPreferenceService}, not by the school-wide flag. A parent who never touched
  *       their preferences still gets the school's behaviour, because that flag is what the resolver
- *       falls back to — so this is a widening, not a change, for existing schools.
+ *       falls back to â€” so this is a widening, not a change, for existing schools.
  * </ul>
  */
 @Service
@@ -240,7 +240,7 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
             templateName,
             List.of(TemplateParam.of(subject), TemplateParam.of(dueDateText)),
             smsBody);
-    // HashMap, not Map.of — this payload grows deep-link fields that are routinely null.
+    // HashMap, not Map.of â€” this payload grows deep-link fields that are routinely null.
     Map<String, String> pushData = new HashMap<>();
     pushData.put("type", "homework");
     pushData.put("homeworkId", item.getId().toString());
@@ -301,3 +301,4 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
     };
   }
 }
+

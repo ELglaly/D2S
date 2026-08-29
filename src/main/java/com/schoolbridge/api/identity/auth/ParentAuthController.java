@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth;
+﻿package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.identity.auth.dto.ParentLogoutRequest;
 import com.schoolbridge.api.identity.auth.dto.RequestOtpRequest;
@@ -39,7 +39,7 @@ public class ParentAuthController {
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
-        description = "OTP sent (or silently dropped — anti-enumeration)"),
+        description = "OTP sent (or silently dropped â€” anti-enumeration)"),
     @ApiResponse(responseCode = "422", description = "Validation error (malformed phone number)"),
     @ApiResponse(responseCode = "429", description = "Rate limit exceeded for this phone number")
   })
@@ -78,3 +78,4 @@ public class ParentAuthController {
     return ResponseEntity.noContent().build();
   }
 }
+

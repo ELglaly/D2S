@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations;
+﻿package com.schoolbridge.api.integrations;
 
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
@@ -21,7 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * AnnouncementScheduleSweeper}, where the cron footprint would have been cheaper, because
  * announcement dispatch already lives here ({@link AnnouncementSendService}). Putting the release
  * scan in the {@code announcements} module would have made that domain module call into {@code
- * integrations} and closed a package cycle — the two modules would then depend on each other.
+ * integrations} and closed a package cycle â€” the two modules would then depend on each other.
  *
  * <p>The scan runs with no tenant bound so it spans schools; each release is re-bound to the row's
  * own school before any further repository access, so the cross-tenant window closes immediately.
@@ -86,3 +86,4 @@ public class AnnouncementDeferralSweeper {
     log.info("announcement_deferred_released count={}", released);
   }
 }
+

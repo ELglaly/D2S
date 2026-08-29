@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.service;
+﻿package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.CreateParentLinkRequest;
 import com.schoolbridge.api.classes.dto.ParentStudentLinkResponse;
@@ -13,3 +13,4 @@ public interface ParentStudentLinkService {
 
   void delete(UUID linkId);
 }
+

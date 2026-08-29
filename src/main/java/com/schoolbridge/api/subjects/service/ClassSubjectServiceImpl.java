@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.service;
+﻿package com.schoolbridge.api.subjects.service;
 
 import com.schoolbridge.api.classes.entity.SchoolClass;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
@@ -110,3 +110,4 @@ public class ClassSubjectServiceImpl implements ClassSubjectService {
     classSubjects.delete(classSubject);
   }
 }
+

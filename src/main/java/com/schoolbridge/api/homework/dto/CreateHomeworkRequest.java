@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework.dto;
+﻿package com.schoolbridge.api.homework.dto;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -21,3 +21,4 @@ public record CreateHomeworkRequest(
     @NotNull @Future LocalDate dueDate,
     boolean requiresAck,
     boolean publish) {}
+

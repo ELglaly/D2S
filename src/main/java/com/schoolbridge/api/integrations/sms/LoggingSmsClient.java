@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.sms;
+﻿package com.schoolbridge.api.integrations.sms;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.integrations.whatsapp.MessageSendResult;
@@ -19,7 +19,7 @@ public class LoggingSmsClient implements SmsClient {
   @Override
   public MessageSendResult send(String recipientPhone, String body, Language language) {
     log.warn(
-        "sms_dispatch_no_provider phone={} bodyLen={} lang={} — install a real SmsClient in M14",
+        "sms_dispatch_no_provider phone={} bodyLen={} lang={} â€” install a real SmsClient in M14",
         maskPhone(recipientPhone),
         body == null ? 0 : body.length(),
         language);
@@ -33,3 +33,4 @@ public class LoggingSmsClient implements SmsClient {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
+

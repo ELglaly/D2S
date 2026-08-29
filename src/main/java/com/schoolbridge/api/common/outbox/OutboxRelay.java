@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.outbox;
+﻿package com.schoolbridge.api.common.outbox;
 
 import java.time.Instant;
 import java.util.List;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Two properties matter here and both were previously missing. Rows are claimed with {@code FOR
  * UPDATE SKIP LOCKED} ({@link OutboxRepository#claimDue}), so running more than one instance splits
  * the work instead of double-publishing every event. And a failure is a <b>retry</b>, not a
- * tombstone — {@link OutboxEvent#markFailed} schedules exponential backoff and only parks the row
+ * tombstone â€” {@link OutboxEvent#markFailed} schedules exponential backoff and only parks the row
  * as {@code DEAD} after {@link OutboxEvent#MAX_ATTEMPTS}. Before that, one RabbitMQ blip
  * permanently dropped whichever announcement or absence alert happened to be in flight.
  */
@@ -52,7 +52,7 @@ public class OutboxRelay {
       } catch (RuntimeException ex) {
         event.markFailed(ex.getMessage());
         if (event.getStatus() == OutboxStatus.DEAD) {
-          // Terminal: nothing will retry this. Alert on it — a DEAD row is an undelivered
+          // Terminal: nothing will retry this. Alert on it â€” a DEAD row is an undelivered
           // announcement or absence alert that a parent will never receive.
           log.error(
               "outbox_dead id={} type={} school={} attempts={}",
@@ -74,3 +74,4 @@ public class OutboxRelay {
     }
   }
 }
+

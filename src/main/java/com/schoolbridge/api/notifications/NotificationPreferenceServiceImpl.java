@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.common.error.ValidationException;
 import com.schoolbridge.api.common.time.QuietHoursCalculator;
@@ -249,3 +249,4 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
   }
 }
+

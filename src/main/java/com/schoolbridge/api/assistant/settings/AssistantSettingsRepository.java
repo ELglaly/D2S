@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.settings;
+﻿package com.schoolbridge.api.assistant.settings;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,3 +21,4 @@ public interface AssistantSettingsRepository extends JpaRepository<AssistantSett
   @Query("select s from AssistantSettings s where s.schoolId = :schoolId")
   Optional<AssistantSettings> findBySchoolId(@Param("schoolId") UUID schoolId);
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.identity.UserRole;
@@ -12,7 +12,7 @@ import java.util.UUID;
  * Per-request context handed to every tool. Carries the resolved tenant, the authenticated
  * principal, the role, the answer language, and (for action execution) a stable idempotency key.
  *
- * <p>Immutable — {@link #withIdempotencyKey(String)} returns a copy. The {@code schoolId} always
+ * <p>Immutable â€” {@link #withIdempotencyKey(String)} returns a copy. The {@code schoolId} always
  * comes from {@code TenantContext.require()} and never from the LLM.
  */
 public record ToolContext(
@@ -67,3 +67,4 @@ public record ToolContext(
     return new ToolContext(schoolId, principal, role, language, key);
   }
 }
+

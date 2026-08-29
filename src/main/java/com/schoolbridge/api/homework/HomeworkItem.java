@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * A homework item assigned by a TEACHER (or SCHOOL_ADMIN) to a class. {@code description} is
- * AES-GCM encrypted at rest. {@code attachmentKey} is an opaque string in M9 — S3 wiring deferred
+ * AES-GCM encrypted at rest. {@code attachmentKey} is an opaque string in M9 â€” S3 wiring deferred
  * to M14. {@code reminderSentAt} is stamped immediately before the per-recipient reminder loop so
  * that the daily SETNX dedup and re-sweep cannot re-fire the same item.
  */
@@ -130,3 +130,4 @@ public class HomeworkItem extends TenantEntity {
     return reminderSentAt;
   }
 }
+

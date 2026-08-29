@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.action;
+﻿package com.schoolbridge.api.assistant.tools.action;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.assistant.confirm.ConfirmationTokenService;
@@ -61,3 +61,4 @@ public class ActionSupport {
     return mapper;
   }
 }
+

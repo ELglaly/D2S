@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +34,7 @@ public class AssistantStartupValidator {
   void validate() {
     if ("none".equalsIgnoreCase(chatProvider)) {
       throw new IllegalStateException(
-          "schoolbridge.assistant.enabled=true but spring.ai.model.chat=none — no chat provider is"
+          "schoolbridge.assistant.enabled=true but spring.ai.model.chat=none â€” no chat provider is"
               + " configured. Set SPRING_AI_CHAT to a provider (e.g. openai) and supply its API"
               + " key, or set ASSISTANT_ENABLED=false.");
     }
@@ -46,3 +46,4 @@ public class AssistantStartupValidator {
     }
   }
 }
+

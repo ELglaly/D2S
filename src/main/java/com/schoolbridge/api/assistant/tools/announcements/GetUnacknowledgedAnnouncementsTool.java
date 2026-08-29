@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.announcements;
+﻿package com.schoolbridge.api.assistant.tools.announcements;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.announcements.Announcement;
@@ -10,7 +10,6 @@ import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-/** PARENT — announcements the parent has received but not yet acknowledged. */
+/** PARENT â€” announcements the parent has received but not yet acknowledged. */
 @Component
 public class GetUnacknowledgedAnnouncementsTool implements ReadTool {
 
@@ -84,3 +83,4 @@ public class GetUnacknowledgedAnnouncementsTool implements ReadTool {
     return ToolResult.ok(views);
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.dto;
+﻿package com.schoolbridge.api.assistant.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,3 +9,4 @@ import jakarta.validation.constraints.Size;
  */
 public record AskRequest(
     @NotBlank @Size(max = 500) String question, @Size(max = 8) String language) {}
+

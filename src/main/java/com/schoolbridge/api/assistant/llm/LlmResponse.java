@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,3 +25,4 @@ public record LlmResponse(List<LlmContent> content, String stopReason, LlmUsage 
     return !toolUses().isEmpty();
   }
 }
+

@@ -1,6 +1,6 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
-/** Thrown when a request fails business validation (→ 422). */
+/** Thrown when a request fails business validation (â†’ 422). */
 public class ValidationException extends ApplicationException {
 
   public ValidationException(String messageKey, Object... args) {
@@ -11,3 +11,4 @@ public class ValidationException extends ApplicationException {
     super(ErrorType.VALIDATION, ErrorType.VALIDATION.defaultMessageKey());
   }
 }
+

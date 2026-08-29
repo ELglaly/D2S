@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import com.schoolbridge.api.classes.entity.ParentStudentLink;
@@ -47,13 +47,13 @@ import org.springframework.transaction.annotation.Transactional;
  *       moved to {@link AttendanceAlertStatus#DEFERRED} with {@code deferredUntil} set to the
  *       window's next-end instant. {@code AttendanceSweeper} (BP-3) releases these later.
  *   <li>The Meta-approved template name is chosen by triggering status, not by the announcement
- *       body — three templates for the three alerting statuses.
+ *       body â€” three templates for the three alerting statuses.
  * </ul>
  *
  * <p>{@code AttendanceRecord.alertSentAt} is stamped once every materialized recipient row has
  * reached a terminal state ({@link AttendanceAlertStatus#SENT} or {@link
  * AttendanceAlertStatus#FAILED}). DEFERRED rows hold the record's {@code alertSentAt} null until
- * the sweeper resolves them — which is the desired behavior for NFR-P2 dashboards.
+ * the sweeper resolves them â€” which is the desired behavior for NFR-P2 dashboards.
  */
 @Service
 public class AttendanceAlertService {
@@ -102,7 +102,7 @@ public class AttendanceAlertService {
    * to handle.
    *
    * @param recordId target attendance record (must belong to the current tenant)
-   * @param triggeringStatus the status that triggered the alert — selects the template name + SMS
+   * @param triggeringStatus the status that triggered the alert â€” selects the template name + SMS
    *     i18n key
    */
   @Transactional
@@ -270,13 +270,13 @@ public class AttendanceAlertService {
             templateName,
             List.of(TemplateParam.of(studentName), TemplateParam.of(dateText)),
             smsBody);
-    // HashMap, not Map.of — this payload grows deep-link fields that are routinely null.
+    // HashMap, not Map.of â€” this payload grows deep-link fields that are routinely null.
     Map<String, String> pushData = new HashMap<>();
     pushData.put("type", "attendance");
     pushData.put("attendanceRecordId", row.getAttendanceRecordId().toString());
 
     // ATTENDANCE is a non-mutable category: this call can only ever reorder channels, never remove
-    // one and never suppress or defer. It is here so a parent who prefers push gets push — not so
+    // one and never suppress or defer. It is here so a parent who prefers push gets push â€” not so
     // they can turn an absence alert off, which they cannot.
     NotificationDecision decision =
         preferences.resolve(
@@ -370,3 +370,4 @@ public class AttendanceAlertService {
     };
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -9,3 +9,4 @@ public interface PermissionRepository extends JpaRepository<PermissionEntity, UU
 
   Optional<PermissionEntity> findByName(String name);
 }
+

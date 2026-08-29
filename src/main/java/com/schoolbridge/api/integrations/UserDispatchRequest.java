@@ -1,12 +1,12 @@
-package com.schoolbridge.api.integrations;
+﻿package com.schoolbridge.api.integrations;
 
 import java.util.Map;
 
 /**
  * A notification addressed to a known user, across any channel.
  *
- * <p>Wraps rather than extends {@link DispatchRequest} so the OTP path — which has no user, no
- * preferences, and must never acquire either — keeps compiling against the original record
+ * <p>Wraps rather than extends {@link DispatchRequest} so the OTP path â€” which has no user, no
+ * preferences, and must never acquire either â€” keeps compiling against the original record
  * unchanged. A parent cannot mute their own login code, so it does not belong on this type.
  *
  * @param target who to reach and how they can be reached
@@ -27,3 +27,4 @@ public record UserDispatchRequest(
     return pushTitle != null && !pushTitle.isBlank();
   }
 }
+

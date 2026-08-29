@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.notifications.dto.NotificationPreferencesRequest;
 import com.schoolbridge.api.notifications.dto.NotificationPreferencesResponse;
@@ -10,7 +10,7 @@ import java.util.UUID;
  * read/write of the underlying rows.
  *
  * <p>The resolve step lives here rather than inside {@code NotificationDispatcher} because two of
- * the three outcomes — suppress and defer — are decisions about a <em>recipient row</em>, and the
+ * the three outcomes â€” suppress and defer â€” are decisions about a <em>recipient row</em>, and the
  * dispatcher has no row. The fan-out services own that state machine already ({@code markDeferred}
  * / the sweepers), so they ask this service and act; the dispatcher is handed only the resulting
  * channel order.
@@ -21,7 +21,7 @@ public interface NotificationPreferenceService {
    * Decides send / defer / suppress for one (user, category) at {@code now}.
    *
    * <p>Never suppresses or defers a non-mutable category (see {@link NotificationCategory}), and
-   * never throws for a missing user or missing rows — an unreadable preference must degrade to
+   * never throws for a missing user or missing rows â€” an unreadable preference must degrade to
    * "send", because failing closed here would silently mute a parent.
    */
   NotificationDecision resolve(
@@ -34,3 +34,4 @@ public interface NotificationPreferenceService {
   NotificationPreferencesResponse replace(
       UUID schoolId, UUID userId, NotificationPreferencesRequest request);
 }
+

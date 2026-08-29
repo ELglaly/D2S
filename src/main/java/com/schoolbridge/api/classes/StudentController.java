@@ -1,12 +1,10 @@
-package com.schoolbridge.api.classes;
+﻿package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.BulkImportResult;
 import com.schoolbridge.api.classes.dto.CreateStudentRequest;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.dto.UpdateStudentRequest;
 import com.schoolbridge.api.classes.service.StudentService;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -37,7 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/students")
 @Tag(name = "Students", description = "Student roster management and bulk import")
-@RequirePermission(Permission.STUDENT_MANAGE)
+@PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
 public class StudentController {
 
   private final StudentService service;
@@ -149,3 +147,4 @@ public class StudentController {
     return ResponseEntity.ok(result);
   }
 }
+

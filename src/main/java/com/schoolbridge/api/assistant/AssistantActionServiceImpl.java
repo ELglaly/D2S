@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant;
+﻿package com.schoolbridge.api.assistant;
 
 import com.schoolbridge.api.assistant.audit.AssistantAuditRecorder;
 import com.schoolbridge.api.assistant.confirm.ConfirmIntent;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Loads a previewed action by token, enforces the security gates (owner, expiry, typed confirmation
- * for destructive actions), then runs {@code ActionTool.execute} — which atomically consumes the
+ * for destructive actions), then runs {@code ActionTool.execute} â€” which atomically consumes the
  * token and mutates through the existing service. The LLM is never on this path.
  */
 @Service
@@ -93,3 +93,4 @@ public class AssistantActionServiceImpl implements AssistantActionService {
     return ConfirmResult.cancelled(messages.get("assistant.action.cancelled"));
   }
 }
+

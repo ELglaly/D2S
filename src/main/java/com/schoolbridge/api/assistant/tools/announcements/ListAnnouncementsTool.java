@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.announcements;
+﻿package com.schoolbridge.api.assistant.tools.announcements;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
@@ -6,12 +6,11 @@ import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — list recent school announcements. Mirrors {@code GET /announcements}. */
+/** ADMIN â€” list recent school announcements. Mirrors {@code GET /announcements}. */
 @Component
 public class ListAnnouncementsTool implements ReadTool {
 
@@ -48,3 +47,4 @@ public class ListAnnouncementsTool implements ReadTool {
     return ToolResult.ok(announcements.list(null, PageRequest.of(0, MAX)).getContent());
   }
 }
+

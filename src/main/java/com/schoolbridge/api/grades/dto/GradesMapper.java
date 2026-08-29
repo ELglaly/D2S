@@ -1,4 +1,4 @@
-package com.schoolbridge.api.grades.dto;
+﻿package com.schoolbridge.api.grades.dto;
 
 import com.schoolbridge.api.grades.GradeRecord;
 import org.springframework.stereotype.Component;
@@ -23,3 +23,4 @@ public class GradesMapper {
         g.getUpdatedAt());
   }
 }
+

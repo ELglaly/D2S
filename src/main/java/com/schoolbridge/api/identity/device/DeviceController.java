@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.device;
+﻿package com.schoolbridge.api.identity.device;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.tenancy.TenantContext;
@@ -78,3 +78,4 @@ public class DeviceController {
     };
   }
 }
+

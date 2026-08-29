@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects.dto;
+﻿package com.schoolbridge.api.subjects.dto;
 
 import com.schoolbridge.api.subjects.ClassSubject;
 import com.schoolbridge.api.subjects.Subject;
@@ -41,3 +41,4 @@ public class SubjectsMapper {
         a.getCreatedAt());
   }
 }
+

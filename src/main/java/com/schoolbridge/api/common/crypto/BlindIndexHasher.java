@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.crypto;
+﻿package com.schoolbridge.api.common.crypto;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 /**
  * Produces a deterministic, keyed hash (HMAC-SHA256) of a sensitive value so that an
  * AES-GCM-encrypted column (which is non-deterministic and unsearchable) can still be looked up by
- * an equality match on a separate blind-index column — e.g. finding a user by phone number.
+ * an equality match on a separate blind-index column â€” e.g. finding a user by phone number.
  */
 @Component
 public class BlindIndexHasher {
@@ -42,3 +42,4 @@ public class BlindIndexHasher {
     }
   }
 }
+

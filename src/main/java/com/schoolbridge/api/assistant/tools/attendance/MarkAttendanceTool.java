@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,7 +14,6 @@ import com.schoolbridge.api.attendance.AttendanceStatus;
 import com.schoolbridge.api.attendance.dto.MarkAttendanceRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.dto.StudentResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** TEACHER/ADMIN — mark one student's attendance. Mirrors {@code POST /attendance/mark}. */
+/** TEACHER/ADMIN â€” mark one student's attendance. Mirrors {@code POST /attendance/mark}. */
 @Component
 public class MarkAttendanceTool extends AbstractActionTool {
 
@@ -134,3 +133,4 @@ public class MarkAttendanceTool extends AbstractActionTool {
     }
   }
 }
+

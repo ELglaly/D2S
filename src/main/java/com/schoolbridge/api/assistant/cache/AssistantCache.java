@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.cache;
+﻿package com.schoolbridge.api.assistant.cache;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -16,7 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Redis cache for READ answers only — keyed by {user, normalized-question, day}. Action proposals
+ * Redis cache for READ answers only â€” keyed by {user, normalized-question, day}. Action proposals
  * are never cached. Degrades gracefully when Redis is unavailable (miss on read, no-op on write),
  * mirroring {@code IdempotencyService}.
  */
@@ -40,7 +40,7 @@ public class AssistantCache {
     try {
       return Optional.ofNullable(redis.opsForValue().get(key));
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — assistant cache miss forced");
+      log.warn("Redis unavailable â€” assistant cache miss forced");
       return Optional.empty();
     }
   }
@@ -49,7 +49,7 @@ public class AssistantCache {
     try {
       redis.opsForValue().set(key, answer, ttl);
     } catch (RedisConnectionFailureException e) {
-      log.warn("Redis unavailable — assistant answer not cached");
+      log.warn("Redis unavailable â€” assistant answer not cached");
     }
   }
 
@@ -66,3 +66,4 @@ public class AssistantCache {
     }
   }
 }
+

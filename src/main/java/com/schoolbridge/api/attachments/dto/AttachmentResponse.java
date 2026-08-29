@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments.dto;
+﻿package com.schoolbridge.api.attachments.dto;
 
 import com.schoolbridge.api.attachments.AttachmentStatus;
 import com.schoolbridge.api.attachments.AvResult;
@@ -23,3 +23,4 @@ public record AttachmentResponse(
     UUID uploaderUserId,
     Instant createdAt,
     Instant completedAt) {}
+

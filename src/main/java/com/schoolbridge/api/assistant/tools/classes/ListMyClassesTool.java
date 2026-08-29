@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.classes;
+﻿package com.schoolbridge.api.assistant.tools.classes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -6,12 +6,11 @@ import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.service.SchoolClassService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** TEACHER — lists classes the caller teaches. Mirrors {@code GET /classes/my-classes}. */
+/** TEACHER â€” lists classes the caller teaches. Mirrors {@code GET /classes/my-classes}. */
 @Component
 public class ListMyClassesTool implements ReadTool {
 
@@ -48,3 +47,4 @@ public class ListMyClassesTool implements ReadTool {
     return ToolResult.ok(classes.listMyClasses(ctx.userId(), PageRequest.of(0, MAX)).getContent());
   }
 }
+

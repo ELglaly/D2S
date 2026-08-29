@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.parents;
+﻿package com.schoolbridge.api.assistant.tools.parents;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +12,6 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.ParentStudentLinkResponse;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.ParentStudentLinkService;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.dto.UserResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,7 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — remove a parent-student link. Mirrors {@code DELETE /parent-links/{id}}. */
+/** ADMIN â€” remove a parent-student link. Mirrors {@code DELETE /parent-links/{id}}. */
 @Component
 public class RemoveParentLinkTool extends AbstractActionTool {
 
@@ -96,3 +95,4 @@ public class RemoveParentLinkTool extends AbstractActionTool {
     return ToolResult.ok(Map.of("removed", true));
   }
 }
+

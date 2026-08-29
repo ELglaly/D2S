@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant;
+﻿package com.schoolbridge.api.tenant;
 
 import com.schoolbridge.api.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 
 /**
  * The tenant root aggregate. Every other tenant-scoped row carries this aggregate's id as {@code
- * school_id}. {@link SchoolSettings} is embedded — same table — because every read of a school will
+ * school_id}. {@link SchoolSettings} is embedded â€” same table â€” because every read of a school will
  * want its settings too.
  */
 @Entity
@@ -98,3 +98,4 @@ public class School extends BaseEntity {
     return settings;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.service;
+﻿package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import java.util.List;
@@ -8,3 +8,4 @@ public interface ParentChildrenService {
 
   List<ParentChildResponse> listChildren(UUID parentUserId);
 }
+

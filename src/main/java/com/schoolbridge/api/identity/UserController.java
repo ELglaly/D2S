@@ -1,7 +1,5 @@
-package com.schoolbridge.api.identity;
+﻿package com.schoolbridge.api.identity;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.identity.dto.CreateUserRequest;
@@ -26,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/schools/{schoolId}/users")
-@RequirePermission(Permission.USER_MANAGE)
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 @Tag(
     name = "School Users",
     description = "Platform-admin user management within a school tenant. Requires SUPER_ADMIN.")
@@ -89,3 +87,4 @@ public class UserController {
     return ResponseEntity.ok(service.findById(schoolId, id));
   }
 }
+

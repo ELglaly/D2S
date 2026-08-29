@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.service;
+﻿package com.schoolbridge.api.announcements.service;
 
 import com.schoolbridge.api.announcements.*;
 import com.schoolbridge.api.announcements.dto.AnnouncementRecipientResponse;
@@ -91,7 +91,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     // Only dispatch now if this is not scheduled. Recording the outbox event unconditionally meant
     // an announcement scheduled for next week was delivered within seconds while the UI still
-    // showed SCHEDULED — the schedule was decorative. AnnouncementScheduleSweeper records the event
+    // showed SCHEDULED â€” the schedule was decorative. AnnouncementScheduleSweeper records the event
     // when scheduledFor actually arrives.
     if (initialStatus == AnnouncementStatus.SENT) {
       outbox.record(
@@ -127,7 +127,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
   /**
    * Dispatch payload for {@code announcement.created}. Built with {@link HashMap}, never {@code
-   * Map.of} — {@code attachmentKey} is nullable and {@code Map.of} throws NPE on a null value.
+   * Map.of} â€” {@code attachmentKey} is nullable and {@code Map.of} throws NPE on a null value.
    */
   private Map<String, Object> dispatchPayload(Announcement saved, long recipientCount) {
     Map<String, Object> payload = new HashMap<>();
@@ -197,7 +197,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
   public void acknowledge(UUID announcementId, UUID parentUserId) {
     Announcement entity = requireAnnouncement(announcementId);
     // One row per linked child. A parent sees a single announcement and acknowledges once, so the
-    // tap must clear every row they hold for it — otherwise a parent with two children stays
+    // tap must clear every row they hold for it â€” otherwise a parent with two children stays
     // permanently "unacknowledged" for the sibling they never had a way to acknowledge separately.
     List<AnnouncementRecipient> rows =
         recipients.findAllByAnnouncementIdAndParentUserId(announcementId, parentUserId);
@@ -301,3 +301,4 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     return deduped.size();
   }
 }
+

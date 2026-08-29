@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
 import com.schoolbridge.api.common.i18n.MessageResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -132,3 +132,4 @@ public class GlobalExceptionHandler {
     return traceId == null ? "" : traceId;
   }
 }
+

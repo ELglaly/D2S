@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth.dto;
+﻿package com.schoolbridge.api.identity.auth.dto;
 
 import java.util.UUID;
 
@@ -9,3 +9,4 @@ public record VerifyOtpResponse(
     return new VerifyOtpResponse(token, schoolId, "Bearer", 86_400L);
   }
 }
+

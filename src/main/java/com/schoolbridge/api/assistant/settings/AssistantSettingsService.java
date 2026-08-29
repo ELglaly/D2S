@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.settings;
+﻿package com.schoolbridge.api.assistant.settings;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import com.schoolbridge.api.assistant.llm.SystemPrompt;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Resolves the effective system prompt for a tenant. The editable part — a per-school persona
+ * Resolves the effective system prompt for a tenant. The editable part â€” a per-school persona
  * stored in {@code assistant_settings}, falling back to a configured default and then the built-in
- * persona — is always followed by the immutable security {@link SystemPrompt#guardrails
+ * persona â€” is always followed by the immutable security {@link SystemPrompt#guardrails
  * guardrails}, so a tenant's edited prompt can never weaken the confirm gate or cause the model to
  * leak ids.
  */
@@ -68,3 +68,4 @@ public class AssistantSettingsService {
     return value == null || value.isBlank() ? Optional.empty() : Optional.of(value);
   }
 }
+

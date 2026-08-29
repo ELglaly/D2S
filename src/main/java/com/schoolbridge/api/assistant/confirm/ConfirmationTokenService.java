@@ -1,11 +1,11 @@
-package com.schoolbridge.api.assistant.confirm;
+﻿package com.schoolbridge.api.assistant.confirm;
 
 import java.security.SecureRandom;
 import java.util.Base64;
 import org.springframework.stereotype.Component;
 
 /**
- * Issues opaque, single-use confirmation tokens. A token carries no data — it is a 256-bit random
+ * Issues opaque, single-use confirmation tokens. A token carries no data â€” it is a 256-bit random
  * handle to a {@link PendingAction} held server-side in Redis, bound there to the issuing user and
  * consumed atomically on execute. Unguessable + server-validated + single-use is the security
  * property; the stored record (not the token) is the source of truth.
@@ -22,3 +22,4 @@ public class ConfirmationTokenService {
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.action;
+﻿package com.schoolbridge.api.assistant.tools.action;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,13 +15,13 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Skeleton for action tools. Owns the whole confirm-then-execute machinery — bulk cap, token issue,
- * Redis store, single-use consume, user/expiry re-checks — so each concrete tool implements only:
+ * Skeleton for action tools. Owns the whole confirm-then-execute machinery â€” bulk cap, token issue,
+ * Redis store, single-use consume, user/expiry re-checks â€” so each concrete tool implements only:
  *
  * <ul>
- *   <li>{@link #prepare} — validate scope, resolve names→ids, compute the bilingual impact (no
+ *   <li>{@link #prepare} â€” validate scope, resolve namesâ†’ids, compute the bilingual impact (no
  *       mutation), and
- *   <li>{@link #doExecute} — re-guard then call the backing service with the resolved args.
+ *   <li>{@link #doExecute} â€” re-guard then call the backing service with the resolved args.
  * </ul>
  */
 public abstract class AbstractActionTool implements ActionTool {
@@ -177,3 +177,4 @@ public abstract class AbstractActionTool implements ActionTool {
       Map<String, Object> impact,
       int impactCount) {}
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security;
+﻿package com.schoolbridge.api.common.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Registers {@link RateLimitInterceptor} across the API.
  *
- * <p>Actuator is excluded because infrastructure polls health and metrics on a fixed schedule —
+ * <p>Actuator is excluded because infrastructure polls health and metrics on a fixed schedule â€”
  * throttling those turns a traffic spike into a false "service is down" signal and can trigger a
  * pointless failover. The WhatsApp webhook is excluded because Meta's retry rate is not ours to cap
  * and every request is already authenticated by HMAC signature.
@@ -48,3 +48,4 @@ public class RateLimitWebConfig implements WebMvcConfigurer {
             "/error");
   }
 }
+

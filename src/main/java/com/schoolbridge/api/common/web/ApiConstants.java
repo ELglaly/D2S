@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.web;
+﻿package com.schoolbridge.api.common.web;
 
 /** Shared API path prefixes and well-known header names. */
 public final class ApiConstants {
@@ -9,3 +9,4 @@ public final class ApiConstants {
   public static final String IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
   public static final String REQUEST_ID_HEADER = "X-Request-Id";
 }
+

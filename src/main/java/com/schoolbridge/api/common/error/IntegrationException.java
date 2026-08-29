@@ -1,7 +1,7 @@
-package com.schoolbridge.api.common.error;
+﻿package com.schoolbridge.api.common.error;
 
 /**
- * Thrown when a downstream/third-party integration fails (→ 502). Detail returned to clients is
+ * Thrown when a downstream/third-party integration fails (â†’ 502). Detail returned to clients is
  * sanitized; the underlying cause is logged server-side only.
  */
 public class IntegrationException extends ApplicationException {
@@ -19,3 +19,4 @@ public class IntegrationException extends ApplicationException {
     super(ErrorType.INTEGRATION, ErrorType.INTEGRATION.defaultMessageKey());
   }
 }
+

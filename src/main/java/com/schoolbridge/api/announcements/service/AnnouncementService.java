@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.service;
+﻿package com.schoolbridge.api.announcements.service;
 
 import com.schoolbridge.api.announcements.dto.AnnouncementRecipientResponse;
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;
@@ -22,3 +22,4 @@ public interface AnnouncementService {
 
   void acknowledge(UUID announcementId, UUID parentUserId);
 }
+

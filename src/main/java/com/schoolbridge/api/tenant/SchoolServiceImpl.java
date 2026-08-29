@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant;
+﻿package com.schoolbridge.api.tenant;
 
 import com.schoolbridge.api.common.audit.AuditService;
 import com.schoolbridge.api.common.error.ConflictException;
@@ -166,3 +166,4 @@ public class SchoolServiceImpl implements SchoolService {
     }
   }
 }
+

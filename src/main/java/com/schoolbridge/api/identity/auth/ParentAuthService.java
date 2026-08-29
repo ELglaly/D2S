@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth;
+﻿package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.common.error.RateLimitException;
@@ -70,14 +70,14 @@ public class ParentAuthService {
     }
 
     // Checked after the lookup, and the counter is only advanced for a real parent below, so the
-    // limiter cannot be used to probe which numbers are registered — an unknown number never
+    // limiter cannot be used to probe which numbers are registered â€” an unknown number never
     // consumes budget and never sees a different response.
     if (requestRateLimiter.isBlocked(request.phone())) {
       throw new RateLimitException("error.otp.too_many_requests");
     }
 
     OtpService.IssuedOtp issued = otpService.issue(parent.getId(), parent.getSchoolId());
-    // NEVER log issued.code() — the OTP is the whole credential and logs ship to a central store.
+    // NEVER log issued.code() â€” the OTP is the whole credential and logs ship to a central store.
     dispatcher.dispatch(request.phone(), issued.code());
     requestRateLimiter.recordRequest(request.phone());
     return new RequestOtpResponse(issued.ticketId());
@@ -93,3 +93,4 @@ public class ParentAuthService {
     otpService.revoke(token);
   }
 }
+

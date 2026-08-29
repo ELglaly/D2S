@@ -1,10 +1,8 @@
-package com.schoolbridge.api.classes;
+﻿package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.EnrollStudentRequest;
 import com.schoolbridge.api.classes.dto.EnrollmentResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,7 +34,7 @@ public class EnrollmentController {
   }
 
   @PostMapping("/classes/{classId}/enrollments")
-  @RequirePermission(Permission.ENROLLMENT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "Enroll student in class",
       description = "Creates an enrollment record linking a student to a class.")
@@ -56,7 +54,7 @@ public class EnrollmentController {
   }
 
   @GetMapping("/classes/{classId}/enrollments")
-  @RequirePermission(Permission.CLASS_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
   @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#classId)")
   @Operation(
       summary = "List enrollments for a class",
@@ -76,7 +74,7 @@ public class EnrollmentController {
   }
 
   @DeleteMapping("/enrollments/{id}")
-  @RequirePermission(Permission.ENROLLMENT_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "Remove enrollment",
       description = "Removes a student from a class by deleting the enrollment record.")
@@ -91,3 +89,4 @@ public class EnrollmentController {
     return ResponseEntity.noContent().build();
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications;
+﻿package com.schoolbridge.api.notifications;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,3 +30,4 @@ public interface NotificationPreferenceRepository
   Optional<NotificationPreference> findByUserIdAndCategory(
       @Param("userId") UUID userId, @Param("category") NotificationCategory category);
 }
+

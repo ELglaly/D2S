@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.device;
+﻿package com.schoolbridge.api.identity.device;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -75,3 +75,4 @@ public class DeviceToken extends TenantEntity {
     return active;
   }
 }
+

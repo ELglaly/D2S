@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.homework;
+﻿package com.schoolbridge.api.assistant.tools.homework;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,7 +10,6 @@ import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.CreateHomeworkRequest;
 import java.time.LocalDate;
@@ -20,7 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** TEACHER/ADMIN — create homework (draft or published). Mirrors {@code POST /homework}. */
+/** TEACHER/ADMIN â€” create homework (draft or published). Mirrors {@code POST /homework}. */
 @Component
 public class CreateHomeworkTool extends AbstractActionTool {
 
@@ -133,3 +132,4 @@ public class CreateHomeworkTool extends AbstractActionTool {
     return ToolResult.ok(homework.create(ctx.schoolId(), ctx.userId(), request));
   }
 }
+

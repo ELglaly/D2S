@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.support;
+﻿package com.schoolbridge.api.assistant.tools.support;
 
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -107,7 +107,7 @@ public class ToolSupport {
       return needs("assistant.resolve." + label + ".none", name);
     }
     if (m.ambiguous()) {
-      String candidates = m.matches().stream().map(nameFn).collect(Collectors.joining("، "));
+      String candidates = m.matches().stream().map(nameFn).collect(Collectors.joining("ØŒ "));
       return needs("assistant.resolve." + label + ".ambiguous", name, candidates);
     }
     return new Resolved.Of<>(m.first());
@@ -121,6 +121,7 @@ public class ToolSupport {
     if (body == null) {
       return "";
     }
-    return body.length() <= SNIPPET ? body : body.substring(0, SNIPPET) + "…";
+    return body.length() <= SNIPPET ? body : body.substring(0, SNIPPET) + "â€¦";
   }
 }
+

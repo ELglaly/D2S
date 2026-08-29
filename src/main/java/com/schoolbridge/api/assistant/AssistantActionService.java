@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant;
+﻿package com.schoolbridge.api.assistant;
 
 import com.schoolbridge.api.assistant.dto.ConfirmActionRequest;
 import com.schoolbridge.api.assistant.dto.ConfirmResult;
@@ -11,3 +11,4 @@ public interface AssistantActionService {
 
   ConfirmResult cancel(String token, ToolContext ctx);
 }
+

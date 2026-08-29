@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.device;
+﻿package com.schoolbridge.api.identity.device;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,3 +26,4 @@ public interface DeviceTokenRepository extends JpaRepository<DeviceToken, UUID> 
   @Query("select d from DeviceToken d where d.userId = :userId and d.active = true")
   List<DeviceToken> findActiveByUserId(@Param("userId") UUID userId);
 }
+

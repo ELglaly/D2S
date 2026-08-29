@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.entity;
+﻿package com.schoolbridge.api.classes.entity;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 /**
  * A class (or section) within a school for a given academic year. The homeroom teacher is a soft
- * reference — it is nullable because a class may not have a homeroom teacher assigned yet.
+ * reference â€” it is nullable because a class may not have a homeroom teacher assigned yet.
  */
 @Entity
 @Table(name = "school_classes")
@@ -61,3 +61,4 @@ public class SchoolClass extends TenantEntity {
     return homeroomTeacherId;
   }
 }
+

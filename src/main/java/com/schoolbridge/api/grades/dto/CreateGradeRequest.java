@@ -1,4 +1,4 @@
-package com.schoolbridge.api.grades.dto;
+﻿package com.schoolbridge.api.grades.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,3 +14,4 @@ public record CreateGradeRequest(
     BigDecimal score,
     @Size(max = 10) String gradeLabel,
     @Size(max = 2000) String notes) {}
+

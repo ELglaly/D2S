@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements;
+﻿package com.schoolbridge.api.announcements;
 
 import com.schoolbridge.api.announcements.enums.DeliveryStatus;
 import com.schoolbridge.api.common.tenancy.TenantEntity;
@@ -100,7 +100,7 @@ public class AnnouncementRecipient extends TenantEntity {
 
   /**
    * Called by the webhook on a delivery/read transition from Meta. Idempotent for the same status
-   * (caller must also drop duplicates via the Redis key — see {@code
+   * (caller must also drop duplicates via the Redis key â€” see {@code
    * IntegrationsWhatsAppWebhookController}).
    */
   public void updateDeliveryStatus(DeliveryStatus newStatus) {
@@ -135,3 +135,4 @@ public class AnnouncementRecipient extends TenantEntity {
     return deferredUntil;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.subjects;
+﻿package com.schoolbridge.api.subjects;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +34,7 @@ public interface TeacherSubjectAssignmentRepository
   /**
    * Returns [Subject, classId, teacherUserId] rows for every subject a student is enrolled in. LEFT
    * JOIN on assignments means teacherUserId may be null. Multiple rows per (classId, subjectId) are
-   * possible when multiple teachers are assigned — callers must deduplicate.
+   * possible when multiple teachers are assigned â€” callers must deduplicate.
    */
   @Query(
       "select s, cs.classId, a.teacherUserId"
@@ -46,3 +46,4 @@ public interface TeacherSubjectAssignmentRepository
           + " where e.studentId = :studentId")
   List<Object[]> findSubjectsWithTeacherForStudent(@Param("studentId") UUID studentId);
 }
+

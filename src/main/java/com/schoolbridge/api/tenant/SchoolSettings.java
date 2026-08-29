@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant;
+﻿package com.schoolbridge.api.tenant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -170,3 +170,4 @@ public class SchoolSettings {
         rosterDueByLocalTime);
   }
 }
+

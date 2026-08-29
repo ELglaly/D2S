@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import java.time.Instant;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
  * Tenant-scoped repository for {@link Attachment}.
  *
  * <p>{@link #findById} is overridden with explicit JPQL because Hibernate's {@code @Filter} does
- * NOT apply to {@code EntityManager.find()}, which is what the default implementation calls — see
+ * NOT apply to {@code EntityManager.find()}, which is what the default implementation calls â€” see
  * {@code docs/COMMON_MISTAKES.md} section 1.
  *
  * <p>The two sweeper queries deliberately do <em>not</em> filter by school: they run outside any
@@ -46,3 +46,4 @@ public interface AttachmentRepository extends JpaRepository<Attachment, UUID> {
           + "order by a.createdAt asc")
   List<Attachment> findExpired(@Param("cutoff") Instant cutoff, Pageable pageable);
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.tenant.dto;
+﻿package com.schoolbridge.api.tenant.dto;
 
 import com.schoolbridge.api.tenant.SubscriptionTier;
 import jakarta.validation.Valid;
@@ -18,3 +18,4 @@ public record CreateSchoolRequest(
     @NotBlank @Size(max = 35) String locale,
     @NotNull SubscriptionTier subscriptionTier,
     @Valid SchoolSettingsRequest settings) {}
+

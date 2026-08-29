@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance.dto;
+﻿package com.schoolbridge.api.attendance.dto;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -10,3 +10,4 @@ import java.util.UUID;
  */
 public record MarkAllPresentResponse(
     UUID classId, LocalDate date, int transitionedCount, int skippedCount) {}
+

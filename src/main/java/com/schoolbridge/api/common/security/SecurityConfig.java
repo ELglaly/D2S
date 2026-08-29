@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security;
+﻿package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.identity.jwt.JwtService;
 import com.schoolbridge.api.identity.otp.OtpService;
@@ -27,7 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * the request.
  *
  * <p>Swagger UI and API-docs paths are conditionally included in the public allow-list based on
- * {@code springdoc.api-docs.enabled} — set to {@code false} in prod to remove docs exposure.
+ * {@code springdoc.api-docs.enabled} â€” set to {@code false} in prod to remove docs exposure.
  */
 @Configuration
 @EnableWebSecurity
@@ -112,3 +112,4 @@ public class SecurityConfig {
     return source;
   }
 }
+

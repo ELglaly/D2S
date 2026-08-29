@@ -1,12 +1,10 @@
-package com.schoolbridge.api.attachments;
+﻿package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.attachments.dto.AttachmentDownloadTicket;
 import com.schoolbridge.api.attachments.dto.AttachmentResponse;
 import com.schoolbridge.api.attachments.dto.AttachmentUploadTicket;
 import com.schoolbridge.api.attachments.dto.CreateAttachmentRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
@@ -33,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>No endpoint here accepts or returns file bytes. Uploads are a presigned PUT the client
  * performs against object storage; downloads are a short-lived presigned GET. Serving user files
  * from this origin would put a stored-XSS or content-sniffing bug inside the API's own security
- * origin, against an already-authenticated session — see {@code docs/PLAN_FILE_UPLOAD.md} section
+ * origin, against an already-authenticated session â€” see {@code docs/PLAN_FILE_UPLOAD.md} section
  * 2.
  */
 @RestController
@@ -48,7 +46,7 @@ public class AttachmentController {
   }
 
   @PostMapping
-  @RequirePermission(Permission.ATTACHMENT_UPLOAD)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @Operation(
       summary = "Request an upload URL",
       description =
@@ -72,7 +70,7 @@ public class AttachmentController {
   }
 
   @PostMapping("/{id}/complete")
-  @RequirePermission(Permission.ATTACHMENT_UPLOAD)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN') or @perms.isAttachmentUploader(#id)")
   @Operation(
       summary = "Finish an upload",
@@ -96,7 +94,7 @@ public class AttachmentController {
   }
 
   @GetMapping("/{id}")
-  @RequirePermission(Permission.ATTACHMENT_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @PreAuthorize(
       "hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN','TEACHER')"
           + " or @perms.parentCanReadAttachment(#id)")
@@ -114,7 +112,7 @@ public class AttachmentController {
   }
 
   @GetMapping("/{id}/download")
-  @RequirePermission(Permission.ATTACHMENT_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @PreAuthorize(
       "hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN','TEACHER')"
           + " or @perms.parentCanReadAttachment(#id)")
@@ -137,7 +135,7 @@ public class AttachmentController {
   }
 
   @DeleteMapping("/{id}")
-  @RequirePermission(Permission.ATTACHMENT_DELETE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
   @Operation(
       summary = "Delete an attachment",
       description =
@@ -163,3 +161,4 @@ public class AttachmentController {
     return staff;
   }
 }
+

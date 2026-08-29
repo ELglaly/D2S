@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.otp;
+﻿package com.schoolbridge.api.identity.otp;
 
 /**
  * Port for delivering a one-time PIN to a parent. The WhatsApp Cloud API implementation lands in
@@ -9,3 +9,4 @@ public interface OtpDispatcher {
 
   void dispatch(String phone, String code);
 }
+

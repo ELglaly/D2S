@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,3 +29,4 @@ public interface KnowledgeDocumentRepository extends JpaRepository<KnowledgeDocu
   Optional<KnowledgeDocument> findBySchoolAndChecksum(
       @Param("schoolId") UUID schoolId, @Param("checksum") String checksum);
 }
+

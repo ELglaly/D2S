@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.whatsapp;
+﻿package com.schoolbridge.api.integrations.whatsapp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.schoolbridge.api.announcements.enums.Language;
@@ -25,7 +25,7 @@ import org.springframework.web.client.RestClient;
  *
  * <p>Wrapped in a Resilience4j circuit breaker + retry (configured in {@code application.yml} so
  * thresholds are tunable per environment). Only {@link WhatsAppRetryableException} (5xx / transport
- * faults) is retried — a 4xx is a permanent failure (bad template name, banned recipient, expired
+ * faults) is retried â€” a 4xx is a permanent failure (bad template name, banned recipient, expired
  * token) and is mapped straight to {@link IntegrationException} so the dispatcher can flip the
  * recipient to the SMS fallback channel.
  *
@@ -209,3 +209,4 @@ public class MetaCloudWhatsAppClient implements WhatsAppClient {
     record Message(String id) {}
   }
 }
+

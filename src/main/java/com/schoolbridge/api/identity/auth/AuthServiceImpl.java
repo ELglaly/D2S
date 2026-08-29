@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth;
+﻿package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import com.schoolbridge.api.common.error.RateLimitException;
@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Email is globally unique across tenants precisely so a staff member can sign in without
-    // knowing their schoolId — which means this lookup runs before any tenant is bound and must
+    // knowing their schoolId â€” which means this lookup runs before any tenant is bound and must
     // step outside the changelog-017 RLS predicate, or every login resolves to zero rows.
     Optional<User> user = sessionBinder.withBypass(() -> userRepository.findByEmail(email));
     if (user.isPresent()
@@ -164,3 +164,4 @@ public class AuthServiceImpl implements AuthService {
     return fresh;
   }
 }
+

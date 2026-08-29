@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.outbox;
+﻿package com.schoolbridge.api.common.outbox;
 
 /**
  * Lifecycle of a transactional-outbox event.
@@ -14,3 +14,4 @@ public enum OutboxStatus {
   FAILED,
   DEAD
 }
+

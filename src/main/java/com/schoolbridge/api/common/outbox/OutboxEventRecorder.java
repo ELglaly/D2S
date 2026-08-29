@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.outbox;
+﻿package com.schoolbridge.api.common.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Records an outbox event inside the caller's existing transaction. Propagation is MANDATORY so an
- * event is never written without a surrounding domain transaction — that is what guarantees the
+ * event is never written without a surrounding domain transaction â€” that is what guarantees the
  * mutation and its event commit atomically.
  */
 @Service
@@ -38,3 +38,4 @@ public class OutboxEventRecorder {
     }
   }
 }
+

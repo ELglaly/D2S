@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.rabbit;
+﻿package com.schoolbridge.api.integrations.rabbit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,3 +57,4 @@ public class AnnouncementCreatedConsumer {
         });
   }
 }
+

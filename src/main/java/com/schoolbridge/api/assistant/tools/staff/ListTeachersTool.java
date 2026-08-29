@@ -1,11 +1,10 @@
-package com.schoolbridge.api.assistant.tools.staff;
+﻿package com.schoolbridge.api.assistant.tools.staff;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.UserService;
 import com.schoolbridge.api.identity.dto.UserResponse;
@@ -14,7 +13,7 @@ import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-/** ADMIN — list the school's teachers. Mirrors a role-filtered {@code GET /users}. */
+/** ADMIN â€” list the school's teachers. Mirrors a role-filtered {@code GET /users}. */
 @Component
 public class ListTeachersTool implements ReadTool {
 
@@ -55,3 +54,4 @@ public class ListTeachersTool implements ReadTool {
     return ToolResult.ok(teachers);
   }
 }
+

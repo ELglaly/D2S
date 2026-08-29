@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.llm;
+﻿package com.schoolbridge.api.assistant.llm;
 
 /**
  * Fallback {@link LlmGateway} used when the assistant is disabled (no SDK gateway bean). It exists
@@ -12,3 +12,4 @@ public class DisabledLlmGateway implements LlmGateway {
     throw new IllegalStateException("Assistant is disabled (schoolbridge.assistant.enabled=false)");
   }
 }
+

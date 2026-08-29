@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.rabbit;
+﻿package com.schoolbridge.api.integrations.rabbit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Consumes {@code announcement.recalled} events. Per open question (4) / option (b) in {@code
- * HANDOFF_M7.md}, M7 does NOT send a follow-up "recalled" template — it only marks not-yet-
+ * HANDOFF_M7.md}, M7 does NOT send a follow-up "recalled" template â€” it only marks not-yet-
  * delivered recipients FAILED to stop further fan-out attempts.
  */
 @Component
@@ -51,3 +51,4 @@ public class AnnouncementRecalledConsumer {
         });
   }
 }
+

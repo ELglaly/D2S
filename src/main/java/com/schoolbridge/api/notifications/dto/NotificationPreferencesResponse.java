@@ -1,4 +1,4 @@
-package com.schoolbridge.api.notifications.dto;
+﻿package com.schoolbridge.api.notifications.dto;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A user's complete notification configuration.
  *
- * <p>Every category appears, whether or not a row exists — the client should never have to know
+ * <p>Every category appears, whether or not a row exists â€” the client should never have to know
  * which defaults are materialised and which are stored, and a missing entry would otherwise read as
  * "off". {@code effectiveQuietHours*} are what will actually be applied after inheritance from the
  * school is resolved, so the app can render the real window without fetching school settings.
@@ -25,3 +25,4 @@ public record NotificationPreferencesResponse(
     LocalTime effectiveQuietHoursStart,
     LocalTime effectiveQuietHoursEnd,
     List<CategoryPreference> preferences) {}
+

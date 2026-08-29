@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.attendance;
+﻿package com.schoolbridge.api.assistant.tools.attendance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -10,13 +10,12 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.classes.dto.StudentResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** TEACHER/ADMIN — a student's attendance history. Mirrors {@code GET /attendance/history}. */
+/** TEACHER/ADMIN â€” a student's attendance history. Mirrors {@code GET /attendance/history}. */
 @Component
 public class GetStudentAttendanceTool implements ReadTool {
 
@@ -72,3 +71,4 @@ public class GetStudentAttendanceTool implements ReadTool {
     return ToolResult.ok(attendance.history(studentId, from, to));
   }
 }
+

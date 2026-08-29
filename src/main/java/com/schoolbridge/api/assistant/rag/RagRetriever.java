@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -16,9 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * The single, centralized entry point for RAG retrieval. Every similarity search is hard-scoped to
  * the caller's tenant ({@code metadata.school_id == ctx.schoolId()}) so a missed filter can never
- * leak another tenant's documents — keeping the tenant predicate in one auditable place is the
+ * leak another tenant's documents â€” keeping the tenant predicate in one auditable place is the
  * primary isolation control. As defense-in-depth, the tenant is also bound to the transaction via
- * {@code set_config('app.current_tenant', …)} so the database RLS policy (changelog 014) enforces
+ * {@code set_config('app.current_tenant', â€¦)} so the database RLS policy (changelog 014) enforces
  * isolation independently. Returns empty when RAG is disabled, the query is blank, or the search
  * fails: retrieval is best-effort and must never break the chat flow.
  */
@@ -66,3 +66,4 @@ public class RagRetriever {
     }
   }
 }
+

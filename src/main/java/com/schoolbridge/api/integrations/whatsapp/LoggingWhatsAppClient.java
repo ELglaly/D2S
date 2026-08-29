@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.whatsapp;
+﻿package com.schoolbridge.api.integrations.whatsapp;
 
 import com.schoolbridge.api.announcements.enums.Language;
 import java.util.List;
@@ -21,7 +21,7 @@ public class LoggingWhatsAppClient implements WhatsAppClient {
   public MessageSendResult sendTemplate(
       String templateName, String recipientPhone, Language language, List<TemplateParam> params) {
     log.warn(
-        "whatsapp_stub_send template={} phone={} lang={} — set schoolbridge.whatsapp.access-token for real delivery",
+        "whatsapp_stub_send template={} phone={} lang={} â€” set schoolbridge.whatsapp.access-token for real delivery",
         templateName,
         maskPhone(recipientPhone),
         language);
@@ -31,7 +31,7 @@ public class LoggingWhatsAppClient implements WhatsAppClient {
   @Override
   public MessageSendResult sendText(String recipientPhone, String body) {
     log.warn(
-        "whatsapp_stub_send_text phone={} — set schoolbridge.whatsapp.access-token for real delivery",
+        "whatsapp_stub_send_text phone={} â€” set schoolbridge.whatsapp.access-token for real delivery",
         maskPhone(recipientPhone));
     return MessageSendResult.accepted("wa-logging-" + UUID.randomUUID());
   }
@@ -43,3 +43,4 @@ public class LoggingWhatsAppClient implements WhatsAppClient {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
+

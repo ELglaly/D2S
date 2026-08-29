@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.homework;
+﻿package com.schoolbridge.api.assistant.tools.homework;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
@@ -9,14 +9,13 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.HomeworkResponse;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** TEACHER/ADMIN — recipients + delivery state of a homework item. */
+/** TEACHER/ADMIN â€” recipients + delivery state of a homework item. */
 @Component
 public class GetHomeworkRecipientsTool implements ReadTool {
 
@@ -68,3 +67,4 @@ public class GetHomeworkRecipientsTool implements ReadTool {
     return ToolResult.ok(homework.listRecipients(hw.value().id()));
   }
 }
+

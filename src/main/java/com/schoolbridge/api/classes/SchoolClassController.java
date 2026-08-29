@@ -1,12 +1,10 @@
-package com.schoolbridge.api.classes;
+﻿package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.CreateSchoolClassRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.dto.UpdateSchoolClassRequest;
 import com.schoolbridge.api.classes.service.SchoolClassService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -37,7 +35,7 @@ public class SchoolClassController {
     this.service = service;
   }
 
-  @RequirePermission(Permission.CLASS_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @PostMapping
   @Operation(summary = "Create class", description = "Creates a new school class for the tenant.")
   @ApiResponses({
@@ -55,7 +53,7 @@ public class SchoolClassController {
   }
 
   @GetMapping
-  @RequirePermission(Permission.CLASS_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "List classes",
       description = "Returns a paginated list of all classes for the school, newest first.")
@@ -72,7 +70,7 @@ public class SchoolClassController {
   }
 
   @GetMapping("/by-teacher")
-  @RequirePermission(Permission.CLASS_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(
       summary = "List classes by teacher",
       description =
@@ -97,7 +95,7 @@ public class SchoolClassController {
   @Operation(
       summary = "List my classes",
       description =
-          "Returns all classes assigned to the authenticated teacher — both as homeroom teacher "
+          "Returns all classes assigned to the authenticated teacher â€” both as homeroom teacher "
               + "and via explicit TeacherAssignment records.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Paginated class list"),
@@ -113,7 +111,7 @@ public class SchoolClassController {
   }
 
   @GetMapping("/{id}")
-  @RequirePermission(Permission.CLASS_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @Operation(summary = "Get class", description = "Returns a single class by ID.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Class found"),
@@ -125,7 +123,7 @@ public class SchoolClassController {
     return ResponseEntity.ok(service.findById(id));
   }
 
-  @RequirePermission(Permission.CLASS_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @PatchMapping("/{id}")
   @Operation(
       summary = "Update class",
@@ -142,7 +140,7 @@ public class SchoolClassController {
     return ResponseEntity.ok(service.update(id, request));
   }
 
-  @RequirePermission(Permission.CLASS_MANAGE)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
   @DeleteMapping("/{id}")
   @Operation(
       summary = "Delete class",
@@ -166,3 +164,4 @@ public class SchoolClassController {
     return staff;
   }
 }
+

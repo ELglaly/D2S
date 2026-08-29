@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.security.authz;
+﻿package com.schoolbridge.api.common.security.authz;
 
 import java.util.Set;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * RolePermissionAdminService} can grant it immediately.
  *
  * <p>Insert-only: missing rows are added, never removed (a retired enum value leaves a harmless
- * orphan row). New permissions are NOT granted to any role — that is an explicit admin action — so
+ * orphan row). New permissions are NOT granted to any role â€” that is an explicit admin action â€” so
  * the secure default for an unknown permission is "no role has it".
  *
  * <p>Each row is saved in its own transaction with the unique-constraint violation swallowed, so
@@ -48,7 +48,7 @@ public class PermissionCatalogReconciler {
         permissions.save(new PermissionEntity(UUID.randomUUID(), permission.name(), null));
         inserted++;
       } catch (DataIntegrityViolationException race) {
-        // A concurrent instance inserted the same permission first — safe to ignore.
+        // A concurrent instance inserted the same permission first â€” safe to ignore.
         log.debug("permission_catalog_insert_race name={}", permission.name());
       }
     }
@@ -61,3 +61,4 @@ public class PermissionCatalogReconciler {
     }
   }
 }
+

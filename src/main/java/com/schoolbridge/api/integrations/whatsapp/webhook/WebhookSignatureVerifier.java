@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.whatsapp.webhook;
+﻿package com.schoolbridge.api.integrations.whatsapp.webhook;
 
 import com.schoolbridge.api.integrations.whatsapp.WhatsAppProperties;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>The verification MUST operate on the EXACT bytes Meta sent; the controller therefore consumes
  * {@code @RequestBody byte[]} (Spring's {@code ByteArrayHttpMessageConverter}) before any JSON
- * parsing happens — see {@code feedback_outbox_audit_mapof_npe} for why "operate on the wire bytes"
+ * parsing happens â€” see {@code feedback_outbox_audit_mapof_npe} for why "operate on the wire bytes"
  * is the only safe path here.
  */
 @Component
@@ -58,3 +58,4 @@ public class WebhookSignatureVerifier {
     }
   }
 }
+

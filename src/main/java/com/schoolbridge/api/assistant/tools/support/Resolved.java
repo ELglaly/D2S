@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.support;
+﻿package com.schoolbridge.api.assistant.tools.support;
 
 import com.schoolbridge.api.assistant.tools.ToolResult;
 
@@ -26,3 +26,4 @@ public sealed interface Resolved<C> {
     return ((Of<C>) this).value();
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth.dto;
+﻿package com.schoolbridge.api.identity.auth.dto;
 
 import java.time.Instant;
 
@@ -14,3 +14,4 @@ public record AuthResponse(
     return new AuthResponse(accessToken, refreshToken, accessExpiresAt, "Bearer", role);
   }
 }
+

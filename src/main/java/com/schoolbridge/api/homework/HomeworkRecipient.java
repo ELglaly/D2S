@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;
@@ -124,3 +124,4 @@ public class HomeworkRecipient extends TenantEntity {
     return value.length() <= 256 ? value : value.substring(0, 256);
   }
 }
+

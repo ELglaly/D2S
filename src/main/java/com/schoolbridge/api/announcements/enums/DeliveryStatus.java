@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.enums;
+﻿package com.schoolbridge.api.announcements.enums;
 
 /**
  * Per-recipient delivery state.
@@ -18,10 +18,11 @@ public enum DeliveryStatus {
    * AnnouncementDeferralSweeper}.
    */
   DEFERRED,
-  /** The recipient opted out of announcements. Terminal — nothing will retry it. */
+  /** The recipient opted out of announcements. Terminal â€” nothing will retry it. */
   SUPPRESSED,
   SENT,
   DELIVERED,
   READ,
   FAILED
 }
+

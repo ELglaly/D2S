@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements;
+﻿package com.schoolbridge.api.announcements;
 
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
@@ -29,7 +29,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * at the right time.
  *
  * <p>Recipients are materialised at create time, not here, so the recipient set is the one that
- * existed when the announcement was written — a student enrolled between scheduling and sending
+ * existed when the announcement was written â€” a student enrolled between scheduling and sending
  * does not silently receive it. That is the conservative choice; revisit it if schools ask for the
  * other behaviour.
  */
@@ -111,7 +111,7 @@ public class AnnouncementScheduleSweeper {
           managed.markSent();
 
           long recipientCount = recipients.countByAnnouncementId(managed.getId());
-          // HashMap, not Map.of — attachmentKey is nullable.
+          // HashMap, not Map.of â€” attachmentKey is nullable.
           Map<String, Object> payload = new HashMap<>();
           payload.put("announcementId", managed.getId());
           payload.put("schoolId", managed.getSchoolId());
@@ -131,3 +131,4 @@ public class AnnouncementScheduleSweeper {
         });
   }
 }
+

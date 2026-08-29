@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools;
+﻿package com.schoolbridge.api.assistant.tools;
 
 /**
  * Coarse intent bucket used to gate the tool catalog by the user's query, so a request advertises
@@ -18,7 +18,7 @@ public enum ToolDomain {
   STAFF,
   GENERAL;
 
-  /** Maps a tool's leaf package (…{@code .tools.attendance}) to its domain; unknown → GENERAL. */
+  /** Maps a tool's leaf package (â€¦{@code .tools.attendance}) to its domain; unknown â†’ GENERAL. */
   public static ToolDomain fromPackage(Class<?> type) {
     String pkg = type.getPackageName();
     int dot = pkg.lastIndexOf('.');
@@ -37,3 +37,4 @@ public enum ToolDomain {
     };
   }
 }
+

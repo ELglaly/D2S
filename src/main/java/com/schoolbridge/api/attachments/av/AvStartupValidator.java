@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attachments.av;
+﻿package com.schoolbridge.api.attachments.av;
 
 import com.schoolbridge.api.attachments.StorageProperties;
 import jakarta.annotation.PostConstruct;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * com.schoolbridge.api.common.tenancy.RlsStartupValidator}: the convenient default exists so local
  * development and the test suite do not need a ClamAV image, and a convenient default is exactly
  * the kind of thing a production deployment inherits by omission. Without this check the failure
- * mode is silent — uploads succeed, downloads work, and every attachment is recorded {@code
+ * mode is silent â€” uploads succeed, downloads work, and every attachment is recorded {@code
  * SKIPPED} while everyone believes files are being scanned.
  */
 @Component
@@ -36,7 +36,7 @@ public class AvStartupValidator {
           "Anti-virus scanning is disabled (schoolbridge.storage.av.enabled=false) under the prod"
               + " profile. Attachments would be stored and served back to parents without ever"
               + " being scanned, and recorded as SKIPPED rather than CLEAN. Set STORAGE_AV_ENABLED"
-              + " and point STORAGE_AV_HOST at a clamd instance — see docs/RUNBOOK.md,"
+              + " and point STORAGE_AV_HOST at a clamd instance â€” see docs/RUNBOOK.md,"
               + " 'Attachment storage'.");
     }
     log.info(
@@ -45,3 +45,4 @@ public class AvStartupValidator {
         properties.getAv().getPort());
   }
 }
+

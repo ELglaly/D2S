@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.dto;
+﻿package com.schoolbridge.api.classes.dto;
 
 import com.schoolbridge.api.classes.RelationshipType;
 import com.schoolbridge.api.classes.StudentStatus;
@@ -14,3 +14,4 @@ public record ParentChildResponse(
     RelationshipType relationship,
     boolean primaryContact,
     List<ChildClassSummary> classes) {}
+

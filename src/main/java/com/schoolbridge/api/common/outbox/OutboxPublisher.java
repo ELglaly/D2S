@@ -1,4 +1,4 @@
-package com.schoolbridge.api.common.outbox;
+﻿package com.schoolbridge.api.common.outbox;
 
 /**
  * Port that publishes an outbox event to the message broker. The RabbitMQ implementation is
@@ -9,3 +9,4 @@ public interface OutboxPublisher {
 
   void publish(OutboxEvent event);
 }
+

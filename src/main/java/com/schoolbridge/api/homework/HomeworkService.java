@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.homework.dto.CreateHomeworkRequest;
 import com.schoolbridge.api.homework.dto.HomeworkRecipientResponse;
@@ -40,3 +40,4 @@ public interface HomeworkService {
   /** Returns all recipient rows for a homework item with delivery and acknowledgment status. */
   List<HomeworkRecipientResponse> listRecipients(UUID homeworkId);
 }
+

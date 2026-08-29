@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.attendance.dto.AttendanceHistoryEntry;
 import com.schoolbridge.api.attendance.dto.AttendanceRecordResponse;
@@ -8,8 +8,6 @@ import com.schoolbridge.api.attendance.dto.MarkAllPresentResponse;
 import com.schoolbridge.api.attendance.dto.MarkAttendanceRequest;
 import com.schoolbridge.api.attendance.dto.ParentResponseRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
@@ -46,11 +44,11 @@ public class AttendanceController {
   }
 
   // Slash-style action verbs ({@code /mark}, {@code /mark-all-present}) instead of the
-  // Google-AIP-style {@code :mark} the IMPLEMENTATION_PLAN proposes — REST clients (RestAssured,
+  // Google-AIP-style {@code :mark} the IMPLEMENTATION_PLAN proposes â€” REST clients (RestAssured,
   // OkHttp) URL-encode the colon to %3A, which makes Spring's path matcher route the request to
   // the static-resource fallback.
   @GetMapping("/{id}")
-  @RequirePermission(Permission.ATTENDANCE_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @Operation(
       summary = "Get attendance record",
       description = "Returns a single attendance record by ID.")
@@ -65,7 +63,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/mark")
-  @RequirePermission(Permission.ATTENDANCE_RECORD)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
   @Operation(
@@ -89,7 +87,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/mark-all-present")
-  @RequirePermission(Permission.ATTENDANCE_RECORD)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
   @Operation(
@@ -112,7 +110,7 @@ public class AttendanceController {
   }
 
   @GetMapping("/roster")
-  @RequirePermission(Permission.ATTENDANCE_READ)
+  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
   @PreAuthorize(
       "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
   @Operation(
@@ -170,7 +168,7 @@ public class AttendanceController {
   }
 
   /**
-   * Parent reply to an absence alert. {@code @PreAuthorize} only narrows to PARENT role — the
+   * Parent reply to an absence alert. {@code @PreAuthorize} only narrows to PARENT role â€” the
    * per-record linked-child check is in the service layer so an unlinked parent gets 404
    * (anti-enumeration) rather than 403.
    */
@@ -215,3 +213,4 @@ public class AttendanceController {
     return parent;
   }
 }
+

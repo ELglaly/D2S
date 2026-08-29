@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations.push;
+﻿package com.schoolbridge.api.integrations.push;
 
 import java.util.Map;
 
@@ -18,3 +18,4 @@ public interface PushNotificationClient {
    */
   PushSendResult send(String fcmToken, String title, String body, Map<String, String> data);
 }
+

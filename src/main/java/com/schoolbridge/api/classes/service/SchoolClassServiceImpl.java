@@ -1,4 +1,4 @@
-package com.schoolbridge.api.classes.service;
+﻿package com.schoolbridge.api.classes.service;
 
 import com.schoolbridge.api.classes.dto.ClassesMapper;
 import com.schoolbridge.api.classes.dto.CreateSchoolClassRequest;
@@ -106,3 +106,4 @@ public class SchoolClassServiceImpl implements SchoolClassService {
         .orElseThrow(() -> new NotFoundException("error.class.not_found", id));
   }
 }
+

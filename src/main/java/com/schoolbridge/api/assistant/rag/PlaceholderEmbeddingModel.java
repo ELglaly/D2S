@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -15,8 +15,8 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 /**
  * Deterministic, offline {@link EmbeddingModel} used in Phase 2 so the RAG ingestion pipeline and
  * the PgVectorStore wire and run end-to-end without any cloud embedding provider (which would pull
- * a heavy native stack and require credentials). Vectors are derived purely from the input text —
- * equal text always yields the same unit vector — which makes ingestion deterministic and lets the
+ * a heavy native stack and require credentials). Vectors are derived purely from the input text â€”
+ * equal text always yields the same unit vector â€” which makes ingestion deterministic and lets the
  * cross-tenant isolation tests assert exact matches.
  *
  * <p>NOTE: these are NOT semantic embeddings. Phase 3 replaces this bean with the real Vertex
@@ -85,3 +85,4 @@ public class PlaceholderEmbeddingModel implements EmbeddingModel {
     }
   }
 }
+

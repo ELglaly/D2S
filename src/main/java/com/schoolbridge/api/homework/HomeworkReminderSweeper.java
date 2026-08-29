@@ -1,4 +1,4 @@
-package com.schoolbridge.api.homework;
+﻿package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.tenant.School;
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
  *
  * <ol>
  *   <li><b>Reminder fire.</b> Every 5 minutes (default), walks ACTIVE schools that have {@link
- *       SchoolSettings#isHomeworkReminderEnabled()} and whose school-local time is within ±{@code
+ *       SchoolSettings#isHomeworkReminderEnabled()} and whose school-local time is within Â±{@code
  *       reminder-window-minutes} of {@link SchoolSettings#getHomeworkReminderTime()}. For each
  *       qualifying school, finds PUBLISHED {@link HomeworkItem}s due within the horizon whose
  *       {@code reminderSentAt} is null, acquires a Redis SETNX dedup key, then delegates to {@link
@@ -206,3 +206,4 @@ public class HomeworkReminderSweeper {
     return Boolean.TRUE.equals(acquired);
   }
 }
+

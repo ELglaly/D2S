@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.tools.support;
+﻿package com.schoolbridge.api.assistant.tools.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -81,3 +81,4 @@ public final class Schema {
     return root;
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.announcements.dto;
+﻿package com.schoolbridge.api.announcements.dto;
 
 import com.schoolbridge.api.announcements.enums.AnnouncementScope;
 import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
@@ -21,3 +21,4 @@ public record AnnouncementResponse(
     long recipientCount,
     Instant createdAt,
     Instant updatedAt) {}
+

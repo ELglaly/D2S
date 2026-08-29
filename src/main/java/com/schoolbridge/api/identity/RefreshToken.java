@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity;
+﻿package com.schoolbridge.api.identity;
 
 import com.schoolbridge.api.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
@@ -76,3 +76,4 @@ public class RefreshToken extends BaseEntity {
     return revokedAt;
   }
 }
+

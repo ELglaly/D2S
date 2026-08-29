@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.auth;
+﻿package com.schoolbridge.api.identity.auth;
 
 import java.time.Duration;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Enforces NFR-S5: max 5 failed login attempts per email per 15 minutes. Implemented as a Redis
- * counter with a sliding window TTL — once {@link #recordFailure(String)} pushes the counter past
+ * counter with a sliding window TTL â€” once {@link #recordFailure(String)} pushes the counter past
  * {@link #MAX_ATTEMPTS}, {@link #isBlocked(String)} returns true until the TTL expires or a {@link
  * #reset(String)} (on successful login) clears it.
  */
@@ -44,3 +44,4 @@ public class LoginRateLimiter {
     return email == null ? "" : email.trim().toLowerCase(java.util.Locale.ROOT);
   }
 }
+

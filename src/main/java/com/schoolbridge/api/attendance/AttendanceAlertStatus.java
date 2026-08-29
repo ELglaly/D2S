@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 /**
  * Per-recipient lifecycle for an attendance alert fan-out. {@code DEFERRED} carries quiet-hours
@@ -11,3 +11,4 @@ public enum AttendanceAlertStatus {
   SENT,
   FAILED
 }
+

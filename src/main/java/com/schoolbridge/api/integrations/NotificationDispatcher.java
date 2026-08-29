@@ -1,4 +1,4 @@
-package com.schoolbridge.api.integrations;
+﻿package com.schoolbridge.api.integrations;
 
 import com.schoolbridge.api.identity.device.DeviceToken;
 import com.schoolbridge.api.identity.device.DeviceTokenRepository;
@@ -27,10 +27,10 @@ import org.springframework.stereotype.Component;
  * <p>Two entry points, deliberately different:
  *
  * <ul>
- *   <li>{@link #dispatch(DispatchRequest)} — addressed to a bare phone number, WhatsApp with SMS
+ *   <li>{@link #dispatch(DispatchRequest)} â€” addressed to a bare phone number, WhatsApp with SMS
  *       fallback. This is the OTP path: no user, no preferences, no quiet hours, because a login
  *       code a user can mute is a support ticket rather than a preference.
- *   <li>{@link #dispatch(UserDispatchRequest, List)} — addressed to a known user over a caller-
+ *   <li>{@link #dispatch(UserDispatchRequest, List)} â€” addressed to a known user over a caller-
  *       supplied channel order, which {@code NotificationPreferenceService} produced from that
  *       user's stored preference. Push is available here and only here, since it is addressed by
  *       device token.
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Component;
  * caught here). After {@code waitDurationInOpenState} the breaker half-opens and a success clears
  * the per-recipient counter, restoring WhatsApp.
  *
- * <p>A channel with no way to reach the user — no active device token, no phone number — is
+ * <p>A channel with no way to reach the user â€” no active device token, no phone number â€” is
  * <em>unavailable</em>, not failed: the walk moves to the next channel without recording anything
  * against the recipient.
  */
@@ -107,7 +107,7 @@ public class NotificationDispatcher {
             case SMS -> attemptSms(request.content());
           };
       if (result == null) {
-        continue; // Channel unavailable for this recipient — not a failure.
+        continue; // Channel unavailable for this recipient â€” not a failure.
       }
       lastAttempted = channel;
       if (result.accepted()) {
@@ -157,7 +157,7 @@ public class NotificationDispatcher {
   }
 
   /**
-   * @return null when WhatsApp was not attempted at all — no phone, or the recipient is currently
+   * @return null when WhatsApp was not attempted at all â€” no phone, or the recipient is currently
    *     demoted by the failure counter.
    */
   private DispatchResult attemptWhatsApp(DispatchRequest request) {
@@ -264,3 +264,4 @@ public class NotificationDispatcher {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
+

@@ -1,4 +1,4 @@
-package com.schoolbridge.api.attendance;
+﻿package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.classes.entity.SchoolClass;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
@@ -43,7 +43,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       attendance:roster_missed:{schoolId}:{classId}:{date}} key with a configurable TTL.
  * </ol>
  *
- * <p>No queue is bound to {@code attendance.roster_missed} in M8 — the event lands on the topic
+ * <p>No queue is bound to {@code attendance.roster_missed} in M8 â€” the event lands on the topic
  * exchange and falls through. A Micrometer counter {@code attendance.roster_missed} tagged by
  * {@code schoolId} is the live signal until M12 reporting wires a consumer.
  */
@@ -96,7 +96,7 @@ public class AttendanceSweeper {
 
   /**
    * Releases every deferred recipient whose hold window has closed. The repository call runs
-   * without a {@link TenantContext} (filter inactive → cross-tenant query), and per-recipient
+   * without a {@link TenantContext} (filter inactive â†’ cross-tenant query), and per-recipient
    * release is then re-bound to the row's school so {@link AttendanceAlertService#releaseDeferred}
    * sees only that tenant's data.
    */
@@ -213,3 +213,4 @@ public class AttendanceSweeper {
     meterRegistry.counter("attendance.roster_missed", "schoolId", schoolId.toString()).increment();
   }
 }
+

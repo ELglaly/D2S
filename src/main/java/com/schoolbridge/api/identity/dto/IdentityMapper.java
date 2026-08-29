@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity.dto;
+﻿package com.schoolbridge.api.identity.dto;
 
 import com.schoolbridge.api.identity.User;
 import org.springframework.stereotype.Component;
@@ -18,3 +18,4 @@ public class IdentityMapper {
         u.getUpdatedAt());
   }
 }
+

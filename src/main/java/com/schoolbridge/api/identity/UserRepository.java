@@ -1,4 +1,4 @@
-package com.schoolbridge.api.identity;
+﻿package com.schoolbridge.api.identity;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
  * Hibernate's {@code @Filter} does NOT apply to {@code Session.get()}/{@code EntityManager.find()}
  * (direct primary-key lookups). The default Spring Data {@code findById} uses {@code em.find}, so
  * without this override a teacher in school A could load any user by id. Routing through a query
- * makes the filter apply. Every future {@code TenantEntity} repository MUST do the same — the
+ * makes the filter apply. Every future {@code TenantEntity} repository MUST do the same â€” the
  * isolation test for {@link User} is the canonical template.
  */
 public interface UserRepository extends JpaRepository<User, UUID> {
@@ -35,3 +35,4 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByPhoneHash(String phoneHash);
 }
+

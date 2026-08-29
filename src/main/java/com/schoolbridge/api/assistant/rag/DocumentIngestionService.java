@@ -1,4 +1,4 @@
-package com.schoolbridge.api.assistant.rag;
+﻿package com.schoolbridge.api.assistant.rag;
 
 import com.schoolbridge.api.assistant.rag.dto.IngestDocumentRequest;
 import com.schoolbridge.api.assistant.rag.dto.KnowledgeDocumentResponse;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Tenant-scoped ingestion of knowledge documents into the RAG corpus: chunk → embed → store. The
+ * Tenant-scoped ingestion of knowledge documents into the RAG corpus: chunk â†’ embed â†’ store. The
  * registry row ({@link KnowledgeDocument}) and the vector chunks are always scoped to {@code
  * ctx.schoolId()} (never a client-supplied tenant); each chunk carries {@code school_id} and {@code
  * document_id} in its vector-store metadata so retrieval can filter by tenant and deletes can
@@ -154,3 +154,4 @@ public class DocumentIngestionService {
     }
   }
 }
+
