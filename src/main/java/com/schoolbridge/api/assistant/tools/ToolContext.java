@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.tools;
+package com.schoolbridge.api.assistant.tools;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.identity.UserRole;

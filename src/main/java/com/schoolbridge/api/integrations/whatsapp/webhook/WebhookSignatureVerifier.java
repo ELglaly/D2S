@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp.webhook;
+package com.schoolbridge.api.integrations.whatsapp.webhook;
 
 import com.schoolbridge.api.integrations.whatsapp.WhatsAppProperties;
 import java.nio.charset.StandardCharsets;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.tools;
+package com.schoolbridge.api.assistant.tools;
 
 /**
  * Coarse intent bucket used to gate the tool catalog by the user's query, so a request advertises

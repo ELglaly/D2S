@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security.authz;
+package com.schoolbridge.api.common.security.authz;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.tools.action;
+package com.schoolbridge.api.assistant.tools.action;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

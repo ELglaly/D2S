@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.dto;
+package com.schoolbridge.api.assistant.dto;
 
 import java.time.Instant;
 import java.util.UUID;

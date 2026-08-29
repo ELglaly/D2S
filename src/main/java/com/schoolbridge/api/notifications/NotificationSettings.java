@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications;
+package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;

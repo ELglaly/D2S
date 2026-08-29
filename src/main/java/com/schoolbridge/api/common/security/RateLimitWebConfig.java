@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security;
+package com.schoolbridge.api.common.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

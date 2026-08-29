@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.config;
+package com.schoolbridge.api.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;

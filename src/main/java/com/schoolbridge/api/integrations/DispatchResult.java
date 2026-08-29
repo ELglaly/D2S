@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations;
+package com.schoolbridge.api.integrations;
 
 /**
  * Outcome of a single {@link NotificationDispatcher#dispatch} call. {@code messageId} is the

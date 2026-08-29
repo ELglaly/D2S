@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.attendance;
 
 /**
  * Daily attendance state recorded by a teacher or admin. {@code PRESENT} is the no-alert default;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications;
+package com.schoolbridge.api.notifications;
 
 import com.schoolbridge.api.notifications.dto.NotificationPreferencesRequest;
 import com.schoolbridge.api.notifications.dto.NotificationPreferencesResponse;

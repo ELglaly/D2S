@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import java.util.Locale;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments;
+package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.announcements.repository.AnnouncementRepository;
 import com.schoolbridge.api.attachments.av.AvScanner;

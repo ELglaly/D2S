@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.subjects.service;
+package com.schoolbridge.api.subjects.service;
 
 import com.schoolbridge.api.subjects.dto.AssignTeacherToSubjectRequest;
 import com.schoolbridge.api.subjects.dto.StudentSubjectResponse;

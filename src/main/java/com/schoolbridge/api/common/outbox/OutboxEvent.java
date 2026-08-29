@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.outbox;
+package com.schoolbridge.api.common.outbox;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

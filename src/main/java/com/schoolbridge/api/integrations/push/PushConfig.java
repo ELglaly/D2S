@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.push;
+package com.schoolbridge.api.integrations.push;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;

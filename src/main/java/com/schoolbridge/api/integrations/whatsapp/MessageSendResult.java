@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp;
+package com.schoolbridge.api.integrations.whatsapp;
 
 /**
  * Outcome of a single outbound message send.

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 /**
  * Thrown when a downstream/third-party integration fails (â†’ 502). Detail returned to clients is

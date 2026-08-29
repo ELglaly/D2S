@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.rag;
+package com.schoolbridge.api.assistant.rag;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

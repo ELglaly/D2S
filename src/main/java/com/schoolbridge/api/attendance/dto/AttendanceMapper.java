@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance.dto;
+package com.schoolbridge.api.attendance.dto;
 
 import com.schoolbridge.api.attendance.AttendanceRecord;
 import org.springframework.stereotype.Component;

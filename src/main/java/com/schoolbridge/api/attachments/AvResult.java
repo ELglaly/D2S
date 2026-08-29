@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments;
+package com.schoolbridge.api.attachments;
 
 /** Outcome of an anti-virus scan, recorded on the attachment row for audit. */
 public enum AvResult {

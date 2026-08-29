@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.classes.dto;
+package com.schoolbridge.api.classes.dto;
 
 import com.schoolbridge.api.classes.StudentStatus;
 import java.time.Instant;

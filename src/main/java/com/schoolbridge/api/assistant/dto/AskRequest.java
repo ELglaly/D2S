@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.dto;
+package com.schoolbridge.api.assistant.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

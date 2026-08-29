@@ -1,9 +1,11 @@
-﻿package com.schoolbridge.api.classes;
+package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.EnrollStudentRequest;
 import com.schoolbridge.api.classes.dto.EnrollmentResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
 import com.schoolbridge.api.common.web.ApiConstants;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +36,7 @@ public class EnrollmentController {
   }
 
   @PostMapping("/classes/{classId}/enrollments")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ENROLLMENT_MANAGE)
   @Operation(
       summary = "Enroll student in class",
       description = "Creates an enrollment record linking a student to a class.")
@@ -54,8 +56,7 @@ public class EnrollmentController {
   }
 
   @GetMapping("/classes/{classId}/enrollments")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#classId)")
+  @RequirePermission(Permission.ENROLLMENT_MANAGE)
   @Operation(
       summary = "List enrollments for a class",
       description =
@@ -74,7 +75,7 @@ public class EnrollmentController {
   }
 
   @DeleteMapping("/enrollments/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+  @RequirePermission(Permission.ENROLLMENT_MANAGE)
   @Operation(
       summary = "Remove enrollment",
       description = "Removes a student from a class by deleting the enrollment record.")

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.auth;
+package com.schoolbridge.api.identity.auth;
 
 import com.schoolbridge.api.identity.auth.dto.ParentLogoutRequest;
 import com.schoolbridge.api.identity.auth.dto.RequestOtpRequest;

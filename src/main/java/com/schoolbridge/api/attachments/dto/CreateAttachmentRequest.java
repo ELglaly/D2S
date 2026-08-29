@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.dto;
+package com.schoolbridge.api.attachments.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;

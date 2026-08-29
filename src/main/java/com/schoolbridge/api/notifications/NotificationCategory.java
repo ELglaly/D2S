@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications;
+package com.schoolbridge.api.notifications;
 
 /**
  * The kinds of outbound message a user can hold a preference about.

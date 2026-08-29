@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.idempotency;
+package com.schoolbridge.api.common.idempotency;
 
 import java.time.Duration;
 import java.util.Base64;

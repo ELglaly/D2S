@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.dto;
+package com.schoolbridge.api.attachments.dto;
 
 import java.time.Instant;
 import java.util.UUID;

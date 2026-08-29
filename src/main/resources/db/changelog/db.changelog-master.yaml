@@ -56,3 +56,6 @@ databaseChangeLog:
   - include:
       file: 019-notification-preferences.sql
       relativeToChangelogFile: true
+  - include:
+      file: 020-authorization-normalization.sql
+      relativeToChangelogFile: true

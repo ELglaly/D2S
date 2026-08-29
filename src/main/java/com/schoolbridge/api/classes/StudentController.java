@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.classes;
+package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.BulkImportResult;
 import com.schoolbridge.api.classes.dto.CreateStudentRequest;
@@ -8,6 +8,8 @@ import com.schoolbridge.api.classes.service.StudentService;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -35,7 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/students")
 @Tag(name = "Students", description = "Student roster management and bulk import")
-@PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN')")
+@RequirePermission(Permission.STUDENT_MANAGE)
 public class StudentController {
 
   private final StudentService service;

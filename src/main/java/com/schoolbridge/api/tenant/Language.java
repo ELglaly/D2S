@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.tenant;
+package com.schoolbridge.api.tenant;
 
 /**
  * Supported school-facing languages. Lives here because {@link SchoolSettings} is its first

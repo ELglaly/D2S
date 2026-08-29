@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.attendance.dto.AttendanceHistoryEntry;
 import com.schoolbridge.api.attendance.dto.AttendanceRecordResponse;

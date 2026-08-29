@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 import java.util.ArrayList;
 import java.util.List;

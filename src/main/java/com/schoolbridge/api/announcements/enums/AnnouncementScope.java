@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.announcements.enums;
+package com.schoolbridge.api.announcements.enums;
 
 /**
  * Targeting scope of an announcement.

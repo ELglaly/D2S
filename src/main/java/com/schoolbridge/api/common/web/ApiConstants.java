@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.web;
+package com.schoolbridge.api.common.web;
 
 /** Shared API path prefixes and well-known header names. */
 public final class ApiConstants {

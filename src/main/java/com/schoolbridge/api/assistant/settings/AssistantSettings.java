@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.settings;
+package com.schoolbridge.api.assistant.settings;
 
 import com.schoolbridge.api.common.tenancy.TenantEntity;
 import jakarta.persistence.Column;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.error;
+package com.schoolbridge.api.common.error;
 
 /** Thrown when a request conflicts with current resource state (â†’ 409). */
 public class ConflictException extends ApplicationException {

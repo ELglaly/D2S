@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security;
+package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.common.error.RateLimitException;
 import jakarta.servlet.http.HttpServletRequest;

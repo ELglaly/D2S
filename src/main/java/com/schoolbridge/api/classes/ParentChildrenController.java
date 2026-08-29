@@ -1,17 +1,18 @@
-﻿package com.schoolbridge.api.classes;
+package com.schoolbridge.api.classes;
 
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.classes.service.ParentChildrenService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,7 @@ public class ParentChildrenController {
   }
 
   @GetMapping("/me/children")
-  @PreAuthorize("hasRole('PARENT')")
+  @RequirePermission(Permission.STUDENT_READ)
   @Operation(
       summary = "List my children",
       description =

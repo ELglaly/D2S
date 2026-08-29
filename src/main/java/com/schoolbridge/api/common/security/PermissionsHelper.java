@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security;
+package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.announcements.enums.AnnouncementScope;
 import com.schoolbridge.api.announcements.repository.AnnouncementRecipientRepository;
@@ -8,7 +8,7 @@ import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
 import com.schoolbridge.api.homework.HomeworkItemRepository;
 import com.schoolbridge.api.homework.HomeworkRecipientRepository;
-import com.schoolbridge.api.identity.UserRole;
+import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import com.schoolbridge.api.subjects.TeacherSubjectAssignmentRepository;
@@ -21,10 +21,11 @@ import org.springframework.stereotype.Component;
  * Instance-level permission helpers exposed as a Spring bean named {@code perms} so controllers can
  * write concise SpEL expressions such as:
  *
- * <pre>{@code @PreAuthorize("hasRole('SCHOOL_ADMIN') or @perms.teacherTeaches(#classId)")}</pre>
+ * <p>Resource ownership predicates are reusable service policies and use the trusted principal plus
+ * domain relationships; they never trust client-supplied roles.
  *
  * <p>All methods return {@code false} (deny) when the security context does not contain the
- * expected principal type â€” this is the safe default.
+ * expected principal type Ã¢â‚¬â€ this is the safe default.
  */
 @Component("perms")
 public class PermissionsHelper {
@@ -37,6 +38,7 @@ public class PermissionsHelper {
   private final HomeworkItemRepository homeworkItems;
   private final HomeworkRecipientRepository homeworkRecipients;
   private final AttachmentRepository attachments;
+  private final EffectivePermissionService effectivePermissions;
 
   public PermissionsHelper(
       SchoolClassRepository schoolClasses,
@@ -46,7 +48,8 @@ public class PermissionsHelper {
       AnnouncementRecipientRepository announcementRecipients,
       HomeworkItemRepository homeworkItems,
       HomeworkRecipientRepository homeworkRecipients,
-      AttachmentRepository attachments) {
+      AttachmentRepository attachments,
+      EffectivePermissionService effectivePermissions) {
     this.attachments = attachments;
     this.schoolClasses = schoolClasses;
     this.teacherSubjectAssignments = teacherSubjectAssignments;
@@ -55,6 +58,7 @@ public class PermissionsHelper {
     this.announcementRecipients = announcementRecipients;
     this.homeworkItems = homeworkItems;
     this.homeworkRecipients = homeworkRecipients;
+    this.effectivePermissions = effectivePermissions;
   }
 
   /**
@@ -108,28 +112,17 @@ public class PermissionsHelper {
    */
   public boolean canSendAnnouncementToScope(AnnouncementScope scopeType, String scopeValue) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null || scopeType == null) {
+    if (auth == null || scopeType == null || !(auth.getPrincipal() instanceof StaffPrincipal staff)) {
       return false;
     }
-    if (!(auth.getPrincipal() instanceof StaffPrincipal staff)) {
+    var granted = effectivePermissions.permissionsForRole(staff.role());
+    if (granted.contains("ANNOUNCEMENT_MANAGE")) return true;
+    if (!granted.contains("ANNOUNCEMENT_SEND") || scopeType != AnnouncementScope.CLASS || scopeValue == null) return false;
+    try {
+      return teacherTeaches(UUID.fromString(scopeValue));
+    } catch (IllegalArgumentException ex) {
       return false;
     }
-    if (staff.role() == UserRole.SCHOOL_ADMIN) {
-      return true;
-    }
-    if (staff.role() == UserRole.TEACHER) {
-      if (scopeType != AnnouncementScope.CLASS || scopeValue == null) {
-        return false;
-      }
-      UUID classId;
-      try {
-        classId = UUID.fromString(scopeValue);
-      } catch (IllegalArgumentException ex) {
-        return false;
-      }
-      return teacherTeaches(classId);
-    }
-    return false;
   }
 
   /**
@@ -181,7 +174,7 @@ public class PermissionsHelper {
    * announcement that carries this attachment. Used in SpEL: {@code
    * @perms.parentCanReadAttachment(#id)}.
    *
-   * <p>The {@code ATTACHMENT_READ} grant on the PARENT role is deliberately coarse â€” it says a
+   * <p>The {@code ATTACHMENT_READ} grant on the PARENT role is deliberately coarse Ã¢â‚¬â€ it says a
    * parent may open attachments, not <em>which</em> ones. This is the part that answers "which",
    * and without it any parent in a school could download any other family's uploaded photo by id.
    * Note it grants nothing for an attachment that is not yet attached to anything, which is the

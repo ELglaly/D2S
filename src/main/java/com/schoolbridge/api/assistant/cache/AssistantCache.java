@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.cache;
+package com.schoolbridge.api.assistant.cache;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

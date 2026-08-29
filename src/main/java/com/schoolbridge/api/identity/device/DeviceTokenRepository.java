@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.device;
+package com.schoolbridge.api.identity.device;
 
 import java.util.List;
 import java.util.Optional;

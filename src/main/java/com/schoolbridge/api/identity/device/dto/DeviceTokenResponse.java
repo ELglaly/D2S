@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.device.dto;
+package com.schoolbridge.api.identity.device.dto;
 
 import com.schoolbridge.api.identity.device.DevicePlatform;
 import com.schoolbridge.api.identity.device.DeviceToken;

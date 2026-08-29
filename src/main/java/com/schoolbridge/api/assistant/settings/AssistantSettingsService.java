@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.settings;
+package com.schoolbridge.api.assistant.settings;
 
 import com.schoolbridge.api.assistant.llm.AssistantProperties;
 import com.schoolbridge.api.assistant.llm.SystemPrompt;

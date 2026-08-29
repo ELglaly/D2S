@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.otp;
+package com.schoolbridge.api.identity.otp;
 
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import java.time.Duration;

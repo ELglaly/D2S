@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.classes;
+package com.schoolbridge.api.classes;
 
 /** Lifecycle status of a student profile. */
 public enum StudentStatus {

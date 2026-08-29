@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.storage;
+package com.schoolbridge.api.attachments.storage;
 
 import com.schoolbridge.api.attachments.StorageProperties;
 import java.net.URI;

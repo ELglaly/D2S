@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.announcements.dto;
+package com.schoolbridge.api.announcements.dto;
 
 import com.schoolbridge.api.announcements.Announcement;
 import com.schoolbridge.api.announcements.AnnouncementRecipient;

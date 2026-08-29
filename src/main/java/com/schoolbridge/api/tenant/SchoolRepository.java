@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.tenant;
+package com.schoolbridge.api.tenant;
 
 import java.util.UUID;
 import org.springframework.data.domain.Page;

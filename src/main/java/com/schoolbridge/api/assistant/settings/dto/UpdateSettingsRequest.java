@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.settings.dto;
+package com.schoolbridge.api.assistant.settings.dto;
 
 import jakarta.validation.constraints.Size;
 

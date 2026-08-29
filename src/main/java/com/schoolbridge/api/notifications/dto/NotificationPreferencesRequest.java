@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.notifications.dto;
+package com.schoolbridge.api.notifications.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.storage;
+package com.schoolbridge.api.attachments.storage;
 
 import java.io.InputStream;
 import java.time.Duration;

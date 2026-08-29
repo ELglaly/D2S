@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.grades.dto;
+package com.schoolbridge.api.grades.dto;
 
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;

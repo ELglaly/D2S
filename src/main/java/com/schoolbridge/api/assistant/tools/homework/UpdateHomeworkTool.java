@@ -1,4 +1,6 @@
-﻿package com.schoolbridge.api.assistant.tools.homework;
+package com.schoolbridge.api.assistant.tools.homework;
+
+import com.schoolbridge.api.common.security.authz.Permission;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

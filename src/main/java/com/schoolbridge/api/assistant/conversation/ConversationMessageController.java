@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.conversation;
+package com.schoolbridge.api.assistant.conversation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.assistant.AssistantContextFactory;

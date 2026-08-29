@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance.dto;
+package com.schoolbridge.api.attendance.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;

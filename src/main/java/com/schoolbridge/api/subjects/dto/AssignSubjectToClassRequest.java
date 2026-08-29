@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.subjects.dto;
+package com.schoolbridge.api.subjects.dto;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;

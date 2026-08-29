@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.av;
+package com.schoolbridge.api.attachments.av;
 
 import com.schoolbridge.api.attachments.StorageProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

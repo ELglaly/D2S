@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity.otp;
+package com.schoolbridge.api.identity.otp;
 
 import com.schoolbridge.api.common.error.AuthenticationException;
 import com.schoolbridge.api.common.error.RateLimitException;

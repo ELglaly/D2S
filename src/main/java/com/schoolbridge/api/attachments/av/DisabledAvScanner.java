@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.av;
+package com.schoolbridge.api.attachments.av;
 
 import java.io.InputStream;
 import org.slf4j.Logger;

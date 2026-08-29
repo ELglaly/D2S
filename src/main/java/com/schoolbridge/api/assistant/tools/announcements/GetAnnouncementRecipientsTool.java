@@ -1,4 +1,6 @@
-﻿package com.schoolbridge.api.assistant.tools.announcements;
+package com.schoolbridge.api.assistant.tools.announcements;
+
+import com.schoolbridge.api.common.security.authz.Permission;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.push;
+package com.schoolbridge.api.integrations.push;
 
 import java.util.Map;
 

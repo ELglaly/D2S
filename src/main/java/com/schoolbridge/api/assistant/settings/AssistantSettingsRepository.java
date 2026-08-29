@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.settings;
+package com.schoolbridge.api.assistant.settings;
 
 import java.util.Optional;
 import java.util.UUID;

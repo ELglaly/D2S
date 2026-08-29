@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.push;
+package com.schoolbridge.api.integrations.push;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;

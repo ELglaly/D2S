@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.conversation;
+package com.schoolbridge.api.assistant.conversation;
 
 /**
  * Sink for the Anthropic-style SSE frames of one streamed reply. The HTTP controller backs this

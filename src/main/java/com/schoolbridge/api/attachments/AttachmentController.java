@@ -1,13 +1,16 @@
-﻿package com.schoolbridge.api.attachments;
+package com.schoolbridge.api.attachments;
 
 import com.schoolbridge.api.attachments.dto.AttachmentDownloadTicket;
 import com.schoolbridge.api.attachments.dto.AttachmentResponse;
 import com.schoolbridge.api.attachments.dto.AttachmentUploadTicket;
 import com.schoolbridge.api.attachments.dto.CreateAttachmentRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.AuthorizationPolicy;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>No endpoint here accepts or returns file bytes. Uploads are a presigned PUT the client
  * performs against object storage; downloads are a short-lived presigned GET. Serving user files
  * from this origin would put a stored-XSS or content-sniffing bug inside the API's own security
- * origin, against an already-authenticated session â€” see {@code docs/PLAN_FILE_UPLOAD.md} section
+ * origin, against an already-authenticated session ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â see {@code docs/PLAN_FILE_UPLOAD.md} section
  * 2.
  */
 @RestController
@@ -40,13 +42,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AttachmentController {
 
   private final AttachmentService service;
+  private final AuthorizationPolicy authorization;
 
-  public AttachmentController(AttachmentService service) {
+  public AttachmentController(AttachmentService service, AuthorizationPolicy authorization) {
     this.service = service;
+    this.authorization = authorization;
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
+  @RequirePermission(Permission.ATTACHMENT_UPLOAD)
   @Operation(
       summary = "Request an upload URL",
       description =
@@ -70,8 +74,7 @@ public class AttachmentController {
   }
 
   @PostMapping("/{id}/complete")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize("hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN') or @perms.isAttachmentUploader(#id)")
+  @RequirePermission(Permission.ATTACHMENT_READ)
   @Operation(
       summary = "Finish an upload",
       description =
@@ -90,14 +93,12 @@ public class AttachmentController {
     @ApiResponse(responseCode = "422", description = "Anti-virus reported a signature match")
   })
   public ResponseEntity<AttachmentResponse> complete(@PathVariable UUID id) {
+    authorization.requireAttachmentAccess(id);
     return ResponseEntity.ok(service.complete(id));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize(
-      "hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN','TEACHER')"
-          + " or @perms.parentCanReadAttachment(#id)")
+  @RequirePermission(Permission.ATTACHMENT_READ)
   @Operation(
       summary = "Get attachment metadata",
       description = "Metadata only. The storage key is never exposed.")
@@ -108,14 +109,12 @@ public class AttachmentController {
     @ApiResponse(responseCode = "404", description = "Attachment not found")
   })
   public ResponseEntity<AttachmentResponse> get(@PathVariable UUID id) {
+    authorization.requireAttachmentAccess(id);
     return ResponseEntity.ok(service.get(id));
   }
 
   @GetMapping("/{id}/download")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize(
-      "hasAnyRole('SCHOOL_ADMIN','SUPER_ADMIN','TEACHER')"
-          + " or @perms.parentCanReadAttachment(#id)")
+  @RequirePermission(Permission.ATTACHMENT_READ)
   @Operation(
       summary = "Get a download URL",
       description =
@@ -131,11 +130,12 @@ public class AttachmentController {
     @ApiResponse(responseCode = "409", description = "Attachment is not CLEAN")
   })
   public ResponseEntity<AttachmentDownloadTicket> download(@PathVariable UUID id) {
+    authorization.requireAttachmentAccess(id);
     return ResponseEntity.ok(service.download(id));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
+  @RequirePermission(Permission.ATTACHMENT_DELETE)
   @Operation(
       summary = "Delete an attachment",
       description =
@@ -149,6 +149,7 @@ public class AttachmentController {
     @ApiResponse(responseCode = "409", description = "Still referenced")
   })
   public ResponseEntity<Void> delete(@PathVariable UUID id, Authentication authentication) {
+    authorization.requireAttachmentAccess(id);
     service.delete(id, requireStaff(authentication).userId());
     return ResponseEntity.noContent().build();
   }

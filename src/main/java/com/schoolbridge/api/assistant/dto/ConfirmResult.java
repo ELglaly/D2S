@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.dto;
+package com.schoolbridge.api.assistant.dto;
 
 /**
  * Result of a confirm/cancel call. {@code status} is one of EXECUTED, CANCELLED,

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.homework;
+package com.schoolbridge.api.homework;
 
 public enum HomeworkStatus {
   DRAFT,

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.homework.dto;
+package com.schoolbridge.api.homework.dto;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;

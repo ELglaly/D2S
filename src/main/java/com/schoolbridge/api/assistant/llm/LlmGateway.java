@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 /**
  * Boundary between the orchestrator and the LLM provider. One call = one model turn. Keeping this

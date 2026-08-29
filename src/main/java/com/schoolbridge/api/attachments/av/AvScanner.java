@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attachments.av;
+package com.schoolbridge.api.attachments.av;
 
 import com.schoolbridge.api.attachments.AvResult;
 import java.io.InputStream;

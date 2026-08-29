@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

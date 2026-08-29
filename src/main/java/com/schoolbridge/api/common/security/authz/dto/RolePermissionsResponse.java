@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security.authz.dto;
+package com.schoolbridge.api.common.security.authz.dto;
 
 import java.util.List;
 

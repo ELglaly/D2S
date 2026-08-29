@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.web;
+package com.schoolbridge.api.common.web;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

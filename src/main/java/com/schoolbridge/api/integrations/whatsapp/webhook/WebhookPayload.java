@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp.webhook;
+package com.schoolbridge.api.integrations.whatsapp.webhook;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;

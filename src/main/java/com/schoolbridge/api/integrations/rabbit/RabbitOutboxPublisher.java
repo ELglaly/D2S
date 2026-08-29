@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.rabbit;
+package com.schoolbridge.api.integrations.rabbit;
 
 import com.schoolbridge.api.common.outbox.OutboxEvent;
 import com.schoolbridge.api.common.outbox.OutboxPublisher;

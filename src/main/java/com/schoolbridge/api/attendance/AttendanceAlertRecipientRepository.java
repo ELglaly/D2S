@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.attendance;
 
 import java.time.Instant;
 import java.util.List;

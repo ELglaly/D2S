@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.attendance;
+package com.schoolbridge.api.attendance;
 
 import com.schoolbridge.api.attendance.dto.AttendanceHistoryEntry;
 import com.schoolbridge.api.attendance.dto.AttendanceRecordResponse;
@@ -8,9 +8,12 @@ import com.schoolbridge.api.attendance.dto.MarkAllPresentResponse;
 import com.schoolbridge.api.attendance.dto.MarkAttendanceRequest;
 import com.schoolbridge.api.attendance.dto.ParentResponseRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
+import com.schoolbridge.api.common.security.AuthorizationPolicy;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +25,6 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,17 +40,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class AttendanceController {
 
   private final AttendanceService service;
+  private final AuthorizationPolicy authorization;
 
-  public AttendanceController(AttendanceService service) {
+  public AttendanceController(AttendanceService service, AuthorizationPolicy authorization) {
     this.service = service;
+    this.authorization = authorization;
   }
 
   // Slash-style action verbs ({@code /mark}, {@code /mark-all-present}) instead of the
-  // Google-AIP-style {@code :mark} the IMPLEMENTATION_PLAN proposes â€” REST clients (RestAssured,
+  // Google-AIP-style {@code :mark} the IMPLEMENTATION_PLAN proposes ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â REST clients (RestAssured,
   // OkHttp) URL-encode the colon to %3A, which makes Spring's path matcher route the request to
   // the static-resource fallback.
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
+  @RequirePermission(Permission.ATTENDANCE_READ)
   @Operation(
       summary = "Get attendance record",
       description = "Returns a single attendance record by ID.")
@@ -63,9 +67,7 @@ public class AttendanceController {
   }
 
   @PostMapping("/mark")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
+  @RequirePermission(Permission.ATTENDANCE_RECORD)
   @Operation(
       summary = "Mark attendance",
       description =
@@ -82,14 +84,13 @@ public class AttendanceController {
   })
   public ResponseEntity<AttendanceRecordResponse> mark(
       @Valid @RequestBody MarkAttendanceRequest request, Authentication authentication) {
+    authorization.requireClassAccess(request.classId());
     UUID staffId = requireStaff(authentication).userId();
     return ResponseEntity.ok(service.mark(staffId, request));
   }
 
   @PostMapping("/mark-all-present")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#request.classId()))")
+  @RequirePermission(Permission.ATTENDANCE_RECORD)
   @Operation(
       summary = "Mark all students present",
       description =
@@ -105,14 +106,13 @@ public class AttendanceController {
   })
   public ResponseEntity<MarkAllPresentResponse> markAllPresent(
       @Valid @RequestBody MarkAllPresentRequest request, Authentication authentication) {
+    authorization.requireClassAccess(request.classId());
     UUID staffId = requireStaff(authentication).userId();
     return ResponseEntity.ok(service.markAllPresent(staffId, request));
   }
 
   @GetMapping("/roster")
-  @PreAuthorize("hasAnyRole('SUPER_ADMIN','SCHOOL_ADMIN','TEACHER','PARENT')")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN') or (hasRole('TEACHER') and @perms.teacherTeaches(#classId))")
+  @RequirePermission(Permission.ATTENDANCE_READ)
   @Operation(
       summary = "Get attendance roster",
       description =
@@ -132,12 +132,12 @@ public class AttendanceController {
           @RequestParam
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate date) {
+    authorization.requireClassRead(classId);
     return ResponseEntity.ok(service.roster(classId, date));
   }
 
   @GetMapping("/history")
-  @PreAuthorize(
-      "hasRole('SCHOOL_ADMIN') or hasRole('TEACHER') or @perms.parentLinkedTo(#studentId)")
+  @RequirePermission(Permission.ATTENDANCE_READ)
   @Operation(
       summary = "Get attendance history",
       description =
@@ -164,16 +164,17 @@ public class AttendanceController {
           @RequestParam
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate to) {
+    authorization.requireStudentRead(studentId);
     return ResponseEntity.ok(service.history(studentId, from, to));
   }
 
   /**
-   * Parent reply to an absence alert. {@code @PreAuthorize} only narrows to PARENT role â€” the
+   * Parent reply to an absence alert. {@code authorization policy} only narrows to PARENT role ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â the
    * per-record linked-child check is in the service layer so an unlinked parent gets 404
    * (anti-enumeration) rather than 403.
    */
   @PostMapping("/{id}/parent-response")
-  @PreAuthorize("hasRole('PARENT')")
+  @RequirePermission(Permission.ATTENDANCE_RESPOND)
   @Operation(
       summary = "Submit parent response to absence alert",
       description =
@@ -213,4 +214,3 @@ public class AttendanceController {
     return parent;
   }
 }
-

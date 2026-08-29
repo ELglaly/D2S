@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.llm;
+package com.schoolbridge.api.assistant.llm;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;

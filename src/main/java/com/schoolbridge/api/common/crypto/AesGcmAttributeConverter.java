@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.crypto;
+package com.schoolbridge.api.common.crypto;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.tools;
+package com.schoolbridge.api.assistant.tools;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.EnumMap;

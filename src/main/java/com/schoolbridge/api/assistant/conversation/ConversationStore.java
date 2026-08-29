@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.assistant.conversation;
+package com.schoolbridge.api.assistant.conversation;
 
 import com.schoolbridge.api.assistant.llm.LlmContent;
 import com.schoolbridge.api.assistant.llm.LlmMessage;

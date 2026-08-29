@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.integrations.whatsapp;
+package com.schoolbridge.api.integrations.whatsapp;
 
 /**
  * Internal marker for retryable WhatsApp failures (5xx, network errors). Resilience4j is configured

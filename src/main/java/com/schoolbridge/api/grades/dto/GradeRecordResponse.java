@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.grades.dto;
+package com.schoolbridge.api.grades.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;

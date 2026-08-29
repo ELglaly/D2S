@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.common.security;
+package com.schoolbridge.api.common.security;
 
 import com.schoolbridge.api.common.error.ErrorType;
 import com.schoolbridge.api.common.i18n.MessageResolver;

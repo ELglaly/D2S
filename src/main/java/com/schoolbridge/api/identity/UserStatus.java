@@ -1,4 +1,4 @@
-﻿package com.schoolbridge.api.identity;
+package com.schoolbridge.api.identity;
 
 public enum UserStatus {
   ACTIVE,
