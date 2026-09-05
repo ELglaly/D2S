@@ -36,8 +36,7 @@ public class AvStartupValidator {
           "Anti-virus scanning is disabled (schoolbridge.storage.av.enabled=false) under the prod"
               + " profile. Attachments would be stored and served back to parents without ever"
               + " being scanned, and recorded as SKIPPED rather than CLEAN. Set STORAGE_AV_ENABLED"
-              + " and point STORAGE_AV_HOST at a clamd instance â€” see docs/RUNBOOK.md,"
-              + " 'Attachment storage'.");
+              + " and point STORAGE_AV_HOST at a clamd instance.");
     }
     log.info(
         "av_enabled=true host={} port={}",

@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
     problem.setDetail(messages.get(ex.messageKey(), ex.args()));
 
     if (type == ErrorType.TENANT_SECURITY) {
-      // Cross-tenant attempts are security events; log loudly. TODO(audit): persist audit entry.
+      // Cross-tenant attempts are security events.
       log.warn("tenant_security_violation path={} traceId={}", request.getRequestURI(), traceId());
     } else if (type.status().is5xxServerError()) {
       log.error("application_error type={} path={}", type, request.getRequestURI(), ex);

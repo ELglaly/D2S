@@ -1,14 +1,22 @@
 ﻿# SchoolBridge API
 
-Multi-tenant backend for school↔parent communication: announcements, attendance
-alerts, homework, and grades, delivered over WhatsApp with SMS fallback. One
-deployment serves many schools; every tenant-owned row carries a `school_id` and is
-isolated by a Hibernate filter *and* PostgreSQL row-level security.
+SchoolBridge is a multi-tenant backend for school-to-parent communication. It supports
+school operations, parent authentication, announcements, attendance, homework, grades,
+attachments, and notification delivery.
 
-Arabic and English are both first-class — every user-facing string is resolved from
-`messages_ar.properties` / `messages_en.properties`, never hardcoded.
+Each tenant-owned record is isolated by a Hibernate filter and PostgreSQL row-level
+security. Arabic and English user-facing strings are resolved from message bundles.
 
-## Stack
+## Features
+
+- Tenant-isolated school, staff, student, class, subject, attendance, homework, and grade data
+- JWT authentication for staff and phone/OTP authentication for parents
+- Role and permission-based authorization
+- Announcements, attendance alerts, homework reminders, WhatsApp delivery, SMS fallback, and push notifications
+- S3-compatible attachments with content checks and optional anti-virus scanning
+- Optional assistant with tool calling and retrieval-augmented responses, disabled by default
+
+## Tech Stack
 
 | | |
 |---|---|
@@ -40,11 +48,17 @@ Package-by-feature under `com.schoolbridge.api`:
 
 ## Quick start
 
-Requires JDK 21 and Docker.
+Requires JDK 21, Maven 3.9+, and a Docker-compatible engine.
 
-```shell
-cp .env.example .env      # then fill in the values it describes
-docker compose up -d      # postgres, rabbitmq, redis, minio
+Copy `.env.example` to `.env` and provide the required datastore credentials before
+starting Docker Compose. Production additionally requires encryption, database,
+messaging, and storage credentials through environment variables.
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d
+$env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.12'
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
 mvn -B -ntp spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
@@ -53,27 +67,23 @@ them. The `local` profile has disposable development defaults so a fresh checkou
 start against the local Docker database. Do not reuse those defaults for real data;
 generate throwaway values with `openssl rand -base64 32` when needed.
 
-With no WhatsApp credentials configured the app falls back to `LoggingWhatsAppClient`
-and sends nothing, which is the intended local setup — OTPs appear in the log so you
-can sign in without a WhatsApp account. That logging is fenced to the `local` and
-`test` profiles and CI fails the build if it ever escapes them.
+The assistant is disabled by default. Enable it only after configuring a supported
+provider and reviewing the data that may be sent to that provider.
 
 API docs at `http://localhost:8080/swagger-ui.html` (disabled in `prod`).
 
-## Build
+## Building
 
 ```shell
-mvn spotless:apply                # format — run before every commit
 mvn -B -ntp -DskipTests compile   # fast compile check
 mvn -B -ntp verify                # full build: tests + Spotless + SpotBugs
-mvn -B -ntp test -Dtest=ClassName # one test class
 ```
 
 Spotless (google-java-format, 2-space indent) and SpotBugs are **hard gates**, not
 advisory. `mvn -B -ntp verify` must be green before any module change is considered
 done.
 
-## Profiles
+## Environment Profiles
 
 | Profile | Assumes |
 |---|---|
@@ -93,20 +103,34 @@ the build if a `TenantEntity` repository is missing its `findById` override, plu
 `TenantRlsIntegrationTest` which proves the database policies hold for an
 unprivileged role.
 
-## Documentation
+## Database
 
-| | |
-|---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System overview, dependency direction, folder conventions |
-| [`docs/DOMAIN_GLOSSARY.md`](docs/DOMAIN_GLOSSARY.md) | Business terminology |
-| [`docs/adr/`](docs/adr/) | Architecture Decision Records — the *why* |
-| [`docs/COMMON_MISTAKES.md`](docs/COMMON_MISTAKES.md) | Traps this codebase has already fallen into, with the fix |
-| [`docs/REPOSITORY_AUDIT_IMPLEMENTATION_PLAN.md`](docs/REPOSITORY_AUDIT_IMPLEMENTATION_PLAN.md) | Current remediation status, scope, and validation requirements |
-| [`docs/CHECKLISTS.md`](docs/CHECKLISTS.md) | Definition of Done, code review and release checklists |
+PostgreSQL is the primary database. Liquibase applies migrations from
+`src/main/resources/db/changelog`; local Docker Compose starts PostgreSQL with pgvector,
+Redis, RabbitMQ, and MinIO.
 
-## Status
+## Docker
 
-Implemented modules are maintained against the gated build order, and each change must keep
-`mvn -B -ntp verify` green. Fees, messaging, reporting, audit, and hardening remain roadmap work.
+Start local dependencies with `docker compose up -d` and stop them with
+`docker compose down`.
 
-`docs/REPOSITORY_AUDIT_IMPLEMENTATION_PLAN.md` is the authoritative remediation and pre-launch status document.
+## Project Structure
+
+```text
+src/
+  main/
+  test/
+.env.example
+docker-compose.yml
+Dockerfile
+pom.xml
+README.md
+```
+
+## Security
+
+- JWT and OTP authentication
+- Role and permission-based authorization
+- PostgreSQL row-level security for tenant data
+- Environment-based credentials and encryption keys
+- Presigned attachment URLs with type validation and production anti-virus enforcement

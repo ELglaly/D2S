@@ -1,7 +1,7 @@
 --liquibase formatted sql
 
 --changeset schoolbridge:019-notification-settings
---comment: Per-user notification settings (P0 item 11). One row per user, holding only the quiet-hours window, because a person means one thing by "do not message me at night" -- storing the window per category invites the categories to disagree and gives the UI three widgets for one intent. NULL start/end means "inherit the school window" from schools.quiet_hours_*, so a school that retimes its window does not leave every user pinned to the old one. Absence of a row is not "muted": it means defaults, so nothing needs backfilling for existing users and a failed write can never silently silence someone. Both FKs cascade per the FK-cascade rule -- existing integration tests tear down with userRepository.deleteAll() and would break on a new child table otherwise.
+--comment: Per-user quiet-hours settings. Null values inherit the school window; no row preserves notification defaults.
 CREATE TABLE notification_settings (
     id                  UUID        PRIMARY KEY,
     school_id           UUID        NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
@@ -16,7 +16,7 @@ CREATE UNIQUE INDEX uk_notification_settings_user ON notification_settings (scho
 --rollback DROP TABLE notification_settings;
 
 --changeset schoolbridge:019-notification-preferences
---comment: Per-(user, category) opt-out and ordered channel list. channels is a JSONB array whose ORDER is the meaning -- ["PUSH","WHATSAPP","SMS"] says try push, then WhatsApp, then SMS -- so it cannot be normalised into a set without losing the preference. category is a VARCHAR rather than an enum type: Liquibase forward-only migrations make adding a value to a Postgres enum a migration, and the application-side NotificationCategory is the authority. ATTENDANCE rows may exist and are deliberately ignored by the resolver: absence alerts carry the NFR-P2 five-minute SLA and a parent who muted them would not learn their child is missing, so the immutability is enforced in code where it can be tested, and the API rejects the attempt with 422 rather than writing a row that lies about what will happen.
+--comment: Per-category delivery preferences. Channel order defines fallback order; attendance alerts remain mandatory.
 CREATE TABLE notification_preferences (
     id         UUID        PRIMARY KEY,
     school_id  UUID        NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
@@ -32,7 +32,7 @@ CREATE UNIQUE INDEX uk_notification_preferences_user_category
 --rollback DROP TABLE notification_preferences;
 
 --changeset schoolbridge:019-notification-rls
---comment: Row-Level Security on both new tables, in the shape changelog 017 established for every tenant-owned table. nullif() is required, not decoration -- current_setting(k, true) yields '' rather than NULL once set_config has run on the connection, and ''::uuid raises, so without it the second unbound query on a pooled connection 500s instead of returning nothing. NOT FORCED, exactly as 014, 017 and 018: the owner bypasses (local dev, Testcontainers) while the policy activates for the least-privilege application role -- see docs/RUNBOOK.md and RlsStartupValidator.
+--comment: Enforce tenant isolation. nullif() makes an unbound pooled connection fail closed; production uses a non-owner role.
 ALTER TABLE notification_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY notification_settings_tenant_isolation ON notification_settings
     USING (school_id = nullif(current_setting('app.current_tenant', true), '')::uuid

@@ -188,7 +188,6 @@
         * spring-ai-starter-vector-store-pgvector — Phase 2. Its PgVectorStore auto-config requires an
           EmbeddingModel bean, which fails the context where no embedding creds exist.
         * spring-ai-starter-model-azure-openai — dropped until a tenant needs it.
-      See docs/ARCHITECTURE.md and the assistant ADRs.
     -->
     <dependency>
       <groupId>org.springframework.ai</groupId>
@@ -226,9 +225,8 @@
 
     <!-- Observability: actuator, metrics, distributed tracing, JSON logs -->
     <!--
-      Object storage for attachments (P0 item 10). S3-compatible: MinIO locally via an endpoint
-      override, S3/R2 in production, one property apart. The presigner lives in this artifact —
-      user bytes never transit the API origin in either direction (see the attachments module).
+      Object storage for attachments. The API issues presigned URLs so attachment bytes do not
+      transit the application origin.
     -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>

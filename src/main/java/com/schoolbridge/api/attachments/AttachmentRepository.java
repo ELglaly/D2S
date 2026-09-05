@@ -13,8 +13,7 @@ import org.springframework.data.repository.query.Param;
  * Tenant-scoped repository for {@link Attachment}.
  *
  * <p>{@link #findById} is overridden with explicit JPQL because Hibernate's {@code @Filter} does
- * NOT apply to {@code EntityManager.find()}, which is what the default implementation calls â€” see
- * {@code docs/COMMON_MISTAKES.md} section 1.
+ * NOT apply to {@code EntityManager.find()}, which is what the default implementation calls.
  *
  * <p>The two sweeper queries deliberately do <em>not</em> filter by school: they run outside any
  * request, with no tenant bound, and must drain every school from one pass. They are the reason

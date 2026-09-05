@@ -47,7 +47,7 @@ public class RlsStartupValidator {
               + " for the current database role. The application is connecting as the table owner"
               + " (or a superuser), which bypasses every tenant-isolation policy from changelog 017."
               + " Connect as the least-privilege application role and run migrations separately as"
-              + " the owner via spring.liquibase.user â€” see docs/RUNBOOK.md, 'Database roles'.");
+              + " the owner via spring.liquibase.user.");
     }
     log.info("rls_active table={} role_bypass=false", PROBE_TABLE);
   }

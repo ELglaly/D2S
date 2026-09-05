@@ -1,7 +1,7 @@
 --liquibase formatted sql
 
 --changeset schoolbridge:018-attachments-table
---comment: Attachment metadata for the presigned upload/download pipeline (P0 item 10). The bytes live in S3-compatible object storage and never transit this API; this table is the record of what exists, who uploaded it, and whether it is safe to hand back. storage_key is generated server-side as {school_id}/{yyyy}/{MM}/{id} -- a client-influenced key would be a cross-tenant write primitive and would make the per-tenant prefix decorative, so it is derived, never accepted. declared_content_type is what the client claimed; content_type is what the stored bytes actually sniffed as, and only the latter is trusted. declared_size_bytes is signed into the presigned PUT as Content-Length so the object store itself rejects an oversized body (a presigned PUT cannot carry a content-length-range condition -- that is a presigned POST feature); size_bytes is the real length re-read from HeadObject at completion. Both FKs cascade per the FK-cascade rule: existing integration tests tear down with userRepository.deleteAll() and would break on a new child table otherwise.
+--comment: Attachment metadata for the presigned upload pipeline. Storage keys are server-generated; detected content type and final object size are authoritative.
 CREATE TABLE attachments (
     id                    UUID          PRIMARY KEY,
     school_id             UUID          NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
@@ -32,7 +32,7 @@ CREATE INDEX idx_attachments_retention ON attachments (created_at)
 --rollback DROP TABLE attachments;
 
 --changeset schoolbridge:018-attachments-rls
---comment: Row-Level Security on attachments, in the shape changelog 017 established for every other tenant-owned table. Same reasoning applies with more force here: an attachment is a photo of a child, and the download path mints a bearer URL, so a missed application-side filter would leak an object that stays readable for the life of the presigned URL. nullif() is required, not decoration -- current_setting(k, true) yields '' rather than NULL once set_config has run on the connection, and ''::uuid raises, so without it the second unbound query on a pooled connection 500s instead of returning nothing. NOT FORCED, exactly as 014 and 017: the owner bypasses (local dev, Testcontainers) while the policy activates for the least-privilege application role -- see docs/RUNBOOK.md and RlsStartupValidator.
+--comment: Enforce attachment tenant isolation. nullif() makes an unbound pooled connection fail closed; production uses a non-owner role.
 ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY attachments_tenant_isolation ON attachments
     USING (school_id = nullif(current_setting('app.current_tenant', true), '')::uuid

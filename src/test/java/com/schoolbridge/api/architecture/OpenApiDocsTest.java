@@ -8,10 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.schoolbridge.api.AbstractIntegrationTest;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 /**
- * Validates that the OpenAPI spec is generated correctly and contains all expected tags, paths, and
- * security schemes. Also writes the spec to docs/api/ as a committed artifact for the Flutter team
- * to use with openapi-generator / swagger_parser.
- *
- * <p>This test replaces the springdoc-openapi-maven-plugin (which requires a live server on :8080
- * during the integration-test phase and silently no-ops in CI).
+ * Validates the generated OpenAPI specification and its security schemes.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OpenApiDocsTest extends AbstractIntegrationTest {
@@ -54,7 +45,7 @@ class OpenApiDocsTest extends AbstractIntegrationTest {
   }
 
   @Test
-  void openApiJsonIsValidAndContainsAllExpectedTags() throws IOException {
+  void openApiJsonIsValidAndContainsAllExpectedTags() throws java.io.IOException {
     Response response =
         given()
             .accept("application/json")
@@ -96,7 +87,6 @@ class OpenApiDocsTest extends AbstractIntegrationTest {
 
     assertNoXSchoolIdParameter(spec);
 
-    writeArtifacts(body, mapper);
   }
 
   @Test
@@ -116,23 +106,4 @@ class OpenApiDocsTest extends AbstractIntegrationTest {
         .doesNotContainIgnoringCase("X-School-Id");
   }
 
-  private void writeArtifacts(String jsonBody, ObjectMapper mapper) throws IOException {
-    Path outDir = Paths.get("docs", "api");
-    Files.createDirectories(outDir);
-
-    Path jsonPath = outDir.resolve("openapi.json");
-    Object parsed = mapper.readValue(jsonBody, Object.class);
-    Files.writeString(jsonPath, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(parsed));
-
-    Response yamlResponse =
-        given()
-            .accept("application/vnd.oai.openapi")
-            .when()
-            .get("/v3/api-docs.yaml")
-            .then()
-            .statusCode(200)
-            .extract()
-            .response();
-    Files.writeString(outDir.resolve("openapi.yaml"), yamlResponse.asString());
-  }
 }

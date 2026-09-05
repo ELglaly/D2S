@@ -31,5 +31,13 @@ logs/
 # Build output
 *.class
 
-# Claude Code local config (machine-specific, not shared)
-.claude/settings.local.json
+# Local development tools
+.claude/
+.codex/
+.cursor/
+.windsurf/
+
+# Local project artifacts
+docs/
+postman/
+tools/
