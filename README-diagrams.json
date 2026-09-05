@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "title": "SchoolBridge README diagrams",
+  "description": "Canonical Mermaid source used by the repository README.",
+  "diagrams": [
+    {
+      "id": "system_architecture",
+      "title": "System architecture",
+      "kind": "raw",
+      "source": "flowchart LR\n    subgraph Users[SchoolBridge users]\n        Staff[School staff app]\n        Parent[Parent app]\n        Admin[Platform admin]\n    end\n    subgraph API[SchoolBridge API - Spring Boot]\n        Security[Authentication and authorization]\n        Domains[Feature modules]\n        Outbox[Transactional outbox]\n        Files[Attachment service]\n    end\n    subgraph Data[Private platform data]\n        PG[(PostgreSQL + pgvector)]\n        Cache[(Redis)]\n        MQ[RabbitMQ]\n        ObjectStore[(MinIO / S3)]\n    end\n    subgraph Channels[Delivery channels]\n        WA[WhatsApp Cloud API]\n        SMS[SMS provider]\n        FCM[Firebase Cloud Messaging]\n    end\n    Staff -->|JWT / HTTPS| Security\n    Parent -->|Phone OTP / HTTPS| Security\n    Admin -->|JWT / HTTPS| Security\n    Security --> Domains\n    Domains --> PG\n    Domains --> Cache\n    Domains --> Outbox\n    Domains --> Files\n    Files -->|Presigned URLs| ObjectStore\n    Outbox --> MQ\n    MQ --> WA\n    MQ --> SMS\n    MQ --> FCM"
+    },
+    {
+      "id": "notification_delivery",
+      "title": "Notification delivery",
+      "kind": "raw",
+      "source": "sequenceDiagram\n    participant S as School staff\n    participant A as SchoolBridge API\n    participant D as PostgreSQL\n    participant Q as RabbitMQ\n    participant N as Notification worker\n    participant W as WhatsApp\n    participant F as SMS fallback\n    S->>A: Publish announcement / record attendance\n    A->>D: Commit domain change + outbox event\n    A-->>S: Return successful API response\n    A->>Q: Relay committed outbox event (production)\n    Q->>N: Deliver notification job\n    N->>W: Send approved WhatsApp template\n    alt WhatsApp delivery fails repeatedly\n        N->>F: Send SMS fallback\n    end"
+    },
+    {
+      "id": "local_topology",
+      "title": "Local development topology",
+      "kind": "raw",
+      "source": "flowchart TB\n    Dev[Developer machine] --> App[SchoolBridge API :8080]\n    App --> Postgres[(PostgreSQL + pgvector - host :5434)]\n    App --> Redis[(Redis - host :6379)]\n    App --> Rabbit[RabbitMQ - host :5672]\n    App --> Minio[MinIO - API :9000, Console :9001]\n    Rabbit --> RUI[RabbitMQ UI :15672]"
+    },
+    {
+      "id": "feature_map",
+      "title": "Feature map",
+      "kind": "raw",
+      "source": "mindmap\n  root((SchoolBridge))\n    Tenant platform\n      Schools\n      Settings\n      Subscriptions\n    Identity and access\n      Staff JWT\n      Parent phone OTP\n      Roles and permissions\n      Device tokens\n    Academic operations\n      Classes and enrollment\n      Subjects and assignments\n      Attendance\n      Homework\n      Grades\n    Communication\n      Announcements\n      Parent acknowledgements\n      WhatsApp SMS push\n    Platform services\n      Attachments\n      Outbox\n      AI assistant\n      Observability"
+    },
+    {
+      "id": "security_model",
+      "title": "Security model",
+      "kind": "raw",
+      "source": "flowchart LR\n    Request[Incoming request] --> Auth{Authenticated?}\n    Auth -- No --> Reject[401 / OTP challenge]\n    Auth -- Yes --> Permission{Allowed by role and permission?}\n    Permission -- No --> Forbidden[403]\n    Permission -- Yes --> Tenant[Resolve school tenant]\n    Tenant --> AppFilter[Hibernate tenant filter]\n    AppFilter --> RLS[PostgreSQL row-level security]\n    RLS --> Data[Only tenant-scoped data]"
+    }
+  ]
+}
