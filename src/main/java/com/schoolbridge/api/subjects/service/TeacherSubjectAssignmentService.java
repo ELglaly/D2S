@@ -19,4 +19,3 @@ public interface TeacherSubjectAssignmentService {
 
   List<StudentSubjectResponse> getSubjectsForStudent(UUID studentId);
 }
-

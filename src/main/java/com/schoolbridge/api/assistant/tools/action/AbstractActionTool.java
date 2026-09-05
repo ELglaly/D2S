@@ -15,8 +15,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Skeleton for action tools. Owns the whole confirm-then-execute machinery â€” bulk cap, token issue,
- * Redis store, single-use consume, user/expiry re-checks â€” so each concrete tool implements only:
+ * Skeleton for action tools. Owns the whole confirm-then-execute machinery â€” bulk cap, token
+ * issue, Redis store, single-use consume, user/expiry re-checks â€” so each concrete tool
+ * implements only:
  *
  * <ul>
  *   <li>{@link #prepare} â€” validate scope, resolve namesâ†’ids, compute the bilingual impact (no
@@ -177,4 +178,3 @@ public abstract class AbstractActionTool implements ActionTool {
       Map<String, Object> impact,
       int impactCount) {}
 }
-

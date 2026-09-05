@@ -93,4 +93,3 @@ public class AssistantActionServiceImpl implements AssistantActionService {
     return ConfirmResult.cancelled(messages.get("assistant.action.cancelled"));
   }
 }
-

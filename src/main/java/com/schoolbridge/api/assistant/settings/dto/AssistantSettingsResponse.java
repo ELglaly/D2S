@@ -5,4 +5,3 @@ package com.schoolbridge.api.assistant.settings.dto;
  * default; {@code usingDefault} makes that explicit for the UI.
  */
 public record AssistantSettingsResponse(String systemPrompt, boolean usingDefault) {}
-

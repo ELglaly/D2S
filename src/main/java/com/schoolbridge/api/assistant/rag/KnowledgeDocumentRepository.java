@@ -29,4 +29,3 @@ public interface KnowledgeDocumentRepository extends JpaRepository<KnowledgeDocu
   Optional<KnowledgeDocument> findBySchoolAndChecksum(
       @Param("schoolId") UUID schoolId, @Param("checksum") String checksum);
 }
-

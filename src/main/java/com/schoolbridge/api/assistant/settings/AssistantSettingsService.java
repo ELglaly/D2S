@@ -68,4 +68,3 @@ public class AssistantSettingsService {
     return value == null || value.isBlank() ? Optional.empty() : Optional.of(value);
   }
 }
-

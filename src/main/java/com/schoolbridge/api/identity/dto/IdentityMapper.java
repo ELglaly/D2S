@@ -18,4 +18,3 @@ public class IdentityMapper {
         u.getUpdatedAt());
   }
 }
-

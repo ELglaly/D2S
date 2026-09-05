@@ -18,6 +18,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Translates exceptions into localized RFC 7807 {@link ProblemDetail} responses.
@@ -89,6 +90,16 @@ public class GlobalExceptionHandler {
     return problem;
   }
 
+  /** Invalid enum/UUID path variables are client input errors, not internal server failures. */
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ProblemDetail handlePathTypeMismatch(
+      MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+    ProblemDetail problem = base(ErrorType.VALIDATION, request);
+    problem.setDetail(messages.get(ErrorType.VALIDATION.defaultMessageKey()));
+    problem.setProperty("errors", List.of(Map.of("field", ex.getName(), "message", "invalid")));
+    return problem;
+  }
+
   @ExceptionHandler(AccessDeniedException.class)
   public ProblemDetail handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
     ProblemDetail problem = base(ErrorType.AUTHORIZATION, request);
@@ -132,4 +143,3 @@ public class GlobalExceptionHandler {
     return traceId == null ? "" : traceId;
   }
 }
-

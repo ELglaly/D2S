@@ -213,4 +213,3 @@ public class AttendanceSweeper {
     meterRegistry.counter("attendance.roster_missed", "schoolId", schoolId.toString()).increment();
   }
 }
-

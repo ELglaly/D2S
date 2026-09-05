@@ -15,4 +15,3 @@ public record AttendanceHistoryEntry(
     Instant markedAt,
     boolean parentResponded,
     Instant parentRespondedAt) {}
-

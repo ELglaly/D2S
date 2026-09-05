@@ -44,4 +44,3 @@ public class LoginRateLimiter {
     return email == null ? "" : email.trim().toLowerCase(java.util.Locale.ROOT);
   }
 }
-

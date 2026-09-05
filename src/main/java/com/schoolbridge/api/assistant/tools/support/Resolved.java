@@ -26,4 +26,3 @@ public sealed interface Resolved<C> {
     return ((Of<C>) this).value();
   }
 }
-

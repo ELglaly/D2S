@@ -8,4 +8,3 @@ import jakarta.validation.constraints.Size;
  * (column is 1024 bytes to accommodate IV + tag + Base64 overhead).
  */
 public record ParentResponseRequest(@NotBlank @Size(max = 500) String response) {}
-

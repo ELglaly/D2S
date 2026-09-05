@@ -69,4 +69,3 @@ public class ConversationController {
     return LocaleContextHolder.getLocale();
   }
 }
-

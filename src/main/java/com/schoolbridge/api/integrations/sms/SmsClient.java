@@ -13,4 +13,3 @@ public interface SmsClient {
 
   MessageSendResult send(String recipientPhone, String body, Language language);
 }
-

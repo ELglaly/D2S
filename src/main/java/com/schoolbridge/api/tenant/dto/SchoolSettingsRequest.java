@@ -21,4 +21,3 @@ public record SchoolSettingsRequest(
     boolean smsFallbackEnabled,
     boolean alertsRespectQuietHours,
     @NotNull LocalTime rosterDueByLocalTime) {}
-

@@ -45,4 +45,3 @@ public class AvStartupValidator {
         properties.getAv().getPort());
   }
 }
-

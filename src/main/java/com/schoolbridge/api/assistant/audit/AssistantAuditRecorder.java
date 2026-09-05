@@ -65,4 +65,3 @@ public class AssistantAuditRecorder {
     return new HashMap<>(answer.metadata() == null ? Map.of() : answer.metadata());
   }
 }
-

@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.parents;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -12,10 +10,13 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.service.ParentStudentLinkService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
-/** ADMIN â€” parent-student links for a student. Mirrors {@code GET /students/{id}/parent-links}. */
+/**
+ * ADMIN â€” parent-student links for a student. Mirrors {@code GET /students/{id}/parent-links}.
+ */
 @Component
 public class ListParentLinksTool implements ReadTool {
 
@@ -56,4 +57,3 @@ public class ListParentLinksTool implements ReadTool {
     return ToolResult.ok(links.listByStudent(student.value().id()));
   }
 }
-

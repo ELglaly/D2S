@@ -22,4 +22,3 @@ public interface NotificationSettingsRepository extends JpaRepository<Notificati
   @Query("select s from NotificationSettings s where s.userId = :userId")
   Optional<NotificationSettings> findByUserId(@Param("userId") UUID userId);
 }
-

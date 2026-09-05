@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.subjects;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -12,6 +10,7 @@ import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.dto.UserResponse;
 import com.schoolbridge.api.subjects.dto.SubjectResponse;
 import com.schoolbridge.api.subjects.dto.TeacherSubjectAssignmentResponse;
@@ -109,4 +108,3 @@ public class RemoveTeacherAssignmentTool extends AbstractActionTool {
     return ToolResult.ok(Map.of("removed", true));
   }
 }
-

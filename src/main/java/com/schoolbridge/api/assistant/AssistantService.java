@@ -9,4 +9,3 @@ public interface AssistantService {
 
   AssistantAnswer ask(AskRequest request, ToolContext ctx);
 }
-

@@ -22,4 +22,3 @@ public record LlmMessage(Role role, List<LlmContent> content) {
     return new LlmMessage(Role.ASSISTANT, content);
   }
 }
-

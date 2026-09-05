@@ -10,10 +10,10 @@ import java.util.UUID;
  * read/write of the underlying rows.
  *
  * <p>The resolve step lives here rather than inside {@code NotificationDispatcher} because two of
- * the three outcomes â€” suppress and defer â€” are decisions about a <em>recipient row</em>, and the
- * dispatcher has no row. The fan-out services own that state machine already ({@code markDeferred}
- * / the sweepers), so they ask this service and act; the dispatcher is handed only the resulting
- * channel order.
+ * the three outcomes â€” suppress and defer â€” are decisions about a <em>recipient row</em>, and
+ * the dispatcher has no row. The fan-out services own that state machine already ({@code
+ * markDeferred} / the sweepers), so they ask this service and act; the dispatcher is handed only
+ * the resulting channel order.
  */
 public interface NotificationPreferenceService {
 
@@ -34,4 +34,3 @@ public interface NotificationPreferenceService {
   NotificationPreferencesResponse replace(
       UUID schoolId, UUID userId, NotificationPreferencesRequest request);
 }
-

@@ -79,4 +79,3 @@ public class SystemPrompt {
     return fallback;
   }
 }
-

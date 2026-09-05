@@ -116,4 +116,3 @@ public class User extends TenantEntity {
     return status;
   }
 }
-

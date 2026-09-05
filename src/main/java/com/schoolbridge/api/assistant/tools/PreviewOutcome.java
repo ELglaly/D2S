@@ -15,4 +15,3 @@ public sealed interface PreviewOutcome {
   /** Denied or needs-clarification; nothing was stored and nothing will mutate. */
   record Rejected(ToolResult result) implements PreviewOutcome {}
 }
-

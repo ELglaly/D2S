@@ -5,4 +5,3 @@ public enum Language {
   AR,
   EN
 }
-

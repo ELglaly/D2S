@@ -21,4 +21,3 @@ public record CreateHomeworkRequest(
     @NotNull @Future LocalDate dueDate,
     boolean requiresAck,
     boolean publish) {}
-

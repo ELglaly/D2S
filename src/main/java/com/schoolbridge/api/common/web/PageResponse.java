@@ -16,4 +16,3 @@ public record PageResponse<T>(
         page.getTotalPages());
   }
 }
-

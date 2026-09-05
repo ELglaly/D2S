@@ -15,7 +15,8 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link AnnouncementRecipient}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for
+ * rationale.
  */
 public interface AnnouncementRecipientRepository
     extends JpaRepository<AnnouncementRecipient, UUID> {
@@ -42,10 +43,11 @@ public interface AnnouncementRecipientRepository
       @Param("announcementIds") Collection<UUID> announcementIds);
 
   /**
-   * Every recipient row a parent holds for one announcement â€” one per linked child, since the table
-   * is keyed {@code (announcement_id, parent_user_id, student_id)}. Acknowledgement must span all
-   * of them: a parent with two children in scope sees one announcement and taps acknowledge once,
-   * and the earlier {@code findFirst...} variant left the sibling rows unacknowledged forever.
+   * Every recipient row a parent holds for one announcement â€” one per linked child, since the
+   * table is keyed {@code (announcement_id, parent_user_id, student_id)}. Acknowledgement must span
+   * all of them: a parent with two children in scope sees one announcement and taps acknowledge
+   * once, and the earlier {@code findFirst...} variant left the sibling rows unacknowledged
+   * forever.
    */
   List<AnnouncementRecipient> findAllByAnnouncementIdAndParentUserId(
       UUID announcementId, UUID parentUserId);
@@ -92,10 +94,9 @@ public interface AnnouncementRecipientRepository
    * Finder used by the WhatsApp delivery-status webhook. Routed through JPQL so the tenant filter
    * applies when a {@link com.schoolbridge.api.common.tenancy.TenantContext} is bound; when invoked
    * without a tenant (the webhook is unauthenticated and global), the filter stays disabled and the
-   * row is visible across schools â€” which is the desired behavior, since Meta only echoes statuses
-   * for message ids we previously issued.
+   * row is visible across schools â€” which is the desired behavior, since Meta only echoes
+   * statuses for message ids we previously issued.
    */
   @Query("select r from AnnouncementRecipient r where r.messageId = :messageId")
   Optional<AnnouncementRecipient> findByMessageId(@Param("messageId") String messageId);
 }
-

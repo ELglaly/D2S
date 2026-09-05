@@ -16,4 +16,3 @@ public interface AuthService {
   /** Revokes a refresh token. Idempotent â€” unknown tokens silently succeed. */
   void logout(LogoutRequest request);
 }
-

@@ -10,4 +10,3 @@ public record UpdateSubjectRequest(
     @Size(max = 50) String code,
     @Size(max = 1024) String description,
     @NotNull SubjectStatus status) {}
-

@@ -21,4 +21,3 @@ public final class AttachmentMapper {
         attachment.getCompletedAt());
   }
 }
-

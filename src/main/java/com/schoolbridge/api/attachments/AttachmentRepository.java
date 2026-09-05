@@ -46,4 +46,3 @@ public interface AttachmentRepository extends JpaRepository<Attachment, UUID> {
           + "order by a.createdAt asc")
   List<Attachment> findExpired(@Param("cutoff") Instant cutoff, Pageable pageable);
 }
-

@@ -9,4 +9,3 @@ import jakarta.validation.constraints.Size;
  * is enough).
  */
 public record ConfirmActionRequest(@Size(max = 50) String confirmation) {}
-

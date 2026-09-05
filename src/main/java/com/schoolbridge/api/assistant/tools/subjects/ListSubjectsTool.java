@@ -1,12 +1,11 @@
 package com.schoolbridge.api.assistant.tools.subjects;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.subjects.service.SubjectService;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
@@ -49,4 +48,3 @@ public class ListSubjectsTool implements ReadTool {
     return ToolResult.ok(subjects.list(ctx.schoolId(), PageRequest.of(0, MAX)).getContent());
   }
 }
-

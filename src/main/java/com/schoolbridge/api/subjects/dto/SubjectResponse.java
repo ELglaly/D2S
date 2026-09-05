@@ -13,4 +13,3 @@ public record SubjectResponse(
     SubjectStatus status,
     Instant createdAt,
     Instant updatedAt) {}
-

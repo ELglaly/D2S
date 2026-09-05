@@ -23,4 +23,3 @@ public record ParentHomeworkFeedEntry(
     HomeworkDeliveryStatus deliveryStatus,
     Instant acknowledgedAt,
     Instant createdAt) {}
-

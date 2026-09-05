@@ -13,4 +13,3 @@ public interface EnrollmentService {
 
   void delete(UUID enrollmentId);
 }
-

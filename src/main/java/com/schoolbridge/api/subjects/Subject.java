@@ -58,4 +58,3 @@ public class Subject extends TenantEntity {
     return status;
   }
 }
-

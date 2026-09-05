@@ -8,4 +8,3 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
 
   Optional<RefreshToken> findByTokenHash(String tokenHash);
 }
-

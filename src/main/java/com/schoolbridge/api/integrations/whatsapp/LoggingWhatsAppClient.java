@@ -43,4 +43,3 @@ public class LoggingWhatsAppClient implements WhatsAppClient {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
-

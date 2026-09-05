@@ -56,9 +56,9 @@ public class TenantSessionBinder {
    * transaction (including any INSERT) is still governed by {@code WITH CHECK}. Keeping every use
    * behind this one method is what makes the exemptions greppable and reviewable.
    *
-   * <p>This is not a hole in the control. RLS here defends against an <em>application</em> bug â€” a
-   * missed filter, a native query, a {@code findById} that skipped its JPQL override â€” and a bug
-   * does not call this method. Anyone able to set the GUC arbitrarily already has arbitrary SQL
+   * <p>This is not a hole in the control. RLS here defends against an <em>application</em> bug â€”
+   * a missed filter, a native query, a {@code findById} that skipped its JPQL override â€” and a
+   * bug does not call this method. Anyone able to set the GUC arbitrarily already has arbitrary SQL
    * execution, at which point RLS was never the thing standing in their way.
    */
   public <T> T withBypass(Supplier<T> action) {
@@ -74,4 +74,3 @@ public class TenantSessionBinder {
     jdbcTemplate.queryForObject(SET_BYPASS_SQL, String.class, value);
   }
 }
-

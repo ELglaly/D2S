@@ -106,4 +106,3 @@ public class SchoolClassServiceImpl implements SchoolClassService {
         .orElseThrow(() -> new NotFoundException("error.class.not_found", id));
   }
 }
-

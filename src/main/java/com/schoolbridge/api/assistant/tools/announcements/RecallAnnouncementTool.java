@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.announcements;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.announcements.dto.AnnouncementResponse;
@@ -13,6 +11,7 @@ import com.schoolbridge.api.assistant.tools.action.ActionSupport;
 import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -88,4 +87,3 @@ public class RecallAnnouncementTool extends AbstractActionTool {
     return body.length() <= 40 ? body : body.substring(0, 40) + "â€¦";
   }
 }
-

@@ -12,4 +12,3 @@ public record CreateUserRequest(
     @Email @Size(max = 255) String email,
     @Size(max = 30) String phone,
     @Size(min = 8, max = 128) String password) {}
-

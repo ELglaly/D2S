@@ -29,4 +29,3 @@ public class DocumentChunker {
     return splitter.apply(List.of(new Document(text))).stream().map(Document::getText).toList();
   }
 }
-

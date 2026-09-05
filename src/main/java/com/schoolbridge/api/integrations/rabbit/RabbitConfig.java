@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Wires the topic exchanges, queues, bindings, and DLQ skeleton for outbox-published events. Only
- * loaded when the outbox relay is enabled â€” that gates the prod profile and lets test slices opt in
- * via {@code @DynamicPropertySource} without polluting unrelated context loads.
+ * loaded when the outbox relay is enabled â€” that gates the prod profile and lets test slices opt
+ * in via {@code @DynamicPropertySource} without polluting unrelated context loads.
  */
 @Configuration
 @ConditionalOnProperty(name = "schoolbridge.outbox.relay.enabled", havingValue = "true")
@@ -224,4 +224,3 @@ public class RabbitConfig {
     return new Jackson2JsonMessageConverter();
   }
 }
-

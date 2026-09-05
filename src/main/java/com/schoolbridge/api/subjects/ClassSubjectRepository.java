@@ -38,4 +38,3 @@ public interface ClassSubjectRepository extends JpaRepository<ClassSubject, UUID
 
   boolean existsBySubjectId(UUID subjectId);
 }
-

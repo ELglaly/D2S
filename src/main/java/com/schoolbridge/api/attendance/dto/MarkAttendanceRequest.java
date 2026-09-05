@@ -14,4 +14,3 @@ public record MarkAttendanceRequest(
     @NotNull UUID classId,
     @NotNull LocalDate date,
     @NotNull AttendanceStatus status) {}
-

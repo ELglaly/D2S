@@ -50,8 +50,9 @@ public class OtpRequestRateLimiter {
   }
 
   /**
-   * Counts a dispatched OTP against both windows. Call this only when a message is actually sent â€”
-   * counting unknown numbers too would let an attacker exhaust a real parent's budget by guessing.
+   * Counts a dispatched OTP against both windows. Call this only when a message is actually sent
+   * â€” counting unknown numbers too would let an attacker exhaust a real parent's budget by
+   * guessing.
    */
   public void recordRequest(String phone) {
     String hash = blindIndex.hash(phone);
@@ -71,4 +72,3 @@ public class OtpRequestRateLimiter {
     }
   }
 }
-

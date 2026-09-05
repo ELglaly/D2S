@@ -23,7 +23,8 @@ import org.springframework.stereotype.Component;
  * on the {@link Authentication}, looks up that role's cached permissions, and allows or denies.
  *
  * <ul>
- *   <li>No / anonymous authentication â†’ {@link AuthenticationCredentialsNotFoundException} (â†’ 401).
+ *   <li>No / anonymous authentication â†’ {@link AuthenticationCredentialsNotFoundException} (â†’
+ *       401).
  *   <li>Authenticated but missing the required permission(s) â†’ {@link AccessDeniedException} (â†’
  *       403, via {@code GlobalExceptionHandler}).
  * </ul>
@@ -99,4 +100,3 @@ public class PermissionAspect {
     return null;
   }
 }
-

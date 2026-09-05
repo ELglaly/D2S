@@ -73,4 +73,3 @@ public class DocumentAdminController {
     return LocaleContextHolder.getLocale();
   }
 }
-

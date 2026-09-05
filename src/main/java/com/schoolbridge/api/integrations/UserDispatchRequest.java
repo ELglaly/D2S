@@ -27,4 +27,3 @@ public record UserDispatchRequest(
     return pushTitle != null && !pushTitle.isBlank();
   }
 }
-

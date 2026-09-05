@@ -26,4 +26,3 @@ public interface AttendanceService {
   AttendanceRecordResponse recordParentResponse(
       UUID recordId, UUID parentUserId, ParentResponseRequest request);
 }
-

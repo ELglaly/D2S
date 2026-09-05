@@ -49,4 +49,3 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
     return value == null ? "" : value.replace("\\", "\\\\").replace("\"", "\\\"");
   }
 }
-

@@ -5,4 +5,3 @@ public enum ToolKind {
   READ,
   ACTION
 }
-

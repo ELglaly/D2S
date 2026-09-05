@@ -1,13 +1,12 @@
 package com.schoolbridge.api.assistant.tools.student;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.service.ParentChildrenService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
@@ -46,4 +45,3 @@ public class ListMyChildrenTool implements ReadTool {
     return ToolResult.ok(parentChildren.listChildren(ctx.userId()));
   }
 }
-

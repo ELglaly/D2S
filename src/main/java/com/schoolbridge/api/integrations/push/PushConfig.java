@@ -26,4 +26,3 @@ public class PushConfig {
     return FirebaseApp.initializeApp(options);
   }
 }
-

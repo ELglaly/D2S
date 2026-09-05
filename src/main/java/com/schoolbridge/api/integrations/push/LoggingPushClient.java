@@ -40,4 +40,3 @@ public class LoggingPushClient implements PushNotificationClient {
     return "****" + token.substring(token.length() - 4);
   }
 }
-

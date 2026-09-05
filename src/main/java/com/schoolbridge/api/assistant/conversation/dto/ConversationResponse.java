@@ -13,4 +13,3 @@ public record ConversationResponse(
         c.getId(), c.getTitle(), c.getLastMessageAt(), c.getCreatedAt());
   }
 }
-

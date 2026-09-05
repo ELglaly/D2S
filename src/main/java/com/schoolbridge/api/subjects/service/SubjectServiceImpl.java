@@ -104,4 +104,3 @@ public class SubjectServiceImpl implements SubjectService {
     return value == null ? null : value.trim();
   }
 }
-

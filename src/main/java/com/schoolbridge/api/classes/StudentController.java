@@ -5,11 +5,11 @@ import com.schoolbridge.api.classes.dto.CreateStudentRequest;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.dto.UpdateStudentRequest;
 import com.schoolbridge.api.classes.service.StudentService;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -127,7 +127,7 @@ public class StudentController {
    * bulk-creates students, optionally enrolling them into a named class. Invalid rows are collected
    * and returned rather than aborting the whole import (FR-1.2 / NFR-U1).
    */
-  @PostMapping(value = ":bulk-import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/bulk-import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(
       summary = "Bulk import students from CSV",
       description =
@@ -149,4 +149,3 @@ public class StudentController {
     return ResponseEntity.ok(result);
   }
 }
-

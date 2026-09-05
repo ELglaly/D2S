@@ -11,4 +11,3 @@ public class AuthenticationException extends ApplicationException {
     super(ErrorType.AUTHENTICATION, ErrorType.AUTHENTICATION.defaultMessageKey());
   }
 }
-

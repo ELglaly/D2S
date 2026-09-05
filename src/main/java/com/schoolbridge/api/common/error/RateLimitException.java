@@ -11,4 +11,3 @@ public class RateLimitException extends ApplicationException {
     super(ErrorType.RATE_LIMIT, ErrorType.RATE_LIMIT.defaultMessageKey());
   }
 }
-

@@ -14,4 +14,3 @@ public enum OutboxStatus {
   FAILED,
   DEAD
 }
-

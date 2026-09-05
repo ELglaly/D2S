@@ -17,7 +17,7 @@ spring:
       # all — matching schoolbridge.assistant.enabled=false. Set SPRING_AI_CHAT=openai (NVIDIA NIM /
       # DeepSeek, OpenAI-compatible, configured below) or another provider to turn it on, and set
       # that provider's key. Embedding stays "none" so RAG uses the in-process placeholder embedder
-      # (dim 768) until real Vertex embeddings are wired at deploy time (docs/PLAN_SPRING_AI_RAG.md).
+      # (dim 768) until real provider embeddings are wired at deploy time.
       chat: ${SPRING_AI_CHAT:none}
       embedding: none
       image: none
@@ -25,19 +25,12 @@ spring:
       audio:
         speech: none
         transcription: none
-    # OpenAI-compatible chat model, pointed at NVIDIA NIM (DeepSeek) by default.
-    # NOTE: the Spring AI OpenAI client appends "/v1/chat/completions", so base-url must NOT
-    # include "/v1" — a base URL carrying a path gets that path replaced, not extended.
-    # api-key is env-only and has NO default. Never inline a key here: this file is committed.
     openai:
       base-url: ${OPENAI_BASE_URL:https://integrate.api.nvidia.com}
       api-key: ${OPENAI_API_KEY:}
       chat:
         options:
           model: ${ASSISTANT_MODEL:deepseek-ai/deepseek-v4-flash}
-    # Phase 2 — PGVector store for assistant RAG. Liquibase owns the schema (changelog 013), so
-    # initialize-schema MUST stay false. dimensions match the assistant_vector_store vector(768)
-    # column and the embedding model (Vertex text-multilingual-embedding-002 / Phase-2 placeholder).
     vectorstore:
       pgvector:
         initialize-schema: false
@@ -48,9 +41,6 @@ spring:
   data:
     redis:
       repositories:
-        # We only use RedisTemplate (idempotency cache, OTP, parent tokens), not Spring Data Redis
-        # repositories; disabling the scanner silences the "strict mode" warning and prevents
-        # accidental misclassification of JPA repositories.
         enabled: false
   profiles:
     default: local
@@ -65,9 +55,6 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
-          # Announcement/attendance fan-out inserts one recipient row per (parent, student). Without
-          # batching that is one network round trip per row — a 1,500-student school costs ~2,500
-          # round trips inside a single HTTP request. Batching turns it into ~50.
           batch_size: 50
         order_inserts: true
         order_updates: true
@@ -112,8 +99,6 @@ schoolbridge:
     aes-key: ${AES_KEY}
     blind-index-key: ${BLIND_INDEX_KEY}
   jwt:
-    # PEM-encoded RSA keypair. Blank in dev → JwtService generates ephemeral keys at startup
-    # (tokens stop verifying after restart, which is fine for local development).
     private-key: ${JWT_PRIVATE_KEY:}
     public-key:  ${JWT_PUBLIC_KEY:}
     access-ttl:  15m
@@ -165,7 +150,7 @@ schoolbridge:
     # Attachment object store. S3-compatible: MinIO locally (see docker-compose.yml), S3 or R2 in
     # production, one endpoint override apart. User bytes never pass through this API — uploads are
     # presigned PUT and downloads are presigned GET, so a stored-XSS or sniffing bug in a
-    # user-supplied file cannot execute in the API's security origin. docs/PLAN_FILE_UPLOAD.md.
+    # user-supplied file cannot execute in the API's security origin.
     # access-key / secret-key are env-only with NO default, like the crypto keys: a default here
     # would let a profile that forgot to override it start against the wrong bucket.
     endpoint: ${STORAGE_ENDPOINT:}
@@ -248,7 +233,7 @@ schoolbridge:
   assistant:
     # Natural-language assistant. SHIPS DARK, and the defaults below actually say so:
     # enabled=false keeps every LLM bean unloaded (AssistantConfig supplies DisabledLlmGateway);
-    # actions.enabled=false keeps mutating tools off even when reads are live;
+    # mutating tools are not part of the shipped v1 registry, even when reads are live;
     # rag.enabled=false keeps retrieval out of the chat flow.
     # Turning this on is an explicit, per-environment opt-in — see ADR-007. It also sends tool
     # results (student names, attendance, grades) to a third-party inference endpoint, so it needs
@@ -276,13 +261,6 @@ schoolbridge:
     # Optional tenant-agnostic default persona. Blank → built-in persona. A per-school row in
     # assistant_settings overrides this; the security guardrails are always appended regardless.
     default-system-prompt: ${ASSISTANT_SYSTEM_PROMPT:}
-    actions:
-      # Second kill-switch: mutating tools (write attendance, grades, homework, classes, students,
-      # announcements). Off by default and cut from the v1 surface entirely — ADR-007.
-      enabled: ${ASSISTANT_ACTIONS_ENABLED:false}
-      confirmation-ttl: PT5M
-      destructive-require-typed-confirm: true
-      max-bulk-impact: 200
     # Retrieval-Augmented Generation (Phase 2 infra). Ships dark: enabled=false keeps retrieval out of
     # the chat flow (wired in Phase 3). Ingestion + the vector store load regardless so documents can
     # be indexed ahead of go-live. embedding-dim must equal the vector(768) column.

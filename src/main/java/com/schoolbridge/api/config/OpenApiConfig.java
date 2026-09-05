@@ -31,8 +31,8 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Authentication: send the token in the {@code Authorization: Bearer <token>} header. Staff and
  * platform-admins use the JWT issued by {@code POST /api/v1/auth/login}. Parents use the opaque
- * token issued by {@code POST /api/v1/parents/auth/verify-otp}. Tenancy is embedded in the token â€”
- * no tenant header is required or accepted.
+ * token issued by {@code POST /api/v1/parents/auth/verify-otp}. Tenancy is embedded in the token
+ * â€” no tenant header is required or accepted.
  */
 @Configuration
 @OpenAPIDefinition(
@@ -88,4 +88,3 @@ public class OpenApiConfig {
     };
   }
 }
-

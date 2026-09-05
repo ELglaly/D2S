@@ -12,4 +12,3 @@ public record DeviceTokenResponse(
         token.getId(), token.getPlatform(), token.getDeviceId(), token.isActive());
   }
 }
-

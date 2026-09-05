@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Short, committed transactions around conversation message persistence. Kept as its own bean so
  * the long-lived streaming method in {@code ConversationChatService} (which is NOT transactional)
- * still goes through the {@code @Transactional} proxy â€” a self-invocation would silently bypass it.
+ * still goes through the {@code @Transactional} proxy â€” a self-invocation would silently bypass
+ * it.
  */
 @Service
 public class ConversationStore {
@@ -83,4 +84,3 @@ public class ConversationStore {
     conversations.findById(conversationId).ifPresent(c -> c.recordActivity(Instant.now()));
   }
 }
-

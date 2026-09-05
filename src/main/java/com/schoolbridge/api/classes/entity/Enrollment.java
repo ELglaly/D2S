@@ -37,4 +37,3 @@ public class Enrollment extends TenantEntity {
     return classId;
   }
 }
-

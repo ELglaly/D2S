@@ -32,4 +32,3 @@ public interface ChatStream {
 
   void error(String message);
 }
-

@@ -26,4 +26,3 @@ public interface DeviceTokenRepository extends JpaRepository<DeviceToken, UUID> 
   @Query("select d from DeviceToken d where d.userId = :userId and d.active = true")
   List<DeviceToken> findActiveByUserId(@Param("userId") UUID userId);
 }
-

@@ -7,4 +7,3 @@ import jakarta.validation.constraints.Size;
  * and reverts the tenant to the default persona.
  */
 public record UpdateSettingsRequest(@Size(max = 8000) String systemPrompt) {}
-

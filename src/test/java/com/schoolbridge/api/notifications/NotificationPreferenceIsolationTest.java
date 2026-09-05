@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -39,6 +40,17 @@ import org.springframework.transaction.support.TransactionTemplate;
  * choices about being contacted.
  */
 @SpringBootTest
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/isolation.sql",
+      "classpath:sql/fixtures/identity/notification-isolation.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class NotificationPreferenceIsolationTest extends AbstractIntegrationTest {
 
   @Autowired NotificationPreferenceRepository preferenceRepository;
@@ -49,29 +61,16 @@ class NotificationPreferenceIsolationTest extends AbstractIntegrationTest {
   @Autowired TransactionTemplate tx;
   @Autowired JdbcTemplate jdbc;
 
-  private UUID schoolA;
-  private UUID schoolB;
-  private UUID preferenceInA;
-  private UUID preferenceInB;
-  private UUID settingsInA;
+  private static final UUID SCHOOL_A = UUID.fromString("10000000-0000-0000-0000-000000000001");
+  private static final UUID SCHOOL_B = UUID.fromString("10000000-0000-0000-0000-000000000002");
+  private static final UUID PREFERENCE_A = UUID.fromString("33000000-0000-0000-0000-000000000001");
+  private static final UUID PREFERENCE_B = UUID.fromString("33000000-0000-0000-0000-000000000002");
+  private static final UUID SETTINGS_A = UUID.fromString("34000000-0000-0000-0000-000000000001");
 
   @BeforeEach
   void setUp() {
     TenantContext.clear();
     RlsTestRole.ensureExists(jdbc);
-    tx.executeWithoutResult(s -> preferenceRepository.deleteAll());
-    tx.executeWithoutResult(s -> settingsRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolA = persistSchool("Alpha");
-    schoolB = persistSchool("Beta");
-    UUID userA = persistStaff(schoolA, "a@prefs-iso.test");
-    UUID userB = persistStaff(schoolB, "b@prefs-iso.test");
-    preferenceInA = persistPreference(schoolA, userA);
-    preferenceInB = persistPreference(schoolB, userB);
-    settingsInA = persistSettings(schoolA, userA);
-    persistSettings(schoolB, userB);
   }
 
   @AfterEach
@@ -81,23 +80,23 @@ class NotificationPreferenceIsolationTest extends AbstractIntegrationTest {
 
   @Test
   void findByIdUnderTenantACannotSeePreferenceInB() {
-    TenantContext.set(schoolA);
-    var own = tx.execute(s -> preferenceRepository.findById(preferenceInA));
-    var other = tx.execute(s -> preferenceRepository.findById(preferenceInB));
+    TenantContext.set(SCHOOL_A);
+    var own = tx.execute(s -> preferenceRepository.findById(PREFERENCE_A));
+    var other = tx.execute(s -> preferenceRepository.findById(PREFERENCE_B));
     assertThat(own).isPresent();
     assertThat(other).as("school A must not see school B's preference row").isEmpty();
   }
 
   @Test
   void settingsFindByIdIsAlsoTenantScoped() {
-    TenantContext.set(schoolB);
-    var other = tx.execute(s -> settingsRepository.findById(settingsInA));
+    TenantContext.set(SCHOOL_B);
+    var other = tx.execute(s -> settingsRepository.findById(SETTINGS_A));
     assertThat(other).as("school B must not see school A's quiet-hours row").isEmpty();
   }
 
   @Test
   void countsAreFilteredByTenant() {
-    TenantContext.set(schoolA);
+    TenantContext.set(SCHOOL_A);
     long preferences = tx.execute(s -> preferenceRepository.count());
     long settings = tx.execute(s -> settingsRepository.count());
     assertThat(preferences).isEqualTo(1);
@@ -111,11 +110,11 @@ class NotificationPreferenceIsolationTest extends AbstractIntegrationTest {
     // grant would make every scoped count zero and the isolation claim meaningless.
     Long total = jdbc.queryForObject("select count(*) from notification_preferences", Long.class);
     assertThat(total).as("both rows exist for the owner").isEqualTo(2L);
-    assertThat(countAs(schoolA, "notification_preferences")).isEqualTo(1L);
-    assertThat(countAs(schoolB, "notification_preferences")).isEqualTo(1L);
-    assertThat(countAs(schoolA, "notification_settings")).isEqualTo(1L);
-    assertThat(idsVisibleAs(schoolA)).containsExactly(preferenceInA);
-    assertThat(idsVisibleAs(schoolB)).containsExactly(preferenceInB);
+    assertThat(countAs(SCHOOL_A, "notification_preferences")).isEqualTo(1L);
+    assertThat(countAs(SCHOOL_B, "notification_preferences")).isEqualTo(1L);
+    assertThat(countAs(SCHOOL_A, "notification_settings")).isEqualTo(1L);
+    assertThat(idsVisibleAs(SCHOOL_A)).containsExactly(PREFERENCE_A);
+    assertThat(idsVisibleAs(SCHOOL_B)).containsExactly(PREFERENCE_B);
   }
 
   @Test

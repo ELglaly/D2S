@@ -34,4 +34,3 @@ public class AssistantSettings extends TenantEntity {
     return systemPrompt;
   }
 }
-

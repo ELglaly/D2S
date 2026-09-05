@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.subjects;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -11,6 +9,7 @@ import com.schoolbridge.api.assistant.tools.action.ActionSupport;
 import com.schoolbridge.api.assistant.tools.support.Args;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.subjects.SubjectStatus;
 import com.schoolbridge.api.subjects.dto.SubjectResponse;
 import com.schoolbridge.api.subjects.dto.UpdateSubjectRequest;
@@ -101,4 +100,3 @@ public class UpdateSubjectTool extends AbstractActionTool {
     return ToolResult.ok(subjects.update(uuid(resolvedArgs, "subjectId"), request));
   }
 }
-

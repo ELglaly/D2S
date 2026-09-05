@@ -31,6 +31,10 @@
     <anthropic.version>2.35.0</anthropic.version>
     <google-genai.version>1.57.0</google-genai.version>
     <aws-sdk.version>2.31.78</aws-sdk.version>
+    <commons-csv.version>1.13.0</commons-csv.version>
+    <commons-io.version>2.18.0</commons-io.version>
+    <!-- Required for compatibility with Docker Engine 29 / current Docker Desktop. -->
+    <testcontainers.version>1.21.4</testcontainers.version>
 
     <!-- Spring AI (BOM-managed). GA baselines on Spring Boot 3.4.x. -->
     <spring-ai.version>1.0.1</spring-ai.version>
@@ -148,6 +152,16 @@
       <artifactId>modelmapper</artifactId>
       <version>${modelmapper.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
 
     <!-- AI assistant: Anthropic Java SDK (provider=anthropic). -->
     <dependency>
@@ -174,7 +188,7 @@
         * spring-ai-starter-vector-store-pgvector — Phase 2. Its PgVectorStore auto-config requires an
           EmbeddingModel bean, which fails the context where no embedding creds exist.
         * spring-ai-starter-model-azure-openai — dropped until a tenant needs it.
-      See docs/PLAN_SPRING_AI_RAG.md.
+      See docs/ARCHITECTURE.md and the assistant ADRs.
     -->
     <dependency>
       <groupId>org.springframework.ai</groupId>
@@ -214,7 +228,7 @@
     <!--
       Object storage for attachments (P0 item 10). S3-compatible: MinIO locally via an endpoint
       override, S3/R2 in production, one property apart. The presigner lives in this artifact —
-      user bytes never transit the API origin in either direction (docs/PLAN_FILE_UPLOAD.md §2).
+      user bytes never transit the API origin in either direction (see the attachments module).
     -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>

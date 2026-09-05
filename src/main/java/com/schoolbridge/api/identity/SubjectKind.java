@@ -5,4 +5,3 @@ public enum SubjectKind {
   USER,
   PLATFORM_ADMIN
 }
-

@@ -22,4 +22,3 @@ public interface AnnouncementService {
 
   void acknowledge(UUID announcementId, UUID parentUserId);
 }
-

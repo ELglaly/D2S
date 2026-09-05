@@ -16,8 +16,8 @@ import org.springframework.ai.embedding.EmbeddingResponse;
  * Deterministic, offline {@link EmbeddingModel} used in Phase 2 so the RAG ingestion pipeline and
  * the PgVectorStore wire and run end-to-end without any cloud embedding provider (which would pull
  * a heavy native stack and require credentials). Vectors are derived purely from the input text â€”
- * equal text always yields the same unit vector â€” which makes ingestion deterministic and lets the
- * cross-tenant isolation tests assert exact matches.
+ * equal text always yields the same unit vector â€” which makes ingestion deterministic and lets
+ * the cross-tenant isolation tests assert exact matches.
  *
  * <p>NOTE: these are NOT semantic embeddings. Phase 3 replaces this bean with the real Vertex
  * {@code text-multilingual-embedding-002} model before retrieval is switched on ({@code
@@ -85,4 +85,3 @@ public class PlaceholderEmbeddingModel implements EmbeddingModel {
     }
   }
 }
-

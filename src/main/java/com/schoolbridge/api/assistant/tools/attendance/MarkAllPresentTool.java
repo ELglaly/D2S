@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.attendance;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -15,6 +13,7 @@ import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.attendance.dto.MarkAllPresentRequest;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -109,4 +108,3 @@ public class MarkAllPresentTool extends AbstractActionTool {
             ctx.userId(), new MarkAllPresentRequest(classId, localDate(resolvedArgs, "date"))));
   }
 }
-

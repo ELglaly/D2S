@@ -86,4 +86,3 @@ public class AnnouncementDeferralSweeper {
     log.info("announcement_deferred_released count={}", released);
   }
 }
-

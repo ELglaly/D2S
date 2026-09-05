@@ -5,4 +5,3 @@ import java.util.UUID;
 
 public record EnrollmentResponse(
     UUID id, UUID schoolId, UUID studentId, UUID classId, Instant createdAt) {}
-

@@ -32,38 +32,31 @@ class ToolRegistryTest {
 
   @Test
   void callerSeesOnlyToolsWhosePermissionTheyHold() {
-    ToolRegistry registry = new ToolRegistry(all, authorizer(), true);
+    ToolRegistry registry = new ToolRegistry(all, authorizer());
     List<Tool> tools = registry.toolsFor(ctx(UserRole.PARENT, parent()));
     assertThat(tools).containsExactly(PARENT_READ);
   }
 
   @Test
-  void teacherSeesToolsBackedByTeacherGrantsWhenActionsEnabled() {
-    ToolRegistry registry = new ToolRegistry(all, authorizer(), true);
+  void teacherSeesOnlyReadToolsBackedByTheirGrants() {
+    ToolRegistry registry = new ToolRegistry(all, authorizer());
     List<Tool> tools = registry.toolsFor(ctx(UserRole.TEACHER, staff(UserRole.TEACHER)));
-    assertThat(tools).containsExactlyInAnyOrder(TEACHER_READ, TEACHER_ACTION);
+    assertThat(tools).containsExactly(TEACHER_READ);
   }
 
   @Test
-  void actionsKillSwitchHidesActionTools() {
-    ToolRegistry registry = new ToolRegistry(all, authorizer(), false);
+  void actionToolsAreNeverRegisteredInV1() {
+    ToolRegistry registry = new ToolRegistry(all, authorizer());
     List<Tool> tools = registry.toolsFor(ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN)));
     assertThat(tools).containsExactly(TEACHER_READ);
-    assertThat(registry.all()).hasSize(4);
+    assertThat(registry.all()).containsOnly(PARENT_READ, TEACHER_READ);
   }
 
   @Test
-  void findRespectsPermissionAndKillSwitch() {
-    ToolRegistry enabled = new ToolRegistry(all, authorizer(), true);
+  void findNeverExposesAnActionTool() {
+    ToolRegistry registry = new ToolRegistry(all, authorizer());
     assertThat(
-            enabled.find("add_student", ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN))))
-        .contains(ADMIN_ACTION);
-    assertThat(enabled.find("add_student", ctx(UserRole.TEACHER, staff(UserRole.TEACHER))))
-        .isEmpty();
-
-    ToolRegistry disabled = new ToolRegistry(all, authorizer(), false);
-    assertThat(
-            disabled.find("add_student", ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN))))
+            registry.find("add_student", ctx(UserRole.SCHOOL_ADMIN, staff(UserRole.SCHOOL_ADMIN))))
         .isEmpty();
   }
 

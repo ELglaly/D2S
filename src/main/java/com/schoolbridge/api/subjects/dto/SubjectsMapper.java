@@ -41,4 +41,3 @@ public class SubjectsMapper {
         a.getCreatedAt());
   }
 }
-

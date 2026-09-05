@@ -13,4 +13,3 @@ public record AnnouncementRecipientResponse(
     Instant acknowledgedAt,
     String messageId,
     Instant createdAt) {}
-

@@ -8,4 +8,3 @@ public interface PlatformAdminRepository extends JpaRepository<PlatformAdmin, UU
 
   Optional<PlatformAdmin> findByEmail(String email);
 }
-

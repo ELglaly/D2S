@@ -8,4 +8,3 @@ import jakarta.validation.constraints.Size;
  * CONFIRM/CANCEL reply ("yes"/"no"/"Ù†Ø¹Ù…"/"Ù„Ø§"/â€¦) when answering a pending action proposal.
  */
 public record SendMessageRequest(@NotBlank @Size(max = 4000) String content) {}
-

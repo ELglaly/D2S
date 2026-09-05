@@ -44,4 +44,3 @@ public class FcmPushClient implements PushNotificationClient {
     return "****" + token.substring(token.length() - 4);
   }
 }
-

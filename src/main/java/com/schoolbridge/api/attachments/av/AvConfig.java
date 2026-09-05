@@ -31,4 +31,3 @@ public class AvConfig {
     return new DisabledAvScanner();
   }
 }
-

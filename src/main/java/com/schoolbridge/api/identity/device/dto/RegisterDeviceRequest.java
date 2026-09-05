@@ -9,4 +9,3 @@ public record RegisterDeviceRequest(
     @NotNull DevicePlatform platform,
     @NotBlank @Size(max = 256) String fcmToken,
     @NotBlank @Size(max = 128) String deviceId) {}
-

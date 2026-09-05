@@ -5,16 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.schoolbridge.api.AbstractIntegrationTest;
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.common.tenancy.TenantContext;
-import com.schoolbridge.api.tenant.School;
-import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -24,44 +20,25 @@ import org.springframework.transaction.support.TransactionTemplate;
  * {@code TenantEntity} repository must copy.
  */
 @SpringBootTest
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/isolation.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class UserRepositoryIsolationTest extends AbstractIntegrationTest {
 
   @Autowired UserRepository userRepository;
-  @Autowired SchoolRepository schoolRepository;
   @Autowired BlindIndexHasher blindIndex;
   @Autowired TransactionTemplate tx;
-
-  private UUID schoolA;
-  private UUID schoolB;
-  private UUID userInA;
-  private UUID userInB;
-
-  @BeforeEach
-  void setUp() {
-    // Clean slate so the test is deterministic across the singleton-container test run.
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolA = persistSchool("Alpha");
-    schoolB = persistSchool("Beta");
-
-    userInA =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.parent(
-                            schoolA, "Parent A", "+201000000001", blindIndex.hash("+201000000001")))
-                    .getId());
-    userInB =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.parent(
-                            schoolB, "Parent B", "+201000000002", blindIndex.hash("+201000000002")))
-                    .getId());
-  }
+  private static final UUID SCHOOL_A = UUID.fromString("10000000-0000-0000-0000-000000000001");
+  private static final UUID SCHOOL_B = UUID.fromString("10000000-0000-0000-0000-000000000002");
+  private static final UUID USER_A = UUID.fromString("30000000-0000-0000-0000-000000000001");
+  private static final UUID USER_B = UUID.fromString("30000000-0000-0000-0000-000000000002");
 
   @AfterEach
   void tearDown() {
@@ -70,26 +47,26 @@ class UserRepositoryIsolationTest extends AbstractIntegrationTest {
 
   @Test
   void findById_underTenantA_cannotSeeUserInB() {
-    TenantContext.set(schoolA);
-    var foundOwn = tx.execute(s -> userRepository.findById(userInA));
-    var foundOther = tx.execute(s -> userRepository.findById(userInB));
+    TenantContext.set(SCHOOL_A);
+    var foundOwn = tx.execute(s -> userRepository.findById(USER_A));
+    var foundOther = tx.execute(s -> userRepository.findById(USER_B));
     assertThat(foundOwn).isPresent();
     assertThat(foundOther).as("school A must not see school B's user").isEmpty();
   }
 
   @Test
   void findAll_underTenantB_returnsOnlyOwnUsers() {
-    TenantContext.set(schoolB);
+    TenantContext.set(SCHOOL_B);
     var ownUsers = tx.execute(s -> userRepository.findAll());
     assertThat(ownUsers).hasSize(1);
-    assertThat(ownUsers.get(0).getId()).isEqualTo(userInB);
+    assertThat(ownUsers).extracting(User::getId).contains(USER_B).doesNotContain(USER_A);
   }
 
   @Test
   void findByPhoneHash_underTenantA_cannotSeeBsParent() {
-    TenantContext.set(schoolA);
+    TenantContext.set(SCHOOL_A);
     var foundOther =
-        tx.execute(s -> userRepository.findByPhoneHash(blindIndex.hash("+201000000002")));
+        tx.execute(s -> userRepository.findByPhoneHash(blindIndex.hash("+201080000002")));
     assertThat(foundOther).as("school A must not resolve school B's phone").isEmpty();
   }
 
@@ -99,22 +76,7 @@ class UserRepositoryIsolationTest extends AbstractIntegrationTest {
     // a parent could never be located in the first place. findAllByPhoneHash returns matches
     // across schools.
     TenantContext.clear();
-    var all = tx.execute(s -> userRepository.findAllByPhoneHash(blindIndex.hash("+201000000001")));
+    var all = tx.execute(s -> userRepository.findAllByPhoneHash(blindIndex.hash("+201080000001")));
     assertThat(all).hasSize(1);
-  }
-
-  private UUID persistSchool(String name) {
-    return tx.execute(
-        s ->
-            schoolRepository
-                .save(
-                    new School(
-                        name,
-                        "EG",
-                        "Africa/Cairo",
-                        "ar-EG",
-                        SubscriptionTier.STANDARD,
-                        SchoolSettings.defaults()))
-                .getId());
   }
 }

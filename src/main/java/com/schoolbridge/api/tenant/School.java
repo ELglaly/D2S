@@ -10,8 +10,8 @@ import jakarta.persistence.Table;
 
 /**
  * The tenant root aggregate. Every other tenant-scoped row carries this aggregate's id as {@code
- * school_id}. {@link SchoolSettings} is embedded â€” same table â€” because every read of a school will
- * want its settings too.
+ * school_id}. {@link SchoolSettings} is embedded â€” same table â€” because every read of a school
+ * will want its settings too.
  */
 @Entity
 @Table(name = "schools")
@@ -98,4 +98,3 @@ public class School extends BaseEntity {
     return settings;
   }
 }
-

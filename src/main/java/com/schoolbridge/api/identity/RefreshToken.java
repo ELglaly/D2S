@@ -76,4 +76,3 @@ public class RefreshToken extends BaseEntity {
     return revokedAt;
   }
 }
-

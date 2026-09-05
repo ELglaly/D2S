@@ -110,4 +110,3 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("error.user.not_found")));
   }
 }
-

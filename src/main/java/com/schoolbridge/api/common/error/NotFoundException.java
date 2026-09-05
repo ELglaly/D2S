@@ -11,4 +11,3 @@ public class NotFoundException extends ApplicationException {
     super(ErrorType.NOT_FOUND, ErrorType.NOT_FOUND.defaultMessageKey());
   }
 }
-

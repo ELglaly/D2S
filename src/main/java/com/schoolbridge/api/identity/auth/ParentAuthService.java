@@ -93,4 +93,3 @@ public class ParentAuthService {
     otpService.revoke(token);
   }
 }
-

@@ -11,4 +11,3 @@ public class ConflictException extends ApplicationException {
     super(ErrorType.CONFLICT, ErrorType.CONFLICT.defaultMessageKey());
   }
 }
-

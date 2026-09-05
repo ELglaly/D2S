@@ -40,4 +40,3 @@ public record NotificationDecision(
     return deferUntil != null;
   }
 }
-

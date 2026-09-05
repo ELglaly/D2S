@@ -20,4 +20,3 @@ public interface ConversationService {
    */
   Conversation requireOwned(UUID schoolId, UUID ownerUserId, UUID conversationId);
 }
-

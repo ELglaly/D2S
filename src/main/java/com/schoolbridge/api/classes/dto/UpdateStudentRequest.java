@@ -12,4 +12,3 @@ public record UpdateStudentRequest(
     @PastOrPresent LocalDate dateOfBirth,
     @Size(max = 100) String externalId,
     @NotNull StudentStatus status) {}
-

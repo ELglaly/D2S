@@ -58,4 +58,3 @@ public class RolePermissionAdminService {
     effectivePermissions.evictRole(role);
   }
 }
-

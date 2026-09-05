@@ -62,11 +62,11 @@ class AssistantActionOrchestrationTest {
           null);
 
   @Test
-  void actionProposalHaltsWithConfirmRequired() {
+  void actionToolIsNotExposedByReadOnlyRegistry() {
     StubActionTool action = new StubActionTool();
     EffectivePermissionService perms = mock(EffectivePermissionService.class);
     when(perms.permissionsForRole(UserRole.TEACHER)).thenReturn(Set.of("ATTENDANCE_RECORD"));
-    ToolRegistry registry = new ToolRegistry(List.of(action), new ToolAuthorizer(perms), true);
+    ToolRegistry registry = new ToolRegistry(List.of(action), new ToolAuthorizer(perms));
     LlmGateway gateway =
         request ->
             new LlmResponse(
@@ -75,6 +75,9 @@ class AssistantActionOrchestrationTest {
                 new LlmUsage(5, 5));
     when(cache.key(ctx.userId(), "mark all present in 5a")).thenReturn("k");
     when(cache.get("k")).thenReturn(Optional.empty());
+    when(messages.get("assistant.error.unknown_tool")).thenReturn("en unavailable");
+    when(messages.get("assistant.error.max_iterations")).thenReturn("en summary");
+    assertThat(registry.all()).isEmpty();
 
     AssistantProperties properties = new AssistantProperties();
     AssistantServiceImpl service =
@@ -93,10 +96,9 @@ class AssistantActionOrchestrationTest {
 
     AssistantAnswer answer = service.ask(new AskRequest("mark all present in 5a", null), ctx);
 
-    assertThat(answer.outcome()).isEqualTo(AssistantAnswer.Outcome.CONFIRM_REQUIRED);
-    assertThat(answer.pendingAction()).isNotNull();
-    assertThat(answer.pendingAction().token()).isEqualTo("tok-123");
-    assertThat(answer.text()).isEqualTo("en summary"); // English ctx → summaryEn
+    assertThat(answer.outcome()).isEqualTo(AssistantAnswer.Outcome.ERROR);
+    assertThat(answer.pendingAction()).isNull();
+    assertThat(answer.text()).isEqualTo("en summary");
   }
 
   private static final class StubActionTool implements ActionTool {

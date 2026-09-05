@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.grades;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -12,6 +10,7 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
 import java.util.List;
@@ -21,7 +20,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * PARENT â€” a child's grades, optionally filtered by subject. Mirrors {@code GET /grades?studentId}.
+ * PARENT â€” a child's grades, optionally filtered by subject. Mirrors {@code GET
+ * /grades?studentId}.
  */
 @Component
 public class GetChildGradesTool implements ReadTool {
@@ -82,4 +82,3 @@ public class GetChildGradesTool implements ReadTool {
     return ToolResult.ok(result);
   }
 }
-

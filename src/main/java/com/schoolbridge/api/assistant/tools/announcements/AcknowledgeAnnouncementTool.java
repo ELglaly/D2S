@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.announcements;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.announcements.Announcement;
@@ -18,6 +16,7 @@ import com.schoolbridge.api.assistant.tools.support.NameMatching;
 import com.schoolbridge.api.assistant.tools.support.NameMatching.MatchResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.common.security.PermissionsHelper;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,4 +122,3 @@ public class AcknowledgeAnnouncementTool extends AbstractActionTool {
     return body.length() <= 40 ? body : body.substring(0, 40) + "â€¦";
   }
 }
-

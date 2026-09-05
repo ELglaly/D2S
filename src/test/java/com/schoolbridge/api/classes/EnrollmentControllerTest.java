@@ -4,22 +4,14 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.classes.entity.SchoolClass;
-import com.schoolbridge.api.classes.entity.Student;
 import com.schoolbridge.api.classes.repository.EnrollmentRepository;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
 import com.schoolbridge.api.classes.repository.StudentRepository;
-import com.schoolbridge.api.identity.User;
 import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.jwt.JwtService;
-import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,9 +20,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/auth-principals.sql",
+      "classpath:sql/fixtures/classes/academic-roster.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class EnrollmentControllerTest extends AbstractIntegrationTest {
 
   @LocalServerPort int port;
@@ -51,54 +55,10 @@ class EnrollmentControllerTest extends AbstractIntegrationTest {
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    tx.executeWithoutResult(s -> enrollmentRepository.deleteAll());
-    tx.executeWithoutResult(s -> studentRepository.deleteAll());
-    tx.executeWithoutResult(s -> classRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "Test School",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-
-    classId =
-        tx.execute(
-            s ->
-                classRepository
-                    .save(new SchoolClass(schoolId, "Grade 3A", "Grade 3", "2025-2026", null))
-                    .getId());
-
-    studentId =
-        tx.execute(
-            s ->
-                studentRepository
-                    .save(
-                        new Student(
-                            schoolId, "Ahmed Mohamed", LocalDate.of(2015, 3, 15), "EXT-001"))
-                    .getId());
-
-    UUID adminId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.SCHOOL_ADMIN,
-                            "Admin",
-                            "admin@enroll.test",
-                            passwordEncoder.encode("pass")))
-                    .getId());
+    schoolId = UUID.fromString("10000000-0000-0000-0000-000000000001");
+    classId = UUID.fromString("30000000-0000-0000-0000-000000000001");
+    studentId = UUID.fromString("30000000-0000-0000-0000-000000000011");
+    UUID adminId = UUID.fromString("20000000-0000-0000-0000-000000000011");
     adminToken =
         jwtService.issueAccess(
             adminId.toString(),
@@ -106,18 +66,27 @@ class EnrollmentControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  void enroll_validRequest_returns201() {
-    given()
-        .header("Authorization", "Bearer " + adminToken)
-        .contentType(ContentType.JSON)
-        .body(Map.of("studentId", studentId.toString()))
-        .when()
-        .post("/api/v1/classes/" + classId + "/enrollments")
-        .then()
-        .log()
-        .ifValidationFails()
-        .statusCode(201)
-        .body("data.studentId", notNullValue());
+  void enroll_validRequest_persistsAndReturns201() {
+    String enrollmentId =
+        given()
+            .header("Authorization", "Bearer " + adminToken)
+            .contentType(ContentType.JSON)
+            .body(Map.of("studentId", studentId.toString()))
+            .when()
+            .post("/api/v1/classes/" + classId + "/enrollments")
+            .then()
+            .log()
+            .ifValidationFails()
+            .statusCode(201)
+            .body("data.studentId", notNullValue())
+            .extract()
+            .path("data.id");
+    org.assertj.core.api.Assertions.assertThat(
+            enrollmentRepository.findById(UUID.fromString(enrollmentId)))
+        .isPresent()
+        .get()
+        .extracting("schoolId", "studentId", "classId")
+        .containsExactly(schoolId, studentId, classId);
   }
 
   @Test
@@ -186,5 +155,8 @@ class EnrollmentControllerTest extends AbstractIntegrationTest {
         .delete("/api/v1/enrollments/" + enrollmentId)
         .then()
         .statusCode(204);
+    org.assertj.core.api.Assertions.assertThat(
+            enrollmentRepository.existsById(UUID.fromString(enrollmentId)))
+        .isFalse();
   }
 }

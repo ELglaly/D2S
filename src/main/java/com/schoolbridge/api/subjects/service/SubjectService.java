@@ -19,4 +19,3 @@ public interface SubjectService {
 
   void delete(UUID id);
 }
-

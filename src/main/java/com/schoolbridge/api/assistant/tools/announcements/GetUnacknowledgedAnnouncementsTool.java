@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.announcements;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.announcements.Announcement;
 import com.schoolbridge.api.announcements.AnnouncementRecipient;
@@ -12,6 +10,7 @@ import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,4 +84,3 @@ public class GetUnacknowledgedAnnouncementsTool implements ReadTool {
     return ToolResult.ok(views);
   }
 }
-

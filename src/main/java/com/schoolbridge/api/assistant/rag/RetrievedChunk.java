@@ -14,4 +14,3 @@ public record RetrievedChunk(String content, String type, String title) {
         title == null ? null : title.toString());
   }
 }
-

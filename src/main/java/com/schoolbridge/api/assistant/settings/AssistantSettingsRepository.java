@@ -21,4 +21,3 @@ public interface AssistantSettingsRepository extends JpaRepository<AssistantSett
   @Query("select s from AssistantSettings s where s.schoolId = :schoolId")
   Optional<AssistantSettings> findBySchoolId(@Param("schoolId") UUID schoolId);
 }
-

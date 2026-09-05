@@ -117,4 +117,3 @@ public class OtpService {
 
   public record ParentSession(String token, UUID userId, UUID schoolId) {}
 }
-

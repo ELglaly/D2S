@@ -210,7 +210,7 @@ class AssistantServiceImplTest {
     lenient()
         .when(perms.permissionsForRole(UserRole.TEACHER))
         .thenReturn(Set.of("GRADE_READ", "ATTENDANCE_RECORD"));
-    return new ToolRegistry(List.of(tools), new ToolAuthorizer(perms), true);
+    return new ToolRegistry(List.of(tools), new ToolAuthorizer(perms));
   }
 
   private static AskRequest ask(String q) {

@@ -11,4 +11,3 @@ public record ClassSubjectResponse(
     String subjectName,
     String subjectCode,
     Instant createdAt) {}
-

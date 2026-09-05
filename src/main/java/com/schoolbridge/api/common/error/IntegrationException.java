@@ -19,4 +19,3 @@ public class IntegrationException extends ApplicationException {
     super(ErrorType.INTEGRATION, ErrorType.INTEGRATION.defaultMessageKey());
   }
 }
-

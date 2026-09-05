@@ -61,4 +61,3 @@ public enum Permission {
   MANAGE_ROLES,
   MANAGE_PERMISSIONS
 }
-

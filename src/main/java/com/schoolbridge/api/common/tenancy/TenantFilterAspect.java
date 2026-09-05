@@ -58,4 +58,3 @@ public class TenantFilterAspect {
     return pjp.proceed();
   }
 }
-

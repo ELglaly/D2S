@@ -12,4 +12,3 @@ public enum HomeworkDeliveryStatus {
   SENT,
   FAILED
 }
-

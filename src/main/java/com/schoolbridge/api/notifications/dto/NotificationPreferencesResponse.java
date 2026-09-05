@@ -25,4 +25,3 @@ public record NotificationPreferencesResponse(
     LocalTime effectiveQuietHoursStart,
     LocalTime effectiveQuietHoursEnd,
     List<CategoryPreference> preferences) {}
-

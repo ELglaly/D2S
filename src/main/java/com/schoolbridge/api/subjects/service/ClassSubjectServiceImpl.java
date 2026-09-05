@@ -110,4 +110,3 @@ public class ClassSubjectServiceImpl implements ClassSubjectService {
     classSubjects.delete(classSubject);
   }
 }
-

@@ -70,4 +70,3 @@ public class Student extends TenantEntity {
     return status;
   }
 }
-

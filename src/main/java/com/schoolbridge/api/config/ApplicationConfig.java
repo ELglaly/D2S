@@ -47,4 +47,3 @@ public class ApplicationConfig {
     return mapper;
   }
 }
-

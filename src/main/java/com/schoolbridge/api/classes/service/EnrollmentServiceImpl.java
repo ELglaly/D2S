@@ -86,4 +86,3 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     enrollmentRepository.delete(enrollment);
   }
 }
-

@@ -3,10 +3,10 @@ package com.schoolbridge.api.classes;
 import com.schoolbridge.api.classes.dto.CreateParentLinkRequest;
 import com.schoolbridge.api.classes.dto.ParentStudentLinkResponse;
 import com.schoolbridge.api.classes.service.ParentStudentLinkService;
-import com.schoolbridge.api.common.tenancy.TenantContext;
-import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.common.security.authz.RequirePermission;
+import com.schoolbridge.api.common.tenancy.TenantContext;
+import com.schoolbridge.api.common.web.ApiConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -91,4 +91,3 @@ public class ParentStudentLinkController {
     return ResponseEntity.noContent().build();
   }
 }
-

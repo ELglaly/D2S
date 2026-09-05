@@ -9,4 +9,3 @@ public record CreateParentLinkRequest(
     @NotNull UUID studentId,
     @NotNull RelationshipType relationship,
     boolean primaryContact) {}
-

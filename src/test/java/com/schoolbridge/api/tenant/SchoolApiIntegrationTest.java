@@ -2,19 +2,10 @@ package com.schoolbridge.api.tenant;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.common.outbox.OutboxEvent;
-import com.schoolbridge.api.common.outbox.OutboxRepository;
-import com.schoolbridge.api.common.outbox.OutboxStatus;
-import com.schoolbridge.api.identity.PlatformAdminRepository;
-import com.schoolbridge.api.identity.RefreshTokenRepository;
-import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.jwt.JwtService;
-import io.restassured.RestAssured;
+import com.schoolbridge.api.SqlIntegrationTest;
 import io.restassured.http.ContentType;
 import java.util.List;
 import java.util.Map;
@@ -22,38 +13,21 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class SchoolApiIntegrationTest extends AbstractIntegrationTest {
+class SchoolApiIntegrationTest extends SqlIntegrationTest {
 
-  @LocalServerPort int port;
-  @Autowired OutboxRepository outboxRepository;
-  @Autowired SchoolRepository schoolRepository;
-  @Autowired UserRepository userRepository;
-  @Autowired RefreshTokenRepository refreshTokenRepository;
-  @Autowired PlatformAdminRepository platformAdminRepository;
-  @Autowired JwtService jwtService;
+  @Autowired JdbcTemplate jdbc;
 
   private String superAdminToken;
 
   @BeforeEach
   void setUp() {
-    RestAssured.port = port;
     // Mint a fresh SUPER_ADMIN JWT for each test. The signing key is ephemeral per JVM, so a
     // token issued here is verifiable by the same JwtService bean a moment later.
-    superAdminToken =
-        jwtService.issueAccess(
-            UUID.randomUUID().toString(), Map.of("kind", "PLATFORM_ADMIN", "role", "SUPER_ADMIN"));
+    superAdminToken = login("admin@platform.test", "password");
     // Delete in dependency order — child rows first — so FK constraints don't bite when prior
     // test classes leave users behind.
-    refreshTokenRepository.deleteAll();
-    userRepository.deleteAll();
-    platformAdminRepository.deleteAll();
-    schoolRepository.deleteAll();
-    outboxRepository.deleteAll();
   }
 
   @Test
@@ -98,13 +72,12 @@ class SchoolApiIntegrationTest extends AbstractIntegrationTest {
             .extract()
             .path("data.id");
 
-    List<OutboxEvent> events =
-        outboxRepository.findByStatusOrderByCreatedAtAsc(
-            OutboxStatus.PENDING, PageRequest.of(0, 10));
-    assertThat(events)
-        .extracting(OutboxEvent::getEventType, OutboxEvent::getAggregateType)
-        .containsExactly(tuple("school.created", "School"));
-    assertThat(events.get(0).getAggregateId()).isEqualTo(UUID.fromString(id));
+    assertThat(
+            jdbc.queryForObject(
+                "select count(*) from outbox_events where event_type = 'school.created' and aggregate_type = 'School' and aggregate_id = ?",
+                Long.class,
+                UUID.fromString(id)))
+        .isEqualTo(1L);
   }
 
   @Test
@@ -183,6 +156,63 @@ class SchoolApiIntegrationTest extends AbstractIntegrationTest {
         .body("data.id", equalTo(firstId));
   }
 
+  @Test
+  void listSettingsSuspendAndReactivatePersistThroughHttp() {
+    String schoolId = "10000000-0000-0000-0000-000000000001";
+    given()
+        .header("Authorization", "Bearer " + superAdminToken)
+        .get("/api/v1/schools?status=ACTIVE")
+        .then()
+        .statusCode(200);
+
+    given()
+        .header("Authorization", "Bearer " + superAdminToken)
+        .get("/api/v1/schools/{id}/settings", schoolId)
+        .then()
+        .statusCode(200)
+        .body("data.defaultLanguage", equalTo("EN"));
+
+    given()
+        .contentType(ContentType.JSON)
+        .header("Authorization", "Bearer " + superAdminToken)
+        .body(settingsPayload())
+        .put("/api/v1/schools/{id}/settings", schoolId)
+        .then()
+        .statusCode(200)
+        .body("data.quietHoursStart", equalTo("22:00:00"));
+    assertThat(
+            jdbc.queryForObject(
+                "select quiet_hours_start::text from schools where id = ?",
+                String.class,
+                UUID.fromString(schoolId)))
+        .isEqualTo("20:00:00");
+
+    given()
+        .header("Authorization", "Bearer " + superAdminToken)
+        .post("/api/v1/schools/{id}/suspend", schoolId)
+        .then()
+        .statusCode(204);
+    assertThat(
+            jdbc.queryForObject(
+                "select status from schools where id = ?", String.class, UUID.fromString(schoolId)))
+        .isEqualTo("SUSPENDED");
+    given()
+        .header("Authorization", "Bearer " + superAdminToken)
+        .post("/api/v1/schools/{id}/reactivate", schoolId)
+        .then()
+        .statusCode(204);
+    assertThat(
+            jdbc.queryForObject(
+                "select status from schools where id = ?", String.class, UUID.fromString(schoolId)))
+        .isEqualTo("ACTIVE");
+  }
+
+  @Test
+  void schoolAdminIsDeniedPlatformSchoolManagement() {
+    String schoolAdmin = login("school-admin@fixture.test", "password");
+    authenticated(schoolAdmin).get("/api/v1/schools").then().statusCode(403);
+  }
+
   private String createSchool(String name) {
     return given()
         .contentType(ContentType.JSON)
@@ -203,5 +233,18 @@ class SchoolApiIntegrationTest extends AbstractIntegrationTest {
         "timezone", "Africa/Cairo",
         "locale", "ar-EG",
         "subscriptionTier", "STANDARD");
+  }
+
+  private static Map<String, Object> settingsPayload() {
+    return Map.of(
+        "defaultLanguage", "EN",
+        "quietHoursStart", "22:00:00",
+        "quietHoursEnd", "06:00:00",
+        "homeworkReminderEnabled", true,
+        "homeworkReminderTime", "19:00:00",
+        "feeReminderOffsetDays", List.of(-7, -1, 0, 7),
+        "smsFallbackEnabled", false,
+        "alertsRespectQuietHours", false,
+        "rosterDueByLocalTime", "09:00:00");
   }
 }

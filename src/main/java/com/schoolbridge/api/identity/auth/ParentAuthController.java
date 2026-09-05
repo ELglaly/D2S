@@ -78,4 +78,3 @@ public class ParentAuthController {
     return ResponseEntity.noContent().build();
   }
 }
-

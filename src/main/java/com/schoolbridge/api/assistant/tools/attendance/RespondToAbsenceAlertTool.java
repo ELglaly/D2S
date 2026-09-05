@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.attendance;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -16,6 +14,7 @@ import com.schoolbridge.api.attendance.AttendanceStatus;
 import com.schoolbridge.api.attendance.dto.AttendanceHistoryEntry;
 import com.schoolbridge.api.attendance.dto.ParentResponseRequest;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -114,4 +113,3 @@ public class RespondToAbsenceAlertTool extends AbstractActionTool {
             recordId, ctx.userId(), new ParentResponseRequest(response)));
   }
 }
-

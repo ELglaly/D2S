@@ -2,6 +2,8 @@ package com.schoolbridge.api.homework;
 
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.security.AuthorizationPolicy;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
@@ -12,8 +14,6 @@ import com.schoolbridge.api.homework.dto.ParentHomeworkFeedEntry;
 import com.schoolbridge.api.homework.dto.UpdateHomeworkRequest;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -262,4 +262,3 @@ public class HomeworkController {
     return parent;
   }
 }
-

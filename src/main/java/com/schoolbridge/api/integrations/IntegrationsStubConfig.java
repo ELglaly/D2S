@@ -31,4 +31,3 @@ class IntegrationsStubConfig {
     return new LoggingWhatsAppClient();
   }
 }
-

@@ -16,4 +16,3 @@ public class WhatsAppRetryableException extends RuntimeException {
     super(message, cause);
   }
 }
-

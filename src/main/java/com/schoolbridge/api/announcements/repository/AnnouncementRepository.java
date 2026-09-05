@@ -47,4 +47,3 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, UUID
           + "order by a.scheduledFor asc")
   List<Announcement> findDueScheduled(@Param("now") Instant now, Pageable pageable);
 }
-

@@ -13,4 +13,3 @@ public record HomeworkRecipientResponse(
     String messageId,
     Instant acknowledgedAt,
     Instant createdAt) {}
-

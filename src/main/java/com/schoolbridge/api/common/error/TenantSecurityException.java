@@ -14,4 +14,3 @@ public class TenantSecurityException extends ApplicationException {
     super(ErrorType.TENANT_SECURITY, "error.tenant_security");
   }
 }
-

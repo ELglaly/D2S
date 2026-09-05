@@ -22,4 +22,3 @@ public class AssistantRagConfig {
     return new PlaceholderEmbeddingModel(properties.getRag().getEmbeddingDim());
   }
 }
-

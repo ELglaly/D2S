@@ -18,10 +18,10 @@ public final class ConfirmIntent {
 
   private static final Set<String> YES =
       Set.of(
-          "yes", "y", "confirm", "ok", "okay", "sure", "Ù†Ø¹Ù…", "Ø£ÙƒØ¯", "Ø§ÙƒØ¯", "ØªØ£ÙƒÙŠØ¯", "ØªØ§ÙƒÙŠØ¯",
-          "Ù…ÙˆØ§ÙÙ‚");
+          "yes", "y", "confirm", "ok", "okay", "sure", "نعم", "أكد", "اكد", "تأكيد", "تاكيد",
+          "موافق");
   private static final Set<String> NO =
-      Set.of("no", "n", "cancel", "stop", "Ù„Ø§", "Ø¥Ù„ØºØ§Ø¡", "Ø§Ù„ØºØ§Ø¡", "Ø£Ù„ØºÙ", "Ø§Ù„Øº", "Ø±ÙØ¶");
+      Set.of("no", "n", "cancel", "stop", "لا", "إلغاء", "الغاء", "ألغِ", "الغ", "رفض");
 
   private ConfirmIntent() {}
 
@@ -43,4 +43,3 @@ public final class ConfirmIntent {
     return classify(text) == Decision.CONFIRM;
   }
 }
-

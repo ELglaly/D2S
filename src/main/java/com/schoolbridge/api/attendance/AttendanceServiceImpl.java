@@ -46,8 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
  * written, so an accidental teacher re-submit cannot re-fire alerts. Bulk mark-all-present writes a
  * single aggregated {@code attendance.bulk_marked} event with the list of transitions per OQ4.
  *
- * <p>All outbox payload maps use {@link HashMap} per {@code feedback-outbox-audit-mapof-npe} Ã¢â‚¬â€
- * {@code traceId} from MDC is nullable and {@code Map.of} would NPE.
+ * <p>All outbox payload maps use {@link HashMap} per {@code feedback-outbox-audit-mapof-npe}
+ * Ã¢â‚¬â€ {@code traceId} from MDC is nullable and {@code Map.of} would NPE.
  */
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
@@ -94,6 +94,9 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Transactional
   public AttendanceRecordResponse mark(UUID markedByUserId, MarkAttendanceRequest request) {
     UUID schoolId = TenantContext.require();
+    if (!enrollments.existsByStudentIdAndClassId(request.studentId(), request.classId())) {
+      throw new ValidationException("error.attendance.student_not_enrolled");
+    }
     Instant now = Instant.now();
     AttendanceRecord existing =
         records
@@ -239,7 +242,8 @@ public class AttendanceServiceImpl implements AttendanceService {
                 () -> new NotFoundException("error.attendance.record_not_found", recordId));
 
     // Anti-enumeration: a parent who is not linked to this record's student must see 404,
-    // not 403. The controller permission check is a coarse capability gate; row-level access is enforced by the service.
+    // not 403. The controller permission check is a coarse capability gate; row-level access is
+    // enforced by the service.
     if (!parentLinks.existsByParentUserIdAndStudentId(parentUserId, record.getStudentId())) {
       throw new NotFoundException("error.attendance.record_not_found", recordId);
     }
@@ -308,4 +312,3 @@ public class AttendanceServiceImpl implements AttendanceService {
     };
   }
 }
-

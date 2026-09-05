@@ -23,4 +23,3 @@ public record WebhookPayload(String object, List<Entry> entry) {
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record Status(String id, String status, String timestamp, String recipient_id) {}
 }
-

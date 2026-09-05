@@ -10,4 +10,3 @@ import java.util.UUID;
  */
 public record MarkAllPresentResponse(
     UUID classId, LocalDate date, int transitionedCount, int skippedCount) {}
-

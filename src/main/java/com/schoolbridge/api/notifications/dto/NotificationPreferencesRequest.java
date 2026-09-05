@@ -23,4 +23,3 @@ public record NotificationPreferencesRequest(
     LocalTime quietHoursStart,
     LocalTime quietHoursEnd,
     @NotNull @Valid List<CategoryPreference> preferences) {}
-

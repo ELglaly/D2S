@@ -80,4 +80,3 @@ public class ParentStudentLinkServiceImpl implements ParentStudentLinkService {
     linkRepository.delete(link);
   }
 }
-

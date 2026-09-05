@@ -40,9 +40,8 @@ public class StorageProperties {
   /**
    * Hard cap on a single object, enforced twice: the declared size is rejected here before a URL is
    * ever minted, and the same value is signed into the PUT as {@code Content-Length} so the object
-   * store rejects a body that disagrees. See {@code docs/PLAN_FILE_UPLOAD.md} section 2.2 â€” a
-   * presigned PUT cannot carry a content-length-range condition, so signing the exact length is the
-   * enforcement mechanism.
+   * store rejects a body that disagrees. A presigned PUT cannot carry a content-length-range
+   * condition, so signing the exact length is the enforcement mechanism.
    */
   private long maxUploadBytes = 10L * 1024 * 1024;
 
@@ -272,4 +271,3 @@ public class StorageProperties {
     }
   }
 }
-

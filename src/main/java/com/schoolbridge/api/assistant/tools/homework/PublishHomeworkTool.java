@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.homework;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -13,6 +11,7 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.homework.HomeworkService;
 import com.schoolbridge.api.homework.dto.HomeworkResponse;
 import java.util.LinkedHashMap;
@@ -102,4 +101,3 @@ public class PublishHomeworkTool extends AbstractActionTool {
     return ToolResult.ok(homework.publish(homeworkId));
   }
 }
-

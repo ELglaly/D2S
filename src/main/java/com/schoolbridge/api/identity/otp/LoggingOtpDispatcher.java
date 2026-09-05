@@ -33,4 +33,3 @@ public class LoggingOtpDispatcher implements OtpDispatcher {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
-

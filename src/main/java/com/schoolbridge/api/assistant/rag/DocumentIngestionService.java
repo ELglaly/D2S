@@ -24,8 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Tenant-scoped ingestion of knowledge documents into the RAG corpus: chunk â†’ embed â†’ store. The
- * registry row ({@link KnowledgeDocument}) and the vector chunks are always scoped to {@code
+ * Tenant-scoped ingestion of knowledge documents into the RAG corpus: chunk â†’ embed â†’ store.
+ * The registry row ({@link KnowledgeDocument}) and the vector chunks are always scoped to {@code
  * ctx.schoolId()} (never a client-supplied tenant); each chunk carries {@code school_id} and {@code
  * document_id} in its vector-store metadata so retrieval can filter by tenant and deletes can
  * target a single document. Re-ingesting unchanged content (same sha-256) is a no-op.
@@ -154,4 +154,3 @@ public class DocumentIngestionService {
     }
   }
 }
-

@@ -14,4 +14,3 @@ public record CreateGradeRequest(
     BigDecimal score,
     @Size(max = 10) String gradeLabel,
     @Size(max = 2000) String notes) {}
-

@@ -23,7 +23,9 @@ public interface HomeworkItemRepository extends JpaRepository<HomeworkItem, UUID
   @Query("select h from HomeworkItem h where h.id = :id")
   Optional<HomeworkItem> findById(@Param("id") UUID id);
 
-  /** Teacher list view â€” filtered by class, status, and date range. Caller may pass null params. */
+  /**
+   * Teacher list view â€” filtered by class, status, and date range. Caller may pass null params.
+   */
   @Query(
       "select h from HomeworkItem h "
           + "where (:classId is null or h.classId = :classId) "
@@ -66,4 +68,3 @@ public interface HomeworkItemRepository extends JpaRepository<HomeworkItem, UUID
   boolean existsRecipientForParent(
       @Param("homeworkId") UUID homeworkId, @Param("parentUserId") UUID parentUserId);
 }
-

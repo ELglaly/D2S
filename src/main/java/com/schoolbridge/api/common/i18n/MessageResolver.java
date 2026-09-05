@@ -27,4 +27,3 @@ public class MessageResolver {
     return messageSource.getMessage(key, args, key, locale);
   }
 }
-

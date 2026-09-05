@@ -6,14 +6,9 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
-import com.schoolbridge.api.identity.User;
 import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.jwt.JwtService;
-import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import java.util.Map;
@@ -24,9 +19,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/auth-principals.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class SchoolClassControllerTest extends AbstractIntegrationTest {
 
   @LocalServerPort int port;
@@ -44,53 +50,13 @@ class SchoolClassControllerTest extends AbstractIntegrationTest {
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    tx.executeWithoutResult(s -> classRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "Test School",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-
-    UUID adminId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.SCHOOL_ADMIN,
-                            "Admin User",
-                            "admin@test.school",
-                            passwordEncoder.encode("pass")))
-                    .getId());
+    schoolId = UUID.fromString("10000000-0000-0000-0000-000000000001");
+    UUID adminId = UUID.fromString("20000000-0000-0000-0000-000000000011");
     adminToken =
         jwtService.issueAccess(
             adminId.toString(),
             Map.of("kind", "USER", "schoolId", schoolId.toString(), "role", "SCHOOL_ADMIN"));
-
-    UUID teacherId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.TEACHER,
-                            "Teacher User",
-                            "teacher@test.school",
-                            passwordEncoder.encode("pass")))
-                    .getId());
+    UUID teacherId = UUID.fromString("20000000-0000-0000-0000-000000000010");
     teacherToken =
         jwtService.issueAccess(
             teacherId.toString(),
@@ -98,19 +64,27 @@ class SchoolClassControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  void create_withAdminToken_returns201() {
-    given()
-        .header("Authorization", "Bearer " + adminToken)
-        .contentType(ContentType.JSON)
-        .body(Map.of("name", "Grade 3A", "gradeLevel", "Grade 3", "academicYear", "2025-2026"))
-        .when()
-        .post("/api/v1/classes")
-        .then()
-        .log()
-        .ifValidationFails()
-        .statusCode(201)
-        .body("data.id", notNullValue())
-        .body("data.name", equalTo("Grade 3A"));
+  void create_withAdminToken_persistsAndReturns201() {
+    String createdId =
+        given()
+            .header("Authorization", "Bearer " + adminToken)
+            .contentType(ContentType.JSON)
+            .body(Map.of("name", "Grade 3A", "gradeLevel", "Grade 3", "academicYear", "2025-2026"))
+            .when()
+            .post("/api/v1/classes")
+            .then()
+            .log()
+            .ifValidationFails()
+            .statusCode(201)
+            .body("data.id", notNullValue())
+            .body("data.name", equalTo("Grade 3A"))
+            .extract()
+            .path("data.id");
+    org.assertj.core.api.Assertions.assertThat(classRepository.findById(UUID.fromString(createdId)))
+        .isPresent()
+        .get()
+        .extracting("schoolId", "name", "gradeLevel", "academicYear")
+        .containsExactly(schoolId, "Grade 3A", "Grade 3", "2025-2026");
   }
 
   @Test
@@ -200,6 +174,8 @@ class SchoolClassControllerTest extends AbstractIntegrationTest {
         .delete("/api/v1/classes/" + classId)
         .then()
         .statusCode(204);
+
+    org.assertj.core.api.Assertions.assertThat(classRepository.existsById(classId)).isFalse();
 
     // Verify gone
     given()

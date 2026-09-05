@@ -56,13 +56,15 @@ public class AuthorizationPolicy {
   }
 
   public void requireHomeworkRead(UUID homeworkId) {
-    if (has("HOMEWORK_READ") || relationships.isHomeworkAuthor(homeworkId)
+    if (has("HOMEWORK_READ")
+        || relationships.isHomeworkAuthor(homeworkId)
         || relationships.parentCanReadAttachment(homeworkId)) return;
     deny();
   }
 
   public void requireAnnouncementAccess(UUID announcementId) {
-    if (has("ANNOUNCEMENT_MANAGE") || relationships.isAnnouncementSender(announcementId)
+    if (has("ANNOUNCEMENT_MANAGE")
+        || relationships.isAnnouncementSender(announcementId)
         || relationships.parentReceivedAnnouncement(announcementId)) return;
     deny();
   }
@@ -83,7 +85,8 @@ public class AuthorizationPolicy {
   }
 
   public void requireAttachmentAccess(UUID attachmentId) {
-    if (has("ATTACHMENT_READ") || has("ATTACHMENT_DELETE")
+    if (has("ATTACHMENT_READ")
+        || has("ATTACHMENT_DELETE")
         || relationships.isAttachmentUploader(attachmentId)
         || relationships.parentCanReadAttachment(attachmentId)) return;
     deny();
@@ -117,8 +120,3 @@ public class AuthorizationPolicy {
     throw new AccessDeniedException("error.forbidden");
   }
 }
-
-
-
-
-

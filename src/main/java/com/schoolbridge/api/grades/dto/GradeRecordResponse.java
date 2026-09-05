@@ -18,4 +18,3 @@ public record GradeRecordResponse(
     String notes,
     Instant createdAt,
     Instant updatedAt) {}
-

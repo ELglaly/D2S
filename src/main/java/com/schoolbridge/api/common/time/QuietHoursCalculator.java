@@ -7,8 +7,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
- * Pure helpers for a quiet-hours window. Handles both same-day windows ({@code 13:00 â†’ 15:00}) and
- * the more common wrap-around windows ({@code 21:00 â†’ 07:00}). All decisions are made in the
+ * Pure helpers for a quiet-hours window. Handles both same-day windows ({@code 13:00 â†’ 15:00})
+ * and the more common wrap-around windows ({@code 21:00 â†’ 07:00}). All decisions are made in the
  * school-local timezone so DST transitions and Egypt's UTC+2/+3 swaps are correct out of the box.
  *
  * <p>A zero-length window ({@code start == end}) is treated as "never in window".
@@ -61,4 +61,3 @@ public final class QuietHoursCalculator {
     return ZonedDateTime.of(endDate, end, zone).toInstant();
   }
 }
-

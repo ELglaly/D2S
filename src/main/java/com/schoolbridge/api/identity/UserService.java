@@ -14,4 +14,3 @@ public interface UserService {
 
   UserResponse findById(UUID schoolId, UUID id);
 }
-

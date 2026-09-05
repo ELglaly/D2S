@@ -9,4 +9,3 @@ public interface OutboxPublisher {
 
   void publish(OutboxEvent event);
 }
-

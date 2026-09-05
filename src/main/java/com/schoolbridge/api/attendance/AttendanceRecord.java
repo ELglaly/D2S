@@ -133,4 +133,3 @@ public class AttendanceRecord extends TenantEntity {
     return alertSentAt;
   }
 }
-

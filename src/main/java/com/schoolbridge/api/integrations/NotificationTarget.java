@@ -6,8 +6,8 @@ import java.util.UUID;
  * Who a user-addressed notification is for.
  *
  * <p>Carries the user id, not just a phone number, because push is addressed by device token rather
- * than by phone â€” and because "was this parent notified" should have one answer keyed to a person,
- * not three answers keyed to whichever identifier a given channel happens to use.
+ * than by phone â€” and because "was this parent notified" should have one answer keyed to a
+ * person, not three answers keyed to whichever identifier a given channel happens to use.
  *
  * @param schoolId owning tenant; the device-token lookup is filtered by it
  * @param userId the recipient
@@ -20,4 +20,3 @@ public record NotificationTarget(UUID schoolId, UUID userId, String phone) {
     return phone != null && !phone.isBlank();
   }
 }
-

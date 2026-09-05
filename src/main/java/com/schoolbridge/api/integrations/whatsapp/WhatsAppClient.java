@@ -18,8 +18,8 @@ public interface WhatsAppClient {
    *
    * @param templateName the Meta template name (e.g. {@code parent_otp_v1})
    * @param recipientPhone E.164-formatted destination
-   * @param language template language (matches Meta's {@code language.code}; AR â†’ {@code ar}, EN â†’
-   *     {@code en})
+   * @param language template language (matches Meta's {@code language.code}; AR â†’ {@code ar}, EN
+   *     â†’ {@code en})
    * @param params positional body parameters substituted into the template's {@code {{1}}}, {@code
    *     {{2}}}, â€¦ slots, in order
    * @return the result with the provider message id on success
@@ -35,4 +35,3 @@ public interface WhatsAppClient {
    */
   MessageSendResult sendText(String recipientPhone, String body);
 }
-

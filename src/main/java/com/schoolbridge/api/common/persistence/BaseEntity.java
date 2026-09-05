@@ -59,4 +59,3 @@ public abstract class BaseEntity {
     return getClass().hashCode();
   }
 }
-

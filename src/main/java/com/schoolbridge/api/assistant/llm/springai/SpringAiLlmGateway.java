@@ -39,8 +39,8 @@ import org.springframework.stereotype.Component;
  *
  * <p><b>Tool execution stays external.</b> Tools are advertised to the model as {@link
  * ToolCallback} definitions, but {@code internalToolExecutionEnabled=false} stops Spring AI from
- * ever invoking them â€” the model's tool-call requests are returned in the {@link ChatResponse} and
- * handed back to the existing orchestrator, which keeps the role/permission checks and the
+ * ever invoking them â€” the model's tool-call requests are returned in the {@link ChatResponse}
+ * and handed back to the existing orchestrator, which keeps the role/permission checks and the
  * previewâ†’confirmâ†’execute gate intact. The advertised callbacks therefore throw if called.
  *
  * <p>Streaming uses the {@link LlmGateway#converseStreaming default} chunked implementation for now
@@ -232,4 +232,3 @@ public class SpringAiLlmGateway implements LlmGateway {
     }
   }
 }
-

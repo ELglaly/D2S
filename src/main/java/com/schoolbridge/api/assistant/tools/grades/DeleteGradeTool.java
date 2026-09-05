@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.grades;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -14,6 +12,7 @@ import com.schoolbridge.api.assistant.tools.support.NameMatching.MatchResult;
 import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.StudentResponse;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.grades.GradeService;
 import com.schoolbridge.api.grades.dto.GradeRecordResponse;
 import java.util.LinkedHashMap;
@@ -111,4 +110,3 @@ public class DeleteGradeTool extends AbstractActionTool {
     return ToolResult.ok(Map.of("deleted", true));
   }
 }
-

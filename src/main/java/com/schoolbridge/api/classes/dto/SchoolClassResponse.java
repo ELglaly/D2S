@@ -12,4 +12,3 @@ public record SchoolClassResponse(
     UUID homeroomTeacherId,
     Instant createdAt,
     Instant updatedAt) {}
-

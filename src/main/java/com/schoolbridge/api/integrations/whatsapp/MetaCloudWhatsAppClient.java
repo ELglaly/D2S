@@ -209,4 +209,3 @@ public class MetaCloudWhatsAppClient implements WhatsAppClient {
     record Message(String id) {}
   }
 }
-

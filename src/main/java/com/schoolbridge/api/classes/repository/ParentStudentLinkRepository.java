@@ -13,7 +13,8 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link ParentStudentLink}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for
+ * rationale.
  *
  * <p>The {@code findAllForXxxAnnouncementScope} queries return all (parent, student) pairs an
  * announcement should fan out to. They are used by M6's recipient materializer; staying on this
@@ -63,4 +64,3 @@ public interface ParentStudentLinkRepository extends JpaRepository<ParentStudent
   @Query("select l from ParentStudentLink l where l.studentId in :studentIds")
   List<ParentStudentLink> findAllByStudentIdIn(@Param("studentIds") Collection<UUID> studentIds);
 }
-

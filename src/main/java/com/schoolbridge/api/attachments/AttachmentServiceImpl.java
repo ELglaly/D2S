@@ -304,4 +304,3 @@ public class AttachmentServiceImpl implements AttachmentService {
     return base.trim().toLowerCase(java.util.Locale.ROOT);
   }
 }
-

@@ -14,4 +14,3 @@ public interface ClassSubjectService {
 
   void delete(UUID classSubjectId);
 }
-

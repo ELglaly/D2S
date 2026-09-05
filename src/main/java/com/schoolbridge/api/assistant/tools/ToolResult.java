@@ -43,4 +43,3 @@ public record ToolResult(Status status, Object data, String message) {
     return status == Status.OK;
   }
 }
-

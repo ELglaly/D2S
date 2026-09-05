@@ -16,6 +16,8 @@ import com.schoolbridge.api.identity.auth.dto.LoginRequest;
 import com.schoolbridge.api.identity.auth.dto.LogoutRequest;
 import com.schoolbridge.api.identity.auth.dto.RefreshRequest;
 import com.schoolbridge.api.identity.jwt.JwtService;
+import com.schoolbridge.api.tenant.SchoolRepository;
+import com.schoolbridge.api.tenant.SchoolStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
   private final JwtService jwtService;
   private final LoginRateLimiter rateLimiter;
   private final TenantSessionBinder sessionBinder;
+  private final SchoolRepository schoolRepository;
 
   public AuthServiceImpl(
       UserRepository userRepository,
@@ -46,7 +49,8 @@ public class AuthServiceImpl implements AuthService {
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
       LoginRateLimiter rateLimiter,
-      TenantSessionBinder sessionBinder) {
+      TenantSessionBinder sessionBinder,
+      SchoolRepository schoolRepository) {
     this.userRepository = userRepository;
     this.platformAdminRepository = platformAdminRepository;
     this.refreshTokenRepository = refreshTokenRepository;
@@ -54,6 +58,7 @@ public class AuthServiceImpl implements AuthService {
     this.jwtService = jwtService;
     this.rateLimiter = rateLimiter;
     this.sessionBinder = sessionBinder;
+    this.schoolRepository = schoolRepository;
   }
 
   @Override
@@ -79,6 +84,7 @@ public class AuthServiceImpl implements AuthService {
     Optional<User> user = sessionBinder.withBypass(() -> userRepository.findByEmail(email));
     if (user.isPresent()
         && user.get().getStatus() == UserStatus.ACTIVE
+        && isSchoolActive(user.get())
         && user.get().getPasswordHash() != null
         && passwordEncoder.matches(request.password(), user.get().getPasswordHash())) {
       rateLimiter.reset(email);
@@ -116,7 +122,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository
             .findById(stored.getSubjectId())
             .orElseThrow(() -> new AuthenticationException("error.auth.token_invalid"));
-    if (user.getStatus() != UserStatus.ACTIVE) {
+    if (user.getStatus() != UserStatus.ACTIVE || !isSchoolActive(user)) {
       throw new AuthenticationException("error.auth.token_invalid");
     }
     return rotateAndIssue(stored, issueForUser(user));
@@ -138,6 +144,13 @@ public class AuthServiceImpl implements AuthService {
     String refresh = persistRefresh(SubjectKind.PLATFORM_ADMIN, admin.getId());
     return AuthResponse.bearer(
         access, refresh, Instant.now().plus(jwtService.accessTtl()), "SUPER_ADMIN");
+  }
+
+  private boolean isSchoolActive(User user) {
+    return schoolRepository
+        .findById(user.getSchoolId())
+        .map(school -> school.getStatus() == SchoolStatus.ACTIVE)
+        .orElse(false);
   }
 
   private AuthResponse issueForUser(User user) {
@@ -164,4 +177,3 @@ public class AuthServiceImpl implements AuthService {
     return fresh;
   }
 }
-

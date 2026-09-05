@@ -35,4 +35,3 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByPhoneHash(String phoneHash);
 }
-

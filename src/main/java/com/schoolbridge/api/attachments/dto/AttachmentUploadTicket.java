@@ -24,4 +24,3 @@ public record AttachmentUploadTicket(
     String method,
     Map<String, String> requiredHeaders,
     Instant expiresAt) {}
-

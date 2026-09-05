@@ -14,4 +14,3 @@ public record StudentResponse(
     StudentStatus status,
     Instant createdAt,
     Instant updatedAt) {}
-

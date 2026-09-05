@@ -11,4 +11,3 @@ public class ValidationException extends ApplicationException {
     super(ErrorType.VALIDATION, ErrorType.VALIDATION.defaultMessageKey());
   }
 }
-

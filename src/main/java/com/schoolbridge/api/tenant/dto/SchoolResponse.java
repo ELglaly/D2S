@@ -16,4 +16,3 @@ public record SchoolResponse(
     SchoolSettingsResponse settings,
     Instant createdAt,
     Instant updatedAt) {}
-

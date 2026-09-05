@@ -12,4 +12,3 @@ public record UpdateHomeworkRequest(
     @NotBlank @Size(max = 4000) String description,
     @Size(max = 512) String attachmentKey,
     @NotNull @Future LocalDate dueDate) {}
-

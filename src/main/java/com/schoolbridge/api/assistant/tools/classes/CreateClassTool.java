@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.classes;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -13,6 +11,7 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.CreateSchoolClassRequest;
 import com.schoolbridge.api.classes.service.SchoolClassService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.dto.UserResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -126,4 +125,3 @@ public class CreateClassTool extends AbstractActionTool {
     return ToolResult.ok(classes.create(ctx.schoolId(), request));
   }
 }
-

@@ -22,4 +22,3 @@ public class ConfirmationTokenService {
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 }
-

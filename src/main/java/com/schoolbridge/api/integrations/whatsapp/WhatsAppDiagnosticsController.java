@@ -1,11 +1,11 @@
 package com.schoolbridge.api.integrations.whatsapp;
 
 import com.schoolbridge.api.announcements.enums.Language;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.integrations.DispatchRequest;
 import com.schoolbridge.api.integrations.DispatchResult;
 import com.schoolbridge.api.integrations.NotificationDispatcher;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.ArrayList;
@@ -195,4 +195,3 @@ public class WhatsAppDiagnosticsController {
   record PhoneNumberInfo(
       String display_phone_number, String verified_name, String quality_rating) {}
 }
-

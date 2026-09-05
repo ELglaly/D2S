@@ -4,14 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.common.crypto.BlindIndexHasher;
-import com.schoolbridge.api.identity.User;
-import com.schoolbridge.api.identity.UserRepository;
 import com.schoolbridge.api.identity.otp.OtpDispatcher;
-import com.schoolbridge.api.tenant.School;
-import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import java.util.Map;
@@ -26,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.jdbc.Sql;
 
 /**
  * Caps OTP requests per phone number.
@@ -39,38 +33,31 @@ import org.springframework.data.redis.core.StringRedisTemplate;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"schoolbridge.otp.max-requests-per-hour=3"})
 @Import(OtpRequestRateLimitIntegrationTest.CountingConfig.class)
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/otp-rate-parent.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class OtpRequestRateLimitIntegrationTest extends AbstractIntegrationTest {
 
   private static final String PHONE = "+201555000111";
 
   @LocalServerPort int port;
-  @Autowired UserRepository userRepository;
-  @Autowired SchoolRepository schoolRepository;
-  @Autowired BlindIndexHasher blindIndex;
   @Autowired StringRedisTemplate redis;
   @Autowired CountingOtpDispatcher dispatcher;
 
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    userRepository.deleteAll();
-    schoolRepository.deleteAll();
     dispatcher.count.set(0);
     // The limiter keys on the blind-index hash, so clear those keys rather than the whole database.
-    String hash = blindIndex.hash(PHONE);
-    redis.delete("otp:req:h:" + hash);
-    redis.delete("otp:req:d:" + hash);
-
-    School school =
-        schoolRepository.save(
-            new School(
-                "OTP Cap School",
-                "EG",
-                "Africa/Cairo",
-                "ar-EG",
-                SubscriptionTier.STANDARD,
-                SchoolSettings.defaults()));
-    userRepository.save(User.parent(school.getId(), "Parent", PHONE, blindIndex.hash(PHONE)));
+    redis.delete("otp:req:h:VYG9gbbPFuiczKAuzuzAnYPeUExPJHJ8DnOO6Fjp+Jc=");
+    redis.delete("otp:req:d:VYG9gbbPFuiczKAuzuzAnYPeUExPJHJ8DnOO6Fjp+Jc=");
   }
 
   private int requestOtp(String phone) {

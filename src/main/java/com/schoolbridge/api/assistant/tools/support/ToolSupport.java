@@ -124,4 +124,3 @@ public class ToolSupport {
     return body.length() <= SNIPPET ? body : body.substring(0, SNIPPET) + "â€¦";
   }
 }
-

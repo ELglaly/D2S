@@ -30,4 +30,3 @@ public record ApiResponse<T>(T data, PageMeta meta) {
     return new ApiResponse<>(page.content(), meta);
   }
 }
-

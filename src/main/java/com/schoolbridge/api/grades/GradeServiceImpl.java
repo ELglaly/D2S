@@ -134,4 +134,3 @@ public class GradeServiceImpl implements GradeService {
         .orElseThrow(() -> new NotFoundException("error.grade.not_found", id));
   }
 }
-

@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/schoolbridge
+    url: jdbc:postgresql://localhost:5434/schoolbridge
     username: postgres
-    password: wasla
+    password: postgres
   data:
     redis:
       host: localhost

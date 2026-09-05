@@ -301,4 +301,3 @@ public class HomeworkReminderServiceImpl implements HomeworkReminderService {
     };
   }
 }
-

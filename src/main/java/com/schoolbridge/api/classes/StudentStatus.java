@@ -7,4 +7,3 @@ public enum StudentStatus {
   GRADUATED,
   SUSPENDED
 }
-

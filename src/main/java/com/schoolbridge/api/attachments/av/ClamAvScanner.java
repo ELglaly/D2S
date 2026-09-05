@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
  *   &lt;- "stream: OK\0"  |  "stream: &lt;Name&gt; FOUND\0"  |  "... ERROR\0"
  * </pre>
  *
- * <p>The body is forwarded chunk by chunk and never held whole in memory â€” at the configured upload
- * cap, buffering per concurrent upload is how a scanner turns into an availability problem.
+ * <p>The body is forwarded chunk by chunk and never held whole in memory â€” at the configured
+ * upload cap, buffering per concurrent upload is how a scanner turns into an availability problem.
  *
  * <p>A scanner that cannot be reached throws rather than returning clean. Failing the upload is the
  * correct direction: an attachment that is stored but unscanned would still be downloadable, which
@@ -113,4 +113,3 @@ public class ClamAvScanner implements AvScanner {
     throw new IntegrationException("error.attachment.av_unavailable");
   }
 }
-

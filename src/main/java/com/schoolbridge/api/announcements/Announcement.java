@@ -134,4 +134,3 @@ public class Announcement extends TenantEntity {
     return status;
   }
 }
-

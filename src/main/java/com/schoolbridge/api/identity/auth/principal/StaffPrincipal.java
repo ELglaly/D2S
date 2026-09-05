@@ -5,4 +5,3 @@ import java.util.UUID;
 
 public record StaffPrincipal(UUID userId, UUID schoolId, UserRole role)
     implements SchoolScopedPrincipal {}
-

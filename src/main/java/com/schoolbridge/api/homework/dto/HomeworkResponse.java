@@ -21,4 +21,3 @@ public record HomeworkResponse(
     Instant reminderSentAt,
     Instant createdAt,
     Instant updatedAt) {}
-

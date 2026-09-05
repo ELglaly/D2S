@@ -42,4 +42,3 @@ public class PermissionEntity {
     return description;
   }
 }
-

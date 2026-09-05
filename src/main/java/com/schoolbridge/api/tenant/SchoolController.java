@@ -1,12 +1,12 @@
 package com.schoolbridge.api.tenant;
 
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.tenant.dto.CreateSchoolRequest;
 import com.schoolbridge.api.tenant.dto.SchoolResponse;
 import com.schoolbridge.api.tenant.dto.SchoolSettingsRequest;
 import com.schoolbridge.api.tenant.dto.SchoolSettingsResponse;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -152,4 +152,3 @@ public class SchoolController {
     return ResponseEntity.noContent().build();
   }
 }
-

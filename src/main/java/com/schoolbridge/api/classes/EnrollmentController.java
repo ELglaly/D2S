@@ -3,9 +3,9 @@ package com.schoolbridge.api.classes;
 import com.schoolbridge.api.classes.dto.EnrollStudentRequest;
 import com.schoolbridge.api.classes.dto.EnrollmentResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
-import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.common.security.authz.RequirePermission;
+import com.schoolbridge.api.common.web.ApiConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,7 +15,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -90,4 +89,3 @@ public class EnrollmentController {
     return ResponseEntity.noContent().build();
   }
 }
-

@@ -75,4 +75,3 @@ public class DeviceToken extends TenantEntity {
     return active;
   }
 }
-

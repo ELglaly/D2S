@@ -9,4 +9,3 @@ public interface OtpDispatcher {
 
   void dispatch(String phone, String code);
 }
-

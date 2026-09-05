@@ -91,4 +91,3 @@ public class ConversationMessage extends TenantEntity {
     return outputTokens;
   }
 }
-

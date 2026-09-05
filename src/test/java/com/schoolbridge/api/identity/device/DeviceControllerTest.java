@@ -5,80 +5,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.identity.User;
-import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
-import com.schoolbridge.api.identity.jwt.JwtService;
-import com.schoolbridge.api.tenant.School;
-import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
-import io.restassured.RestAssured;
+import com.schoolbridge.api.SqlIntegrationTest;
 import io.restassured.http.ContentType;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class DeviceControllerTest extends AbstractIntegrationTest {
+class DeviceControllerTest extends SqlIntegrationTest {
 
-  @LocalServerPort int port;
-
-  @Autowired DeviceTokenRepository deviceTokenRepository;
-  @Autowired UserRepository userRepository;
-  @Autowired SchoolRepository schoolRepository;
-  @Autowired PasswordEncoder passwordEncoder;
-  @Autowired JwtService jwtService;
-  @Autowired TransactionTemplate tx;
-
-  private UUID schoolId;
-  private UUID adminId;
+  @Autowired JdbcTemplate jdbc;
   private String adminToken;
 
   @BeforeEach
   void setUp() {
-    RestAssured.port = port;
-    tx.executeWithoutResult(s -> deviceTokenRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "Device Test School",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-
-    adminId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.SCHOOL_ADMIN,
-                            "Admin",
-                            "admin@device.test",
-                            passwordEncoder.encode("pass")))
-                    .getId());
-    adminToken =
-        jwtService.issueAccess(
-            adminId.toString(),
-            Map.of("kind", "USER", "schoolId", schoolId.toString(), "role", "SCHOOL_ADMIN"));
+    adminToken = login("school-admin@fixture.test", "password");
   }
 
   @Test
@@ -119,14 +61,16 @@ class DeviceControllerTest extends AbstractIntegrationTest {
         .then()
         .statusCode(200);
 
-    // Exactly one row: upsert, not insert
-    long count =
-        tx.execute(
-            s ->
-                deviceTokenRepository.findAll().stream()
-                    .filter(d -> "dev-upsert".equals(d.getDeviceId()))
-                    .count());
-    assertThat(count).isEqualTo(1L);
+    assertThat(
+            jdbc.queryForObject(
+                "select count(*) from device_tokens where device_id = ?", Long.class, "dev-upsert"))
+        .isEqualTo(1L);
+    assertThat(
+            jdbc.queryForObject(
+                "select fcm_token from device_tokens where device_id = ?",
+                String.class,
+                "dev-upsert"))
+        .isEqualTo("fcm-new-token");
   }
 
   @Test
@@ -169,6 +113,13 @@ class DeviceControllerTest extends AbstractIntegrationTest {
         .delete("/api/v1/devices/dev-to-delete")
         .then()
         .statusCode(204);
+
+    assertThat(
+            jdbc.queryForObject(
+                "select active from device_tokens where device_id = ?",
+                Boolean.class,
+                "dev-to-delete"))
+        .isFalse();
   }
 
   @Test
@@ -179,5 +130,25 @@ class DeviceControllerTest extends AbstractIntegrationTest {
         .delete("/api/v1/devices/does-not-exist")
         .then()
         .statusCode(404);
+  }
+
+  @Test
+  void anotherAuthenticatedUserCannotDeregisterOwnersDevice() {
+    given()
+        .header("Authorization", "Bearer " + adminToken)
+        .contentType(ContentType.JSON)
+        .body(Map.of("platform", "ANDROID", "fcmToken", "fcm-owned", "deviceId", "owner-device"))
+        .post("/api/v1/devices/register")
+        .then()
+        .statusCode(200);
+
+    String teacherToken = login("teacher@fixture.test", "password");
+    authenticated(teacherToken).delete("/api/v1/devices/owner-device").then().statusCode(404);
+    assertThat(
+            jdbc.queryForObject(
+                "select active from device_tokens where device_id = ?",
+                Boolean.class,
+                "owner-device"))
+        .isTrue();
   }
 }

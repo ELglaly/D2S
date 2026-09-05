@@ -20,4 +20,3 @@ public record PendingAction(
     boolean destructive,
     Instant createdAt,
     Instant expiresAt) {}
-

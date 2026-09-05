@@ -13,9 +13,9 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link HomeworkRecipient}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
- * The webhook lookup {@link #findByMessageId} is intentionally global (no tenant binding) â€” Meta
- * only echoes statuses for message ids we issued.
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for
+ * rationale. The webhook lookup {@link #findByMessageId} is intentionally global (no tenant
+ * binding) â€” Meta only echoes statuses for message ids we issued.
  */
 public interface HomeworkRecipientRepository extends JpaRepository<HomeworkRecipient, UUID> {
 
@@ -76,4 +76,3 @@ public interface HomeworkRecipientRepository extends JpaRepository<HomeworkRecip
   @Query("select r from HomeworkRecipient r where r.messageId = :messageId")
   Optional<HomeworkRecipient> findByMessageId(@Param("messageId") String messageId);
 }
-

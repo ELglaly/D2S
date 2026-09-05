@@ -27,4 +27,3 @@ public record ConfirmResult(String status, String message, Object data) {
     return new ConfirmResult("INVALID", message, null);
   }
 }
-

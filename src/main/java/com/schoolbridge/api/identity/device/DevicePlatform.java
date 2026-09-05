@@ -5,4 +5,3 @@ public enum DevicePlatform {
   ANDROID,
   IOS
 }
-

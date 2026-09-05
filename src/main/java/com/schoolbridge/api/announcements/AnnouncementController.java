@@ -7,13 +7,13 @@ import com.schoolbridge.api.announcements.enums.AnnouncementStatus;
 import com.schoolbridge.api.announcements.service.AnnouncementService;
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.security.AuthorizationPolicy;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -102,7 +102,9 @@ public class AnnouncementController {
   }
 
   @GetMapping("/{id}")
-  @RequirePermission(Permission.ANNOUNCEMENT_SEND)
+  @RequirePermission(
+      value = {Permission.ANNOUNCEMENT_SEND, Permission.ANNOUNCEMENT_READ},
+      mode = RequirePermission.Mode.ANY)
   @Operation(summary = "Get announcement", description = "Returns a single announcement by ID.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Announcement found"),
@@ -193,4 +195,3 @@ public class AnnouncementController {
     return parent;
   }
 }
-

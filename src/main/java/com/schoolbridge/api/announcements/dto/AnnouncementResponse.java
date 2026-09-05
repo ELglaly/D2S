@@ -21,4 +21,3 @@ public record AnnouncementResponse(
     long recipientCount,
     Instant createdAt,
     Instant updatedAt) {}
-

@@ -22,4 +22,3 @@ public interface GradeService {
 
   void delete(UUID id);
 }
-

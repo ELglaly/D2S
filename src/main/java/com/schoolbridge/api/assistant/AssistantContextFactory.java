@@ -34,4 +34,3 @@ public class AssistantContextFactory {
     throw new TenantSecurityException();
   }
 }
-

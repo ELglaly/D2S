@@ -4,22 +4,15 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.classes.entity.Student;
+import com.schoolbridge.api.SqlIntegrationTest;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.StudentRepository;
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
-import com.schoolbridge.api.identity.User;
 import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.jwt.JwtService;
-import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,10 +21,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ParentStudentLinkControllerTest extends AbstractIntegrationTest {
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/auth-principals.sql",
+      "classpath:sql/fixtures/classes/academic-roster.sql",
+      "classpath:sql/fixtures/classes/parent-children.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+class ParentStudentLinkControllerTest extends SqlIntegrationTest {
 
   @LocalServerPort int port;
   @Autowired ParentStudentLinkRepository linkRepository;
@@ -51,60 +57,10 @@ class ParentStudentLinkControllerTest extends AbstractIntegrationTest {
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    tx.executeWithoutResult(s -> linkRepository.deleteAll());
-    tx.executeWithoutResult(s -> studentRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "Test School",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-
-    studentId =
-        tx.execute(
-            s ->
-                studentRepository
-                    .save(new Student(schoolId, "Ahmed Mohamed", LocalDate.of(2015, 3, 15), null))
-                    .getId());
-
-    parentId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.parent(
-                            schoolId,
-                            "Parent User",
-                            "+201009990002",
-                            blindIndex.hash("+201009990002")))
-                    .getId());
-
-    UUID adminId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.SCHOOL_ADMIN,
-                            "Admin",
-                            "admin@parentlink.test",
-                            passwordEncoder.encode("pass")))
-                    .getId());
-    adminToken =
-        jwtService.issueAccess(
-            adminId.toString(),
-            Map.of("kind", "USER", "schoolId", schoolId.toString(), "role", "SCHOOL_ADMIN"));
+    schoolId = UUID.fromString("10000000-0000-0000-0000-000000000001");
+    studentId = UUID.fromString("30000000-0000-0000-0000-000000000011");
+    parentId = UUID.fromString("20000000-0000-0000-0000-000000000014");
+    adminToken = login("school-admin@fixture.test", "password");
   }
 
   @Test

@@ -6,9 +6,9 @@ import com.schoolbridge.api.announcements.repository.AnnouncementRepository;
 import com.schoolbridge.api.attachments.AttachmentRepository;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
+import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
 import com.schoolbridge.api.homework.HomeworkItemRepository;
 import com.schoolbridge.api.homework.HomeworkRecipientRepository;
-import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import com.schoolbridge.api.subjects.TeacherSubjectAssignmentRepository;
@@ -112,12 +112,16 @@ public class PermissionsHelper {
    */
   public boolean canSendAnnouncementToScope(AnnouncementScope scopeType, String scopeValue) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null || scopeType == null || !(auth.getPrincipal() instanceof StaffPrincipal staff)) {
+    if (auth == null
+        || scopeType == null
+        || !(auth.getPrincipal() instanceof StaffPrincipal staff)) {
       return false;
     }
     var granted = effectivePermissions.permissionsForRole(staff.role());
     if (granted.contains("ANNOUNCEMENT_MANAGE")) return true;
-    if (!granted.contains("ANNOUNCEMENT_SEND") || scopeType != AnnouncementScope.CLASS || scopeValue == null) return false;
+    if (!granted.contains("ANNOUNCEMENT_SEND")
+        || scopeType != AnnouncementScope.CLASS
+        || scopeValue == null) return false;
     try {
       return teacherTeaches(UUID.fromString(scopeValue));
     } catch (IllegalArgumentException ex) {
@@ -211,4 +215,3 @@ public class PermissionsHelper {
         || announcementRecipients.existsForParentAndAttachment(parent.userId(), reference);
   }
 }
-

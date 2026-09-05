@@ -54,4 +54,3 @@ public class PlatformAdmin extends BaseEntity {
     return status;
   }
 }
-

@@ -40,4 +40,3 @@ public class TeacherSubjectAssignment extends TenantEntity {
     return subjectId;
   }
 }
-

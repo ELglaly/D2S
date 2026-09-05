@@ -15,4 +15,3 @@ public record JwtProperties(
     Duration refreshTtl,
     String issuer,
     String kid) {}
-

@@ -27,4 +27,3 @@ public record KnowledgeDocumentResponse(
         doc.getCreatedAt());
   }
 }
-

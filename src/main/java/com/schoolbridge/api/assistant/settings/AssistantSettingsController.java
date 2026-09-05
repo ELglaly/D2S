@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * SCHOOL_ADMIN-only management of the tenant's editable assistant persona. The immutable security
- * guardrails are never exposed or editable here Ã¢â‚¬â€ they are always appended at prompt-build time.
+ * guardrails are never exposed or editable here Ã¢â‚¬â€ they are always appended at prompt-build
+ * time.
  */
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/assistant/settings")
@@ -55,4 +56,3 @@ public class AssistantSettingsController {
     return new AssistantSettingsResponse(persona, persona == null || persona.isBlank());
   }
 }
-

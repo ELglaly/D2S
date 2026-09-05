@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
  *
  * <p>The verification MUST operate on the EXACT bytes Meta sent; the controller therefore consumes
  * {@code @RequestBody byte[]} (Spring's {@code ByteArrayHttpMessageConverter}) before any JSON
- * parsing happens â€” see {@code feedback_outbox_audit_mapof_npe} for why "operate on the wire bytes"
- * is the only safe path here.
+ * parsing happens â€” see {@code feedback_outbox_audit_mapof_npe} for why "operate on the wire
+ * bytes" is the only safe path here.
  */
 @Component
 public class WebhookSignatureVerifier {
@@ -58,4 +58,3 @@ public class WebhookSignatureVerifier {
     }
   }
 }
-

@@ -12,4 +12,3 @@ public class DisabledLlmGateway implements LlmGateway {
     throw new IllegalStateException("Assistant is disabled (schoolbridge.assistant.enabled=false)");
   }
 }
-

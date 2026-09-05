@@ -18,4 +18,3 @@ public interface PushNotificationClient {
    */
   PushSendResult send(String fcmToken, String title, String body, Map<String, String> data);
 }
-

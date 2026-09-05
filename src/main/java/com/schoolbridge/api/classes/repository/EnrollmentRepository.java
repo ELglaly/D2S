@@ -11,7 +11,8 @@ import org.springframework.data.repository.query.Param;
 /**
  * Tenant-scoped repository for {@link Enrollment}.
  *
- * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for rationale.
+ * <p>{@link #findById} is overridden with explicit JPQL â€” see {@code UserRepository} for
+ * rationale.
  */
 public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
 
@@ -25,4 +26,3 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
 
   boolean existsByStudentIdAndClassId(UUID studentId, UUID classId);
 }
-

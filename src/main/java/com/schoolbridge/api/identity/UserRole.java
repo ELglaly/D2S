@@ -7,4 +7,3 @@ public enum UserRole {
   TEACHER,
   PARENT
 }
-

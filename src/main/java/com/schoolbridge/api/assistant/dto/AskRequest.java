@@ -9,4 +9,3 @@ import jakarta.validation.constraints.Size;
  */
 public record AskRequest(
     @NotBlank @Size(max = 500) String question, @Size(max = 8) String language) {}
-

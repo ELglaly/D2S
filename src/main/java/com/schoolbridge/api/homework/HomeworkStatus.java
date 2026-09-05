@@ -5,4 +5,3 @@ public enum HomeworkStatus {
   PUBLISHED,
   ARCHIVED
 }
-

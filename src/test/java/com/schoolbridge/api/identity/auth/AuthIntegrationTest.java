@@ -6,17 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.identity.PlatformAdmin;
-import com.schoolbridge.api.identity.PlatformAdminRepository;
-import com.schoolbridge.api.identity.RefreshTokenRepository;
-import com.schoolbridge.api.identity.User;
-import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.jwt.JwtService;
-import com.schoolbridge.api.tenant.School;
-import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -27,27 +17,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/auth-principals.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class AuthIntegrationTest extends AbstractIntegrationTest {
 
   @LocalServerPort int port;
-  @Autowired UserRepository userRepository;
-  @Autowired PlatformAdminRepository platformAdminRepository;
-  @Autowired RefreshTokenRepository refreshTokenRepository;
-  @Autowired SchoolRepository schoolRepository;
-  @Autowired PasswordEncoder passwordEncoder;
   @Autowired JwtService jwtService;
   @Autowired StringRedisTemplate redis;
+  @Autowired JdbcTemplate jdbc;
 
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    refreshTokenRepository.deleteAll();
-    userRepository.deleteAll();
-    platformAdminRepository.deleteAll();
-    schoolRepository.deleteAll();
     // Reset rate-limit counters from prior tests.
     var keys = redis.keys("login:fail:*");
     if (keys != null && !keys.isEmpty()) {
@@ -57,12 +50,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void login_validPlatformAdmin_returnsTokens() {
-    PlatformAdmin admin = seedPlatformAdmin("admin@platform.test", "correct-horse-staple");
-
     Response response =
         given()
             .contentType(ContentType.JSON)
-            .body(Map.of("email", admin.getEmail(), "password", "correct-horse-staple"))
+            .body(Map.of("email", "admin@platform.test", "password", "password"))
             .when()
             .post("/api/v1/auth/login")
             .then()
@@ -83,13 +74,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void login_validStaffUser_returnsTokensWithSchoolId() {
-    School school = seedSchool();
-    seedStaffUser(school.getId(), "teacher@x.test", "p@ssword", UserRole.TEACHER);
-
     Response response =
         given()
             .contentType(ContentType.JSON)
-            .body(Map.of("email", "teacher@x.test", "password", "p@ssword"))
+            .body(Map.of("email", "teacher@x.test", "password", "password"))
             .when()
             .post("/api/v1/auth/login")
             .then()
@@ -103,12 +91,12 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     var claims = jwtService.parse(response.path("data.accessToken"));
     assertThat(claims.get("kind", String.class)).isEqualTo("USER");
     assertThat(claims.get("role", String.class)).isEqualTo("TEACHER");
-    assertThat(claims.get("schoolId", String.class)).isEqualTo(school.getId().toString());
+    assertThat(claims.get("schoolId", String.class))
+        .isEqualTo("10000000-0000-0000-0000-000000000001");
   }
 
   @Test
   void login_badPassword_returns401() {
-    seedPlatformAdmin("admin2@platform.test", "right-password");
     given()
         .contentType(ContentType.JSON)
         .body(Map.of("email", "admin2@platform.test", "password", "wrong-password"))
@@ -132,8 +120,6 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void login_sixthAttempt_isRateLimited() {
-    seedPlatformAdmin("admin3@platform.test", "right-password");
-
     // Five bad attempts → all 401, counter reaches 5.
     for (int i = 0; i < 5; i++) {
       given()
@@ -147,7 +133,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     // Sixth attempt — limiter trips before credentials are even checked.
     given()
         .contentType(ContentType.JSON)
-        .body(Map.of("email", "admin3@platform.test", "password", "right-password"))
+        .body(Map.of("email", "admin3@platform.test", "password", "password"))
         .when()
         .post("/api/v1/auth/login")
         .then()
@@ -157,11 +143,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void refresh_rotatesAndRevokesOldToken() {
-    seedPlatformAdmin("admin4@platform.test", "admin-password");
     Response login =
         given()
             .contentType(ContentType.JSON)
-            .body(Map.of("email", "admin4@platform.test", "password", "admin-password"))
+            .body(Map.of("email", "admin4@platform.test", "password", "password"))
             .when()
             .post("/api/v1/auth/login")
             .then()
@@ -182,6 +167,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
             .response();
     String secondRefresh = refreshed.path("data.refreshToken");
     assertThat(secondRefresh).isNotEqualTo(firstRefresh);
+    assertThat(
+            jdbc.queryForObject(
+                "select count(*) from refresh_tokens where revoked_at is not null", Long.class))
+        .isEqualTo(1L);
 
     // Replaying the original refresh must be rejected — it's been marked revoked.
     given()
@@ -195,11 +184,10 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void logout_revokesRefreshToken() {
-    seedPlatformAdmin("admin5@platform.test", "admin-password");
     Response login =
         given()
             .contentType(ContentType.JSON)
-            .body(Map.of("email", "admin5@platform.test", "password", "admin-password"))
+            .body(Map.of("email", "admin5@platform.test", "password", "password"))
             .when()
             .post("/api/v1/auth/login")
             .then()
@@ -224,25 +212,43 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         .statusCode(401);
   }
 
-  private PlatformAdmin seedPlatformAdmin(String email, String password) {
-    return platformAdminRepository.save(
-        new PlatformAdmin(email, passwordEncoder.encode(password), "Test Admin"));
+  @Test
+  void malformedAndInvalidRefreshRequestsReturnExpectedErrors() {
+    given()
+        .contentType(ContentType.JSON)
+        .body(Map.of("email", "not-an-email", "password", "x"))
+        .post("/api/v1/auth/login")
+        .then()
+        .statusCode(422);
+    given()
+        .contentType(ContentType.JSON)
+        .body(Map.of("refreshToken", "not-a-real-token"))
+        .post("/api/v1/auth/refresh")
+        .then()
+        .statusCode(401);
   }
 
-  private School seedSchool() {
-    return schoolRepository.save(
-        new School(
-            "Test School",
-            "EG",
-            "Africa/Cairo",
-            "ar-EG",
-            SubscriptionTier.STANDARD,
-            SchoolSettings.defaults()));
-  }
+  @Test
+  void expiredRefreshTokenIsRejectedAndItsPersistedStateIsVisible() {
+    Response login =
+        given()
+            .contentType(ContentType.JSON)
+            .body(Map.of("email", "admin@platform.test", "password", "password"))
+            .post("/api/v1/auth/login")
+            .then()
+            .statusCode(200)
+            .extract()
+            .response();
+    String refresh = login.path("data.refreshToken");
+    jdbc.update(
+        "update refresh_tokens set expires_at = current_timestamp - interval '1 second' where token_hash = ?",
+        jwtService.hashRefresh(refresh));
 
-  private User seedStaffUser(
-      java.util.UUID schoolId, String email, String password, UserRole role) {
-    return userRepository.save(
-        User.staff(schoolId, role, "Test " + role, email, passwordEncoder.encode(password)));
+    given()
+        .contentType(ContentType.JSON)
+        .body(Map.of("refreshToken", refresh))
+        .post("/api/v1/auth/refresh")
+        .then()
+        .statusCode(401);
   }
 }

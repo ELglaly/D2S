@@ -9,4 +9,3 @@ public record VerifyOtpResponse(
     return new VerifyOtpResponse(token, schoolId, "Bearer", 86_400L);
   }
 }
-

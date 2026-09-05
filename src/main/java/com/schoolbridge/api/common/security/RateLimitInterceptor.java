@@ -14,7 +14,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
  *
  * <p>Before this, 96 of 99 endpoints had no rate limit at all: only {@code POST /auth/login} and
  * the two assistant endpoints were protected. Everything else â€” enumerate students, replay
- * announcement reads, hammer attendance writes â€” was bounded only by how fast a client could send.
+ * announcement reads, hammer attendance writes â€” was bounded only by how fast a client could
+ * send.
  *
  * <p>Deliberately a {@link HandlerInterceptor} and not a servlet {@code Filter}. An exception
  * thrown from a filter escapes Spring MVC entirely and renders as a container error page, losing
@@ -37,9 +38,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
  * something this class solves. Public endpoints, which are the ones that do real work while
  * unauthenticated, are fully covered.
  *
- * <p>The counter is a fixed window rather than a sliding one: it permits a 2Ã— burst across a window
- * boundary, which is an acceptable trade for one Redis {@code INCR} per request on the hot path.
- * Tighten it only if abuse actually exploits the boundary.
+ * <p>The counter is a fixed window rather than a sliding one: it permits a 2Ã— burst across a
+ * window boundary, which is an acceptable trade for one Redis {@code INCR} per request on the hot
+ * path. Tighten it only if abuse actually exploits the boundary.
  */
 public class RateLimitInterceptor implements HandlerInterceptor {
 
@@ -95,4 +96,3 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     return request.getRemoteAddr();
   }
 }
-

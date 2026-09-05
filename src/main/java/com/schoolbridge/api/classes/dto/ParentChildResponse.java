@@ -14,4 +14,3 @@ public record ParentChildResponse(
     RelationshipType relationship,
     boolean primaryContact,
     List<ChildClassSummary> classes) {}
-

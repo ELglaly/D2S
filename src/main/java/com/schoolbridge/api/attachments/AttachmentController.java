@@ -6,11 +6,11 @@ import com.schoolbridge.api.attachments.dto.AttachmentUploadTicket;
 import com.schoolbridge.api.attachments.dto.CreateAttachmentRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.security.AuthorizationPolicy;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,8 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>No endpoint here accepts or returns file bytes. Uploads are a presigned PUT the client
  * performs against object storage; downloads are a short-lived presigned GET. Serving user files
  * from this origin would put a stored-XSS or content-sniffing bug inside the API's own security
- * origin, against an already-authenticated session ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â see {@code docs/PLAN_FILE_UPLOAD.md} section
- * 2.
+ * origin, against an already-authenticated session.
  */
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/attachments")
@@ -162,4 +161,3 @@ public class AttachmentController {
     return staff;
   }
 }
-

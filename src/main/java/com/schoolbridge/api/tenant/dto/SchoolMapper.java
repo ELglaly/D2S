@@ -54,4 +54,3 @@ public class SchoolMapper {
         request.rosterDueByLocalTime());
   }
 }
-

@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.attendance;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -14,6 +12,7 @@ import com.schoolbridge.api.attendance.AttendanceService;
 import com.schoolbridge.api.attendance.AttendanceStatus;
 import com.schoolbridge.api.classes.dto.ParentChildResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
@@ -97,4 +96,3 @@ public class GetChildAbsenceCountTool implements ReadTool {
     }
   }
 }
-

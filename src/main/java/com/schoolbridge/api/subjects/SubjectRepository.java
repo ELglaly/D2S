@@ -24,4 +24,3 @@ public interface SubjectRepository extends JpaRepository<Subject, UUID> {
 
   boolean existsByNameAndSchoolId(String name, UUID schoolId);
 }
-

@@ -7,6 +7,7 @@ import com.schoolbridge.api.AbstractIntegrationTest;
 import com.schoolbridge.api.assistant.tools.Tool;
 import com.schoolbridge.api.assistant.tools.ToolAuthorizer;
 import com.schoolbridge.api.assistant.tools.ToolContext;
+import com.schoolbridge.api.assistant.tools.ToolKind;
 import com.schoolbridge.api.assistant.tools.ToolRegistry;
 import com.schoolbridge.api.common.security.authz.Permission;
 import com.schoolbridge.api.identity.UserRole;
@@ -93,7 +94,7 @@ class AssistantToolAuthorizationOracleTest extends AbstractIntegrationTest {
 
   @Test
   void everyRoleSeesExactlyTheToolsItHoldsAPermissionFor() {
-    ToolRegistry registry = new ToolRegistry(tools, authorizer, true);
+    ToolRegistry registry = new ToolRegistry(tools, authorizer);
     for (UserRole role : List.of(UserRole.PARENT, UserRole.TEACHER, UserRole.SCHOOL_ADMIN)) {
       Set<String> visible =
           registry.toolsFor(ctx(role)).stream().map(Tool::name).collect(Collectors.toSet());
@@ -105,17 +106,23 @@ class AssistantToolAuthorizationOracleTest extends AbstractIntegrationTest {
 
   @Test
   void superAdminSeesEveryTool() {
-    ToolRegistry registry = new ToolRegistry(tools, authorizer, true);
+    ToolRegistry registry = new ToolRegistry(tools, authorizer);
     Set<String> visible =
         registry.toolsFor(ctx(UserRole.SUPER_ADMIN)).stream()
             .map(Tool::name)
             .collect(Collectors.toSet());
-    assertThat(visible).isEqualTo(tools.stream().map(Tool::name).collect(Collectors.toSet()));
+    assertThat(visible)
+        .isEqualTo(
+            tools.stream()
+                .filter(tool -> tool.kind() == ToolKind.READ)
+                .map(Tool::name)
+                .collect(Collectors.toSet()));
   }
 
   private Set<String> expectedFor(UserRole role) {
     Set<String> grants = SEED.get(role);
     return tools.stream()
+        .filter(tool -> tool.kind() == ToolKind.READ)
         .filter(t -> t.permissions().stream().map(Enum::name).anyMatch(grants::contains))
         .map(Tool::name)
         .collect(Collectors.toSet());

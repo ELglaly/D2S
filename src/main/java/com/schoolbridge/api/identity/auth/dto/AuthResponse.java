@@ -14,4 +14,3 @@ public record AuthResponse(
     return new AuthResponse(accessToken, refreshToken, accessExpiresAt, "Bearer", role);
   }
 }
-

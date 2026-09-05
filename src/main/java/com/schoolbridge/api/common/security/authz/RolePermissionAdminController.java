@@ -4,8 +4,6 @@ import com.schoolbridge.api.common.security.authz.dto.PermissionResponse;
 import com.schoolbridge.api.common.security.authz.dto.RolePermissionsResponse;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.UserRole;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,14 +18,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Manages roleÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢permission mappings at runtime. Secured by {@link RequirePermission}: {@code
- * MANAGE_PERMISSIONS} is required to read the catalog and to grant/revoke; {@code MANAGE_ROLES} to
- * inspect a role's grants. Both are seeded to SUPER_ADMIN only, so no other role can alter authz
- * mappings ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the aspect denies (403) before any handler body runs.
+ * Manages roleÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢permission mappings at runtime. Secured by {@link
+ * RequirePermission}: {@code MANAGE_PERMISSIONS} is required to read the catalog and to
+ * grant/revoke; {@code MANAGE_ROLES} to inspect a role's grants. Both are seeded to SUPER_ADMIN
+ * only, so no other role can alter authz mappings ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the aspect denies (403) before
+ * any handler body runs.
  */
 @RestController
 @RequestMapping(ApiConstants.API_V1 + "/admin/authz")
-@Tag(name = "Authorization Admin", description = "Manage roleÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢permission mappings")
+@Tag(
+    name = "Authorization Admin",
+    description = "Manage roleÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢permission mappings")
 public class RolePermissionAdminController {
 
   private final RolePermissionAdminService service;
@@ -90,4 +91,3 @@ public class RolePermissionAdminController {
     return ResponseEntity.noContent().build();
   }
 }
-

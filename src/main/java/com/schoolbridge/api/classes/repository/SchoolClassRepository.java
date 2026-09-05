@@ -63,4 +63,3 @@ public interface SchoolClassRepository extends JpaRepository<SchoolClass, UUID> 
           + "     ))")
   boolean existsByIdAndTeacher(@Param("classId") UUID classId, @Param("uid") UUID teacherUserId);
 }
-

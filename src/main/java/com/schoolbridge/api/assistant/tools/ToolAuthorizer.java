@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.schoolbridge.api.common.security.authz.EffectivePermissionService;
 import java.util.Set;
 import org.springframework.stereotype.Component;
@@ -41,4 +39,3 @@ public class ToolAuthorizer {
     return tool.permissions().stream().map(Enum::name).anyMatch(granted::contains);
   }
 }
-

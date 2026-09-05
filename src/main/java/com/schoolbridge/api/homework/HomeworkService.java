@@ -40,4 +40,3 @@ public interface HomeworkService {
   /** Returns all recipient rows for a homework item with delivery and acknowledgment status. */
   List<HomeworkRecipientResponse> listRecipients(UUID homeworkId);
 }
-

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
  * A mutating tool. Two-phase by contract:
  *
  * <ol>
- *   <li>{@link #preview} validates scope, resolves namesâ†’ids, computes a human impact, and stores a
- *       single-use pending action. It NEVER mutates. Returns a {@link PreviewOutcome}: a prepared
+ *   <li>{@link #preview} validates scope, resolves namesâ†’ids, computes a human impact, and stores
+ *       a single-use pending action. It NEVER mutates. Returns a {@link PreviewOutcome}: a prepared
  *       confirmation, or a denied/clarify rejection fed back to the model.
  *   <li>{@link #execute} is reachable only via {@code /confirm} with a valid token. It re-validates
  *       scope, then mutates through the existing service using the caller's principal and a stable
@@ -30,4 +30,3 @@ public interface ActionTool extends Tool {
     return false;
   }
 }
-

@@ -63,4 +63,3 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
     return ApiResponse.of(body);
   }
 }
-

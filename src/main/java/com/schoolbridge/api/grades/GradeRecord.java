@@ -110,4 +110,3 @@ public class GradeRecord extends TenantEntity {
     return notes;
   }
 }
-

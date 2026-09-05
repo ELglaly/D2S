@@ -1,12 +1,12 @@
 package com.schoolbridge.api.subjects;
 
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.common.web.PageResponse;
 import com.schoolbridge.api.subjects.dto.AssignSubjectToClassRequest;
 import com.schoolbridge.api.subjects.dto.ClassSubjectResponse;
 import com.schoolbridge.api.subjects.service.ClassSubjectService;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -89,4 +88,3 @@ public class ClassSubjectController {
     return ResponseEntity.noContent().build();
   }
 }
-

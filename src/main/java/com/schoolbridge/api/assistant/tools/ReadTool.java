@@ -12,4 +12,3 @@ public interface ReadTool extends Tool {
     return ToolKind.READ;
   }
 }
-

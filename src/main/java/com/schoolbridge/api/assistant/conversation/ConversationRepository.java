@@ -27,4 +27,3 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
           + "order by coalesce(c.lastMessageAt, c.createdAt) desc")
   Page<Conversation> findByOwner(@Param("ownerUserId") UUID ownerUserId, Pageable pageable);
 }
-

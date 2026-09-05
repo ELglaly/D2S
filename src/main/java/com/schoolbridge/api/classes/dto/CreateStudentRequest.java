@@ -9,4 +9,3 @@ public record CreateStudentRequest(
     @NotBlank @Size(max = 255) String fullName,
     @PastOrPresent LocalDate dateOfBirth,
     @Size(max = 100) String externalId) {}
-

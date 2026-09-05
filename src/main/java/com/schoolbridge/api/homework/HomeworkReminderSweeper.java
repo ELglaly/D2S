@@ -206,4 +206,3 @@ public class HomeworkReminderSweeper {
     return Boolean.TRUE.equals(acquired);
   }
 }
-

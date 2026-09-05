@@ -9,4 +9,3 @@ public record UpdateSchoolClassRequest(
     @NotBlank @Size(max = 100) String gradeLevel,
     @NotBlank @Size(max = 20) String academicYear,
     UUID homeroomTeacherId) {}
-

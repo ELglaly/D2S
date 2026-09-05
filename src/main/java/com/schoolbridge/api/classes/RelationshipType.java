@@ -6,4 +6,3 @@ public enum RelationshipType {
   FATHER,
   GUARDIAN
 }
-

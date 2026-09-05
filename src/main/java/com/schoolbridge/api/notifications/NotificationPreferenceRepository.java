@@ -30,4 +30,3 @@ public interface NotificationPreferenceRepository
   Optional<NotificationPreference> findByUserIdAndCategory(
       @Param("userId") UUID userId, @Param("category") NotificationCategory category);
 }
-

@@ -30,4 +30,3 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
   @Query("delete from RolePermission rp where rp.role = :role and rp.permission.name = :name")
   int deleteByRoleAndPermissionName(@Param("role") UserRole role, @Param("name") String name);
 }
-

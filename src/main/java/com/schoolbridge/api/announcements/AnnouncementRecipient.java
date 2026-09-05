@@ -135,4 +135,3 @@ public class AnnouncementRecipient extends TenantEntity {
     return deferredUntil;
   }
 }
-

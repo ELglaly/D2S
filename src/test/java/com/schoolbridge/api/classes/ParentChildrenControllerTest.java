@@ -4,11 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.classes.entity.Enrollment;
-import com.schoolbridge.api.classes.entity.ParentStudentLink;
-import com.schoolbridge.api.classes.entity.SchoolClass;
-import com.schoolbridge.api.classes.entity.Student;
+import com.schoolbridge.api.SqlIntegrationTest;
 import com.schoolbridge.api.classes.repository.EnrollmentRepository;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
@@ -16,16 +12,10 @@ import com.schoolbridge.api.classes.repository.StudentRepository;
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.identity.User;
 import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
 import com.schoolbridge.api.identity.jwt.JwtService;
 import com.schoolbridge.api.identity.otp.OtpService;
-import com.schoolbridge.api.tenant.School;
 import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
 import io.restassured.RestAssured;
-import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,10 +23,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ParentChildrenControllerTest extends AbstractIntegrationTest {
+@Sql(
+    scripts = {
+      "classpath:sql/cleanup/all-data.sql",
+      "classpath:sql/fixtures/common/schools.sql",
+      "classpath:sql/fixtures/identity/auth-principals.sql",
+      "classpath:sql/fixtures/classes/academic-roster.sql",
+      "classpath:sql/fixtures/classes/parent-children.sql"
+    },
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(
+    scripts = "classpath:sql/cleanup/all-data.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+class ParentChildrenControllerTest extends SqlIntegrationTest {
 
   private static final String ENDPOINT = "/api/v1/parents/me/children";
 
@@ -67,85 +70,13 @@ class ParentChildrenControllerTest extends AbstractIntegrationTest {
   @BeforeEach
   void setUp() {
     RestAssured.port = port;
-    tx.executeWithoutResult(s -> enrollmentRepository.deleteAll());
-    tx.executeWithoutResult(s -> linkRepository.deleteAll());
-    tx.executeWithoutResult(s -> studentRepository.deleteAll());
-    tx.executeWithoutResult(s -> classRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "SchoolA",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-
-    schoolBId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "SchoolB",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-
-    classId =
-        tx.execute(
-            s ->
-                classRepository
-                    .save(new SchoolClass(schoolId, "3A", "Grade 3", "2025-2026", null))
-                    .getId());
-
-    studentId =
-        tx.execute(
-            s ->
-                studentRepository
-                    .save(new Student(schoolId, "Ahmed Mohamed", LocalDate.of(2015, 3, 15), null))
-                    .getId());
-
-    tx.executeWithoutResult(
-        s -> enrollmentRepository.save(new Enrollment(schoolId, studentId, classId)));
-
-    parentId = persistParent(schoolId, "+201090000201");
-    unlinkedParentId = persistParent(schoolId, "+201090000202");
-
-    tx.executeWithoutResult(
-        s ->
-            linkRepository.save(
-                new ParentStudentLink(
-                    schoolId, parentId, studentId, RelationshipType.MOTHER, true)));
-
-    UUID adminId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.SCHOOL_ADMIN,
-                            "Admin",
-                            "admin@parentchildren.test",
-                            passwordEncoder.encode("pass")))
-                    .getId());
-
-    adminToken =
-        jwtService.issueAccess(
-            adminId.toString(),
-            Map.of("kind", "USER", "schoolId", schoolId.toString(), "role", "SCHOOL_ADMIN"));
-
+    schoolId = UUID.fromString("10000000-0000-0000-0000-000000000001");
+    schoolBId = UUID.fromString("10000000-0000-0000-0000-000000000002");
+    classId = UUID.fromString("30000000-0000-0000-0000-000000000001");
+    studentId = UUID.fromString("30000000-0000-0000-0000-000000000011");
+    parentId = UUID.fromString("20000000-0000-0000-0000-000000000013");
+    unlinkedParentId = UUID.fromString("20000000-0000-0000-0000-000000000014");
+    adminToken = login("school-admin@fixture.test", "password");
     parentToken = issueParentToken(parentId);
     unlinkedParentToken = issueParentToken(unlinkedParentId);
   }
@@ -162,14 +93,14 @@ class ParentChildrenControllerTest extends AbstractIntegrationTest {
         .statusCode(200)
         .body("data", hasSize(1))
         .body("data[0].studentId", equalTo(studentId.toString()))
-        .body("data[0].fullName", equalTo("Ahmed Mohamed"))
+        .body("data[0].fullName", equalTo("Fixture Linked Student"))
         .body("data[0].dateOfBirth", equalTo("2015-03-15"))
         .body("data[0].status", equalTo("ACTIVE"))
         .body("data[0].relationship", equalTo("MOTHER"))
         .body("data[0].primaryContact", equalTo(true))
         .body("data[0].classes", hasSize(1))
         .body("data[0].classes[0].classId", equalTo(classId.toString()))
-        .body("data[0].classes[0].name", equalTo("3A"))
+        .body("data[0].classes[0].name", equalTo("Fixture 3A"))
         .body("data[0].classes[0].gradeLevel", equalTo("Grade 3"))
         .body("data[0].classes[0].academicYear", equalTo("2025-2026"));
   }
@@ -189,15 +120,6 @@ class ParentChildrenControllerTest extends AbstractIntegrationTest {
 
   @Test
   void myChildren_doesNotReturnUnlinkedChild() {
-    UUID otherStudentId =
-        tx.execute(
-            s ->
-                studentRepository
-                    .save(new Student(schoolId, "Unlinked Child", LocalDate.of(2016, 6, 1), null))
-                    .getId());
-    tx.executeWithoutResult(
-        s -> enrollmentRepository.save(new Enrollment(schoolId, otherStudentId, classId)));
-
     given()
         .header("Authorization", "Bearer " + parentToken)
         .when()
@@ -212,27 +134,7 @@ class ParentChildrenControllerTest extends AbstractIntegrationTest {
 
   @Test
   void myChildren_crossTenant_excludesOtherSchoolChild() {
-    UUID otherStudentId =
-        tx.execute(
-            s ->
-                studentRepository
-                    .save(new Student(schoolBId, "School B Child", LocalDate.of(2015, 1, 1), null))
-                    .getId());
-    UUID otherClassId =
-        tx.execute(
-            s ->
-                classRepository
-                    .save(new SchoolClass(schoolBId, "1A", "Grade 1", "2025-2026", null))
-                    .getId());
-    tx.executeWithoutResult(
-        s -> enrollmentRepository.save(new Enrollment(schoolBId, otherStudentId, otherClassId)));
     // link parentId (school A) to the school B student — cross-tenant stale link
-    tx.executeWithoutResult(
-        s ->
-            linkRepository.save(
-                new ParentStudentLink(
-                    schoolBId, parentId, otherStudentId, RelationshipType.FATHER, false)));
-
     given()
         .header("Authorization", "Bearer " + parentToken)
         .when()

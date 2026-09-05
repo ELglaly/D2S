@@ -18,4 +18,3 @@ public record CreateSchoolRequest(
     @NotBlank @Size(max = 35) String locale,
     @NotNull SubscriptionTier subscriptionTier,
     @Valid SchoolSettingsRequest settings) {}
-

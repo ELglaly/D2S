@@ -52,4 +52,3 @@ public class RlsStartupValidator {
     log.info("rls_active table={} role_bypass=false", PROBE_TABLE);
   }
 }
-

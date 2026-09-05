@@ -11,4 +11,3 @@ public interface AssistantActionService {
 
   ConfirmResult cancel(String token, ToolContext ctx);
 }
-

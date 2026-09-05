@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
  *   <li><b>Identifier stripping</b> â€” drops {@code id}/{@code *Id}/{@code *Ids} fields and any
  *       UUID-valued field at every depth. This trims tokens and enforces the system-prompt
  *       guarantee that the model never sees internal identifiers (today's raw DTOs leak them).
- *   <li><b>Collection capping</b> â€” caps arrays at {@code tool-result-max-items}, appending a short
- *       marker so the model knows to narrow its query rather than miscount a truncated list.
+ *   <li><b>Collection capping</b> â€” caps arrays at {@code tool-result-max-items}, appending a
+ *       short marker so the model knows to narrow its query rather than miscount a truncated list.
  * </ul>
  */
 @Component
@@ -93,4 +93,3 @@ public class ToolResultProjector {
     return value.isTextual() && UUID_PATTERN.matcher(value.asText()).matches();
   }
 }
-

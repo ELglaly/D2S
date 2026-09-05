@@ -4,6 +4,9 @@ import com.schoolbridge.api.common.error.ErrorType;
 import com.schoolbridge.api.common.i18n.MessageResolver;
 import com.schoolbridge.api.common.tenancy.TenantContext;
 import com.schoolbridge.api.common.web.ApiConstants;
+import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
+import com.schoolbridge.api.identity.auth.principal.PlatformAdminPrincipal;
+import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +18,8 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -87,9 +92,33 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
   private static String buildKey(HttpServletRequest request) {
     String tenant = TenantContext.get().map(Object::toString).orElse("anon");
+    String subject = authenticatedSubject();
     String idemKey = request.getHeader(ApiConstants.IDEMPOTENCY_KEY_HEADER);
-    String raw = tenant + ':' + request.getMethod() + ':' + request.getRequestURI() + ':' + idemKey;
+    String raw =
+        tenant
+            + ':'
+            + subject
+            + ':'
+            + request.getMethod()
+            + ':'
+            + request.getRequestURI()
+            + ':'
+            + idemKey;
     return DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8));
+  }
+
+  private static String authenticatedSubject() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+      return "public";
+    }
+    Object principal = authentication.getPrincipal();
+    return switch (principal) {
+      case StaffPrincipal staff -> "user:" + staff.userId();
+      case ParentPrincipal parent -> "user:" + parent.userId();
+      case PlatformAdminPrincipal admin -> "platform-admin:" + admin.adminId();
+      default -> "public";
+    };
   }
 
   private void writeCached(HttpServletResponse response, IdempotencyService.CachedResponse cached)
@@ -119,4 +148,3 @@ public class IdempotencyFilter extends OncePerRequestFilter {
     response.getWriter().write(body);
   }
 }
-

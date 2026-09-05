@@ -15,4 +15,3 @@ public class SchoolBridgeApplication {
     SpringApplication.run(SchoolBridgeApplication.class, args);
   }
 }
-

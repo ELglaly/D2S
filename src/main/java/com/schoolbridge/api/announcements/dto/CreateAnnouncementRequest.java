@@ -35,4 +35,3 @@ public record CreateAnnouncementRequest(
     @Size(max = 512) String attachmentKey,
     boolean requiresAck,
     Instant scheduledFor) {}
-

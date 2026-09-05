@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.announcements;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.announcements.dto.CreateAnnouncementRequest;
@@ -17,6 +15,7 @@ import com.schoolbridge.api.assistant.tools.support.Resolved;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.common.security.PermissionsHelper;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -152,4 +151,3 @@ public class PostAnnouncementTool extends AbstractActionTool {
     }
   }
 }
-

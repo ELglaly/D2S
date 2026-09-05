@@ -1,13 +1,12 @@
 package com.schoolbridge.api.assistant.tools.classes;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
 import com.schoolbridge.api.assistant.tools.ToolResult;
 import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.classes.service.SchoolClassService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -49,4 +48,3 @@ public class ListClassesTool implements ReadTool {
     return ToolResult.ok(classes.list(ctx.schoolId(), PageRequest.of(0, MAX)).getContent());
   }
 }
-

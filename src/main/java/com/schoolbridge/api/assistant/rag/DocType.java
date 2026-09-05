@@ -11,4 +11,3 @@ public enum DocType {
   BUSINESS_RULE,
   UPLOAD
 }
-

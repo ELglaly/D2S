@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /**
  * Metadata for one uploaded file. The bytes live in object storage under {@link #storageKey} and
- * never pass through this API â€” see {@code docs/PLAN_FILE_UPLOAD.md}.
+ * never pass through this API.
  *
  * <p>Two pairs of fields exist because the client's claims and the stored reality are different
  * things and the difference is the control: {@code declaredContentType} / {@code declaredSizeBytes}
@@ -159,4 +159,3 @@ public class Attachment extends TenantEntity {
     return completedAt;
   }
 }
-

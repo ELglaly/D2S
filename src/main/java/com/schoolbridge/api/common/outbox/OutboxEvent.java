@@ -152,4 +152,3 @@ public class OutboxEvent {
     return lastError;
   }
 }
-

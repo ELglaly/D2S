@@ -33,4 +33,3 @@ public class LoggingSmsClient implements SmsClient {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
-

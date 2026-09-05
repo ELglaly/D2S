@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record StudentSubjectResponse(
     UUID subjectId, String name, String code, UUID classId, UUID teacherUserId) {}
-

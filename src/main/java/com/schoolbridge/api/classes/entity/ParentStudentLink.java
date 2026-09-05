@@ -62,4 +62,3 @@ public class ParentStudentLink extends TenantEntity {
     return primaryContact;
   }
 }
-

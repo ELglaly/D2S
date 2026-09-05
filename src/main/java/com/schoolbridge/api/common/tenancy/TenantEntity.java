@@ -39,4 +39,3 @@ public abstract class TenantEntity extends BaseEntity {
     this.schoolId = schoolId;
   }
 }
-

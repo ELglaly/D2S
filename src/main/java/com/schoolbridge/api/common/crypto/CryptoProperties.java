@@ -8,4 +8,3 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("schoolbridge.crypto")
 public record CryptoProperties(String aesKey, String blindIndexKey) {}
-

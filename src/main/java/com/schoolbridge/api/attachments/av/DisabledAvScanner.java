@@ -25,4 +25,3 @@ public class DisabledAvScanner implements AvScanner {
     return ScanOutcome.skipped();
   }
 }
-

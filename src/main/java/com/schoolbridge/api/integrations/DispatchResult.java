@@ -11,4 +11,3 @@ public record DispatchResult(NotificationChannel channel, String messageId, bool
     return !accepted;
   }
 }
-

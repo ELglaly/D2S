@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Consumes {@code announcement.recalled} events. Per open question (4) / option (b) in {@code
- * HANDOFF_M7.md}, M7 does NOT send a follow-up "recalled" template â€” it only marks not-yet-
+ * the recall workflow does NOT send a follow-up "recalled" template â€” it only marks not-yet-
  * delivered recipients FAILED to stop further fan-out attempts.
  */
 @Component
@@ -51,4 +51,3 @@ public class AnnouncementRecalledConsumer {
         });
   }
 }
-

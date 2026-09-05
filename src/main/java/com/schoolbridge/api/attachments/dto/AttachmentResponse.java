@@ -23,4 +23,3 @@ public record AttachmentResponse(
     UUID uploaderUserId,
     Instant createdAt,
     Instant completedAt) {}
-

@@ -35,4 +35,3 @@ public enum ErrorType {
     return "https://schoolbridge.app/errors/" + name().toLowerCase().replace('_', '-');
   }
 }
-

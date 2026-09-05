@@ -5,8 +5,8 @@ import java.util.Map;
 
 /**
  * Result of {@code ActionTool.preview(...)}: a single-use confirmation token plus a bilingual,
- * human-readable summary of the impact. No mutation has happened when this is produced â€” the caller
- * must confirm the token before {@code execute} runs.
+ * human-readable summary of the impact. No mutation has happened when this is produced â€” the
+ * caller must confirm the token before {@code execute} runs.
  */
 public record ActionPreview(
     String token,
@@ -15,4 +15,3 @@ public record ActionPreview(
     Map<String, Object> impact,
     boolean destructive,
     Instant expiresAt) {}
-

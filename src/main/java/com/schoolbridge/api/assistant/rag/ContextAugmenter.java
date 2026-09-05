@@ -72,4 +72,3 @@ public class ContextAugmenter {
     return included == 0 ? "" : builder.toString();
   }
 }
-

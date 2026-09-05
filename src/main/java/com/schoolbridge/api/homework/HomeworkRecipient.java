@@ -124,4 +124,3 @@ public class HomeworkRecipient extends TenantEntity {
     return value.length() <= 256 ? value : value.substring(0, 256);
   }
 }
-

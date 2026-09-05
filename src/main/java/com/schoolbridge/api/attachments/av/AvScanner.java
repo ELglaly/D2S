@@ -38,4 +38,3 @@ public interface AvScanner {
    */
   ScanOutcome scan(InputStream content);
 }
-

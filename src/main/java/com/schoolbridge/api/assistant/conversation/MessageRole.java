@@ -5,4 +5,3 @@ public enum MessageRole {
   USER,
   ASSISTANT
 }
-

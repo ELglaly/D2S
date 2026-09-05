@@ -15,4 +15,3 @@ public record SchoolSettingsResponse(
     boolean smsFallbackEnabled,
     boolean alertsRespectQuietHours,
     LocalTime rosterDueByLocalTime) {}
-

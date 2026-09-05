@@ -12,4 +12,3 @@ public record ParentStudentLinkResponse(
     RelationshipType relationship,
     boolean primaryContact,
     Instant createdAt) {}
-

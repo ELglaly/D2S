@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.student;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -15,6 +13,7 @@ import com.schoolbridge.api.classes.StudentStatus;
 import com.schoolbridge.api.classes.dto.StudentResponse;
 import com.schoolbridge.api.classes.dto.UpdateStudentRequest;
 import com.schoolbridge.api.classes.service.StudentService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -107,4 +106,3 @@ public class UpdateStudentTool extends AbstractActionTool {
     return ToolResult.ok(students.update(uuid(resolvedArgs, "studentId"), request));
   }
 }
-

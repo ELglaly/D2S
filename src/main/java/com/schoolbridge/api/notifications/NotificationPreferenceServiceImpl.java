@@ -249,4 +249,3 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
   }
 }
-

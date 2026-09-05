@@ -264,4 +264,3 @@ public class NotificationDispatcher {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
-

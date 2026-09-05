@@ -41,4 +41,3 @@ public final class AttachmentKeys {
     return key != null && key.startsWith(schoolId + "/");
   }
 }
-

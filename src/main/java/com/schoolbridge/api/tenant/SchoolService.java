@@ -30,4 +30,3 @@ public interface SchoolService {
   /** Reactivates a suspended school; 409 if already active. */
   void reactivate(UUID id);
 }
-

@@ -54,4 +54,3 @@ public class Conversation extends TenantEntity {
     return lastMessageAt;
   }
 }
-

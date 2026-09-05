@@ -17,4 +17,3 @@ public sealed interface LlmContent {
   /** The server's reply to a {@link ToolUse}, fed back to the model. */
   record ToolResult(String toolUseId, String content, boolean error) implements LlmContent {}
 }
-

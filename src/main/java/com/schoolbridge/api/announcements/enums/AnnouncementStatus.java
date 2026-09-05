@@ -8,4 +8,3 @@ public enum AnnouncementStatus {
   SENT,
   RECALLED
 }
-

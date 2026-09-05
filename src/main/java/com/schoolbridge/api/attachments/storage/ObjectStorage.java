@@ -9,9 +9,9 @@ import java.util.Optional;
  * through here, and the interface exists so the S3 wire details do not leak into the service.
  *
  * <p>Note what is <em>not</em> here: no "upload" and no "download". The API never carries user
- * bytes in either direction â€” it mints presigned URLs and the client talks to storage directly. The
- * two methods that do read bytes ({@link #readHead} and {@link #openStream}) exist for inspection
- * and AV scanning, both server-side, and {@link #readHead} is bounded.
+ * bytes in either direction â€” it mints presigned URLs and the client talks to storage directly.
+ * The two methods that do read bytes ({@link #readHead} and {@link #openStream}) exist for
+ * inspection and AV scanning, both server-side, and {@link #readHead} is bounded.
  */
 public interface ObjectStorage {
 
@@ -25,9 +25,9 @@ public interface ObjectStorage {
    * Presigns a PUT for exactly {@code contentLength} bytes of {@code contentType} at {@code key}.
    *
    * <p>The length is signed rather than merely validated because a presigned PUT cannot carry a
-   * {@code content-length-range} condition â€” that is a presigned POST form-policy feature. Signing
-   * the exact value makes the object store, not client good behaviour, the thing that rejects an
-   * oversized body.
+   * {@code content-length-range} condition â€” that is a presigned POST form-policy feature.
+   * Signing the exact value makes the object store, not client good behaviour, the thing that
+   * rejects an oversized body.
    */
   PresignedUpload presignPut(String key, String contentType, long contentLength, Duration ttl);
 
@@ -49,4 +49,3 @@ public interface ObjectStorage {
   /** Deletes the object. Succeeds silently when it is already gone. */
   void delete(String key);
 }
-

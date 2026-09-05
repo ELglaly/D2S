@@ -32,4 +32,3 @@ public class ClassSubject extends TenantEntity {
     return subjectId;
   }
 }
-

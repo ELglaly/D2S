@@ -11,4 +11,3 @@ public record LlmUsage(long inputTokens, long outputTokens) {
     return new LlmUsage(inputTokens + other.inputTokens, outputTokens + other.outputTokens);
   }
 }
-

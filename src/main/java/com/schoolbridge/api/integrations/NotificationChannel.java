@@ -21,4 +21,3 @@ public enum NotificationChannel {
    */
   public static final List<NotificationChannel> DEFAULT_ORDER = List.of(PUSH, WHATSAPP, SMS);
 }
-

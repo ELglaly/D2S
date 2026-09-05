@@ -32,4 +32,3 @@ public interface LlmGateway {
     return response;
   }
 }
-

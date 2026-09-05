@@ -16,4 +16,3 @@ public record AttachmentDownloadTicket(
     String fileName,
     String contentType,
     Instant expiresAt) {}
-

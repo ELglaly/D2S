@@ -28,4 +28,3 @@ public record AssistantAnswer(
     return new AssistantAnswer(Outcome.CONFIRM_REQUIRED, text, pendingAction, metadata);
   }
 }
-

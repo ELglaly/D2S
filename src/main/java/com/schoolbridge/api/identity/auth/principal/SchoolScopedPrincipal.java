@@ -9,4 +9,3 @@ import java.util.UUID;
 public interface SchoolScopedPrincipal {
   UUID schoolId();
 }
-

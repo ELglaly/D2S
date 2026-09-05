@@ -74,4 +74,3 @@ public class AesGcmAttributeConverter implements AttributeConverter<String, Stri
     }
   }
 }
-

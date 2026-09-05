@@ -187,4 +187,3 @@ public class S3ObjectStorage implements ObjectStorage {
     return cleaned.isBlank() ? "attachment" : cleaned;
   }
 }
-

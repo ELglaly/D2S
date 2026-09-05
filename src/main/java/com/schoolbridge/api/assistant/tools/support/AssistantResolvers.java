@@ -119,4 +119,3 @@ public class AssistantResolvers {
     return PageRequest.of(0, MAX_CANDIDATES);
   }
 }
-

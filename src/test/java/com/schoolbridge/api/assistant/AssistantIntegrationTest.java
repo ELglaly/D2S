@@ -20,7 +20,6 @@ import com.schoolbridge.api.classes.repository.EnrollmentRepository;
 import com.schoolbridge.api.classes.repository.ParentStudentLinkRepository;
 import com.schoolbridge.api.classes.repository.SchoolClassRepository;
 import com.schoolbridge.api.classes.repository.StudentRepository;
-import com.schoolbridge.api.common.audit.AuditLog;
 import com.schoolbridge.api.common.audit.AuditLogRepository;
 import com.schoolbridge.api.common.crypto.BlindIndexHasher;
 import com.schoolbridge.api.identity.User;
@@ -182,7 +181,7 @@ class AssistantIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
-  void actionProposalConfirmsExecutesAndAudits() {
+  void actionToolRemainsUnavailableWhenActionsPropertyIsSupplied() {
     ObjectNode input = json.createObjectNode();
     input.put("classRef", "3A");
     input.put("studentRef", "Linked Child");
@@ -192,52 +191,21 @@ class AssistantIntegrationTest extends AbstractIntegrationTest {
 
     String body = ask(teacherToken, "mark Linked Child absent in 3A today");
     JsonNode chunk = firstChunk(body);
-    assertThat(chunk.path("type").asText()).isEqualTo("confirmRequired");
-    String token = chunk.path("token").asText();
-    assertThat(token).isNotBlank();
-
-    given()
-        .header("Authorization", "Bearer " + teacherToken)
-        .contentType(ContentType.JSON)
-        .body(Map.of("confirmation", "yes"))
-        .when()
-        .post("/api/v1/assistant/actions/" + token + "/confirm")
-        .then()
-        .log()
-        .ifValidationFails()
-        .statusCode(200)
-        .body("data.status", org.hamcrest.Matchers.equalTo("EXECUTED"));
-
-    // The mutation happened (roster shows ABSENT) and audit rows were written.
-    given()
-        .header("Authorization", "Bearer " + teacherToken)
-        .queryParam("classId", classId.toString())
-        .queryParam("date", TODAY.toString())
-        .when()
-        .get("/api/v1/attendance/roster")
-        .then()
-        .statusCode(200)
-        .body(
-            "data.find { it.studentId == '" + studentId + "' }.status",
-            org.hamcrest.Matchers.equalTo("ABSENT"));
-
-    List<String> actions = auditLogRepository.findAll().stream().map(AuditLog::getAction).toList();
-    assertThat(actions).contains("assistant.action.preview", "assistant.action.execute");
+    assertThat(chunk.path("type").asText()).isEqualTo("delta");
+    assertThat(body).doesNotContain("confirmRequired");
+    assertThat(auditLogRepository.findAll()).isEmpty();
   }
 
   @Test
-  void confirmReplayedTokenDoesNotMutateTwice() {
+  void actionToolDoesNotProduceAConfirmationToken() {
     ObjectNode input = json.createObjectNode();
     input.put("classRef", "3A");
     input.put("studentRef", "Linked Child");
     input.put("status", "LATE");
     input.put("date", TODAY.toString());
     gateway.script(toolUse("mark_attendance", input));
-    String token = firstChunk(ask(teacherToken, "mark late")).path("token").asText();
-
-    confirm(token).statusCode(200).body("data.status", org.hamcrest.Matchers.equalTo("EXECUTED"));
-    // Second confirm of the same single-use token is rejected.
-    confirm(token).statusCode(200).body("data.status", org.hamcrest.Matchers.equalTo("INVALID"));
+    String body = ask(teacherToken, "mark late");
+    assertThat(body).doesNotContain("confirmRequired");
   }
 
   @Test

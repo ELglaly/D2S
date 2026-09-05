@@ -67,4 +67,3 @@ public record ToolContext(
     return new ToolContext(schoolId, principal, role, language, key);
   }
 }
-

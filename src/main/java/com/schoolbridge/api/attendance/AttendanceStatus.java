@@ -10,4 +10,3 @@ public enum AttendanceStatus {
   LATE,
   EXCUSED
 }
-

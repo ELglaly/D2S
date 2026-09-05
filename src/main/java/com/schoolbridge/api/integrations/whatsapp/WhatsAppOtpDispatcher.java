@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
  * parent_otp_v1} template, with SMS fallback handled by {@link NotificationDispatcher}.
  *
  * <p>Replaces {@link com.schoolbridge.api.identity.otp.LoggingOtpDispatcher} in non-test profiles.
- * Language defaults to AR for the MENA-first MVP â€” a per-user preference field can wire here later.
+ * Language defaults to AR for the MENA-first MVP â€” a per-user preference field can wire here
+ * later.
  *
  * <p>OTP send stays in-process per open-question (1) / recommendation: the OTP latency budget is
  * tight and the existing {@code OtpService.issue(...)} â†’ {@code OtpDispatcher.dispatch(...)} hook
@@ -73,4 +74,3 @@ public class WhatsAppOtpDispatcher implements OtpDispatcher {
     return "***" + phone.substring(phone.length() - 4);
   }
 }
-

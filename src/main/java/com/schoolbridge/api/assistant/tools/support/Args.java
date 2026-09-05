@@ -45,4 +45,3 @@ public final class Args {
     return n == null || n.isNull() ? def : n.asBoolean(def);
   }
 }
-

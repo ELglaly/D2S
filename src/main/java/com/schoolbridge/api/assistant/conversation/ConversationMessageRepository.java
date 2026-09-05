@@ -39,4 +39,3 @@ public interface ConversationMessageRepository extends JpaRepository<Conversatio
   List<ConversationMessage> findLatestAssistant(
       @Param("conversationId") UUID conversationId, Pageable pageable);
 }
-

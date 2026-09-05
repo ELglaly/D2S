@@ -1,7 +1,5 @@
 package com.schoolbridge.api.assistant.tools.classes;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.schoolbridge.api.assistant.tools.ReadTool;
 import com.schoolbridge.api.assistant.tools.ToolContext;
@@ -12,11 +10,14 @@ import com.schoolbridge.api.assistant.tools.support.Schema;
 import com.schoolbridge.api.assistant.tools.support.ToolSupport;
 import com.schoolbridge.api.classes.dto.SchoolClassResponse;
 import com.schoolbridge.api.classes.service.EnrollmentService;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** TEACHER/ADMIN â€” students enrolled in a class. Mirrors {@code GET /classes/{id}/enrollments}. */
+/**
+ * TEACHER/ADMIN â€” students enrolled in a class. Mirrors {@code GET /classes/{id}/enrollments}.
+ */
 @Component
 public class GetClassEnrollmentsTool implements ReadTool {
 
@@ -61,4 +62,3 @@ public class GetClassEnrollmentsTool implements ReadTool {
     return ToolResult.ok(enrollments.listByClass(classId));
   }
 }
-

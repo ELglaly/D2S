@@ -91,7 +91,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     // Only dispatch now if this is not scheduled. Recording the outbox event unconditionally meant
     // an announcement scheduled for next week was delivered within seconds while the UI still
-    // showed SCHEDULED â€” the schedule was decorative. AnnouncementScheduleSweeper records the event
+    // showed SCHEDULED â€” the schedule was decorative. AnnouncementScheduleSweeper records the
+    // event
     // when scheduledFor actually arrives.
     if (initialStatus == AnnouncementStatus.SENT) {
       outbox.record(
@@ -301,4 +302,3 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     return deduped.size();
   }
 }
-

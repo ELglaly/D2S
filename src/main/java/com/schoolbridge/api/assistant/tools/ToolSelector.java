@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
  * Narrows a role's tool catalog to the domains the user's message plausibly touches, so a request
  * advertises a handful of tools instead of the whole catalog (the dominant input-token cost).
  * Biased for recall over precision: a query may select several domains, {@link ToolDomain#GENERAL}
- * tools are always offered, and when nothing matches it falls back to the full catalog â€” so gating
- * can trim tokens but never hide a tool the model genuinely needs without a safety net.
+ * tools are always offered, and when nothing matches it falls back to the full catalog â€” so
+ * gating can trim tokens but never hide a tool the model genuinely needs without a safety net.
  *
  * <p>The {@code assistant.tool_gating} counter tracks the {@code gated} vs {@code fallback} split
  * so the fallback (misroute-prone) rate is observable before the keyword map is tightened.
@@ -80,28 +80,27 @@ public class ToolSelector {
     Map<ToolDomain, List<String>> map = new EnumMap<>(ToolDomain.class);
     map.put(
         ToolDomain.ATTENDANCE,
-        List.of("attend", "absent", "absence", "present", "Ø­Ø¶ÙˆØ±", "ØºÙŠØ§Ø¨", "ØºØ§Ø¦Ø¨", "Ø­Ø§Ø¶Ø±"));
+        List.of("attend", "absent", "absence", "present", "حضور", "غياب", "غائب", "حاضر"));
     map.put(
         ToolDomain.GRADES,
-        List.of("grade", "score", "mark", "result", "Ø¯Ø±Ø¬Ø©", "Ø¯Ø±Ø¬Ø§Øª", "Ø¹Ù„Ø§Ù…Ø©", "Ù†ØªÙŠØ¬Ø©", "ØªÙ‚ÙŠÙŠÙ…"));
+        List.of("grade", "score", "mark", "result", "درجة", "درجات", "علامة", "نتيجة", "تقييم"));
     map.put(
         ToolDomain.HOMEWORK,
-        List.of("homework", "assignment", "due", "submit", "ÙˆØ§Ø¬Ø¨", "ÙØ±Ø¶", "ØªØ³Ù„ÙŠÙ…"));
+        List.of("homework", "assignment", "due", "submit", "واجب", "فرض", "تسليم"));
     map.put(
         ToolDomain.CLASSES,
-        List.of("class", "classroom", "section", "enrol", "roster", "ØµÙ", "ÙØµÙ„", "Ø´Ø¹Ø¨Ø©", "ØªØ³Ø¬ÙŠÙ„"));
-    map.put(ToolDomain.SUBJECTS, List.of("subject", "course", "Ù…Ø§Ø¯Ø©", "Ù…ÙˆØ§Ø¯", "Ù…Ù†Ù‡Ø¬"));
+        List.of("class", "classroom", "section", "enrol", "roster", "صف", "فصل", "شعبة", "تسجيل"));
+    map.put(ToolDomain.SUBJECTS, List.of("subject", "course", "مادة", "مواد", "منهج"));
     map.put(
         ToolDomain.ANNOUNCEMENTS,
-        List.of("announce", "announcement", "notice", "notify", "Ø¥Ø¹Ù„Ø§Ù†", "Ø§Ø¹Ù„Ø§Ù†", "ØªÙ†ÙˆÙŠÙ‡"));
+        List.of("announce", "announcement", "notice", "notify", "إعلان", "اعلان", "تنويه"));
     map.put(
         ToolDomain.PARENTS,
-        List.of("parent", "guardian", "mother", "father", "ÙˆÙ„ÙŠ", "ÙˆØ§Ù„Ø¯", "ÙˆØ§Ù„Ø¯Ø©", "Ø±Ø¨Ø·"));
+        List.of("parent", "guardian", "mother", "father", "ولي", "والد", "والدة", "ربط"));
     map.put(
         ToolDomain.STUDENTS,
-        List.of("student", "child", "children", "pupil", "Ø·Ø§Ù„Ø¨", "Ø·Ù„Ø§Ø¨", "ØªÙ„Ù…ÙŠØ°", "Ø§Ø¨Ù†", "Ø·ÙÙ„"));
-    map.put(ToolDomain.STAFF, List.of("teacher", "staff", "Ù…Ø¹Ù„Ù…", "Ù…Ø¯Ø±Ø³", "Ø£Ø³ØªØ§Ø°"));
+        List.of("student", "child", "children", "pupil", "طالب", "طلاب", "تلميذ", "ابن", "طفل"));
+    map.put(ToolDomain.STAFF, List.of("teacher", "staff", "معلم", "مدرس", "أستاذ"));
     return map;
   }
 }
-

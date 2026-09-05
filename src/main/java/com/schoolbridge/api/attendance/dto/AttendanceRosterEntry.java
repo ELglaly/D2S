@@ -15,4 +15,3 @@ public record AttendanceRosterEntry(
     UUID recordId,
     AttendanceStatus status,
     Instant markedAt) {}
-

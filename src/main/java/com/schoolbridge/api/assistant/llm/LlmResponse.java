@@ -25,4 +25,3 @@ public record LlmResponse(List<LlmContent> content, String stopReason, LlmUsage 
     return !toolUses().isEmpty();
   }
 }
-

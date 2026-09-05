@@ -9,4 +9,3 @@ import java.util.UUID;
  * with status PRESENT for {@code date} is upserted to PRESENT. Already-PRESENT rows are skipped.
  */
 public record MarkAllPresentRequest(@NotNull UUID classId, @NotNull LocalDate date) {}
-

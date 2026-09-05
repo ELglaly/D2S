@@ -40,4 +40,3 @@ public interface AttachmentService {
    */
   void requireUsableReference(UUID schoolId, String attachmentReference);
 }
-

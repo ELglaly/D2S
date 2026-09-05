@@ -22,4 +22,3 @@ public record CreateAttachmentRequest(
     // The real cap is schoolbridge.storage.max-upload-bytes, checked in the service against the
     // configured value. This bound only stops an absurd number from reaching that arithmetic.
     @Positive @Max(1_073_741_824L) long sizeBytes) {}
-

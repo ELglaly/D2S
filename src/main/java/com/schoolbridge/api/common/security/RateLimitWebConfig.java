@@ -48,4 +48,3 @@ public class RateLimitWebConfig implements WebMvcConfigurer {
             "/error");
   }
 }
-

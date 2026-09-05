@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
  *   <li>binds {@link TenantContext#runAs} so {@code @Filter} applies during recipient loads â€” the
  *       cross-tenant safety guarantee mirrored from M7's announcement consumer;
  *   <li>records {@code attendance.alert.latency} ({@code markedAt} â†’ "consumer finished
- *       dispatching") which is the NFR-P2 SLA dashboard metric â€” explicitly bucketed to make the 60
- *       s p95 threshold visible.
+ *       dispatching") which is the NFR-P2 SLA dashboard metric â€” explicitly bucketed to make the
+ *       60 s p95 threshold visible.
  * </ol>
  *
  * <p>Only loaded when {@code schoolbridge.outbox.relay.enabled=true}, mirroring M7.
@@ -124,4 +124,3 @@ public class AttendanceAlertConsumer {
     }
   }
 }
-

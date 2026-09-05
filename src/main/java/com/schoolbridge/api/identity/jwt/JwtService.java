@@ -25,8 +25,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Issues and verifies RS256 access tokens; mints and hashes opaque refresh tokens. If no keypair is
- * configured, an ephemeral one is generated at startup â€” tokens then stop verifying after restart,
- * which is exactly what you want in dev but never in prod.
+ * configured, an ephemeral one is generated at startup â€” tokens then stop verifying after
+ * restart, which is exactly what you want in dev but never in prod.
  */
 @Service
 public class JwtService {
@@ -153,4 +153,3 @@ public class JwtService {
         .replaceAll("\\s", "");
   }
 }
-

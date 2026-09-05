@@ -9,11 +9,11 @@ import com.schoolbridge.api.attendance.dto.MarkAttendanceRequest;
 import com.schoolbridge.api.attendance.dto.ParentResponseRequest;
 import com.schoolbridge.api.common.error.TenantSecurityException;
 import com.schoolbridge.api.common.security.AuthorizationPolicy;
+import com.schoolbridge.api.common.security.authz.Permission;
+import com.schoolbridge.api.common.security.authz.RequirePermission;
 import com.schoolbridge.api.common.web.ApiConstants;
 import com.schoolbridge.api.identity.auth.principal.ParentPrincipal;
 import com.schoolbridge.api.identity.auth.principal.StaffPrincipal;
-import com.schoolbridge.api.common.security.authz.Permission;
-import com.schoolbridge.api.common.security.authz.RequirePermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,7 +48,9 @@ public class AttendanceController {
   }
 
   // Slash-style action verbs ({@code /mark}, {@code /mark-all-present}) instead of the
-  // Google-AIP-style {@code :mark} the IMPLEMENTATION_PLAN proposes ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â REST clients (RestAssured,
+  // Google-AIP-style {@code :mark} the IMPLEMENTATION_PLAN proposes
+  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â REST clients
+  // (RestAssured,
   // OkHttp) URL-encode the colon to %3A, which makes Spring's path matcher route the request to
   // the static-resource fallback.
   @GetMapping("/{id}")
@@ -169,7 +171,8 @@ public class AttendanceController {
   }
 
   /**
-   * Parent reply to an absence alert. {@code authorization policy} only narrows to PARENT role ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â the
+   * Parent reply to an absence alert. {@code authorization policy} only narrows to PARENT role
+   * ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â the
    * per-record linked-child check is in the service layer so an unlinked parent gets 404
    * (anti-enumeration) rather than 403.
    */

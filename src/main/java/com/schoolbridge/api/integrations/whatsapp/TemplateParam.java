@@ -12,4 +12,3 @@ public record TemplateParam(String text) {
     return new TemplateParam(value);
   }
 }
-

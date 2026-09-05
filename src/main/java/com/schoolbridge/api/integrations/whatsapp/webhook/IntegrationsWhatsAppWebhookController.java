@@ -237,4 +237,3 @@ public class IntegrationsWhatsAppWebhookController {
     return list == null ? List.of() : list;
   }
 }
-

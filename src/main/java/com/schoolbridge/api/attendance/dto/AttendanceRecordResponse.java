@@ -18,4 +18,3 @@ public record AttendanceRecordResponse(
     boolean parentResponded,
     Instant parentRespondedAt,
     Instant alertSentAt) {}
-

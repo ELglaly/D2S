@@ -23,4 +23,3 @@ public interface SchoolClassService {
 
   void delete(UUID id);
 }
-

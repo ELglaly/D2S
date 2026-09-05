@@ -18,7 +18,9 @@ public enum ToolDomain {
   STAFF,
   GENERAL;
 
-  /** Maps a tool's leaf package (â€¦{@code .tools.attendance}) to its domain; unknown â†’ GENERAL. */
+  /**
+   * Maps a tool's leaf package (â€¦{@code .tools.attendance}) to its domain; unknown â†’ GENERAL.
+   */
   public static ToolDomain fromPackage(Class<?> type) {
     String pkg = type.getPackageName();
     int dot = pkg.lastIndexOf('.');
@@ -37,4 +39,3 @@ public enum ToolDomain {
     };
   }
 }
-

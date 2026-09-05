@@ -41,4 +41,3 @@ public class EffectivePermissionService {
     // Eviction handled by the annotation; body intentionally empty.
   }
 }
-

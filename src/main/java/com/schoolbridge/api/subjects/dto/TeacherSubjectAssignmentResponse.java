@@ -5,4 +5,3 @@ import java.util.UUID;
 
 public record TeacherSubjectAssignmentResponse(
     UUID id, UUID schoolId, UUID teacherUserId, UUID classId, UUID subjectId, Instant createdAt) {}
-

@@ -31,4 +31,3 @@ public interface StudentService {
    */
   BulkImportResult bulkImport(UUID schoolId, InputStream csvStream);
 }
-

@@ -171,4 +171,3 @@ public class AssistantController {
     return value == null ? "" : value;
   }
 }
-

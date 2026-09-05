@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
  * RolePermissionAdminService} can grant it immediately.
  *
  * <p>Insert-only: missing rows are added, never removed (a retired enum value leaves a harmless
- * orphan row). New permissions are NOT granted to any role â€” that is an explicit admin action â€” so
- * the secure default for an unknown permission is "no role has it".
+ * orphan row). New permissions are NOT granted to any role â€” that is an explicit admin action â€”
+ * so the secure default for an unknown permission is "no role has it".
  *
  * <p>Each row is saved in its own transaction with the unique-constraint violation swallowed, so
  * two instances starting concurrently cannot fail each other (one wins the insert, the other
@@ -61,4 +61,3 @@ public class PermissionCatalogReconciler {
     }
   }
 }
-

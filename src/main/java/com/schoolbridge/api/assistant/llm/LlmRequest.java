@@ -11,4 +11,3 @@ public record LlmRequest(
     List<LlmToolSpec> tools,
     String model,
     long maxTokens) {}
-

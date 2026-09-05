@@ -1,87 +1,30 @@
 package com.schoolbridge.api.notifications;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.schoolbridge.api.AbstractIntegrationTest;
-import com.schoolbridge.api.identity.User;
-import com.schoolbridge.api.identity.UserRepository;
-import com.schoolbridge.api.identity.UserRole;
-import com.schoolbridge.api.identity.jwt.JwtService;
-import com.schoolbridge.api.tenant.School;
-import com.schoolbridge.api.tenant.SchoolRepository;
-import com.schoolbridge.api.tenant.SchoolSettings;
-import com.schoolbridge.api.tenant.SubscriptionTier;
-import io.restassured.RestAssured;
+import com.schoolbridge.api.SqlIntegrationTest;
 import io.restassured.http.ContentType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class NotificationPreferenceControllerTest extends AbstractIntegrationTest {
+class NotificationPreferenceControllerTest extends SqlIntegrationTest {
 
-  @LocalServerPort int port;
-
-  @Autowired NotificationPreferenceRepository preferenceRepository;
-  @Autowired NotificationSettingsRepository settingsRepository;
-  @Autowired UserRepository userRepository;
-  @Autowired SchoolRepository schoolRepository;
-  @Autowired PasswordEncoder passwordEncoder;
-  @Autowired JwtService jwtService;
-  @Autowired TransactionTemplate tx;
-
-  private UUID schoolId;
+  @Autowired JdbcTemplate jdbc;
   private String token;
 
   @BeforeEach
   void setUp() {
-    RestAssured.port = port;
-    tx.executeWithoutResult(s -> preferenceRepository.deleteAll());
-    tx.executeWithoutResult(s -> settingsRepository.deleteAll());
-    tx.executeWithoutResult(s -> userRepository.deleteAll());
-    tx.executeWithoutResult(s -> schoolRepository.deleteAll());
-
-    schoolId =
-        tx.execute(
-            s ->
-                schoolRepository
-                    .save(
-                        new School(
-                            "Prefs Test School",
-                            "EG",
-                            "Africa/Cairo",
-                            "ar-EG",
-                            SubscriptionTier.STANDARD,
-                            SchoolSettings.defaults()))
-                    .getId());
-    UUID userId =
-        tx.execute(
-            s ->
-                userRepository
-                    .save(
-                        User.staff(
-                            schoolId,
-                            UserRole.SCHOOL_ADMIN,
-                            "Admin",
-                            "admin@prefs.test",
-                            passwordEncoder.encode("pass")))
-                    .getId());
-    token =
-        jwtService.issueAccess(
-            userId.toString(),
-            Map.of("kind", "USER", "schoolId", schoolId.toString(), "role", "SCHOOL_ADMIN"));
+    token = login("school-admin@fixture.test", "password");
   }
 
   @Test
@@ -99,7 +42,7 @@ class NotificationPreferenceControllerTest extends AbstractIntegrationTest {
         .body("data.preferences.category", hasItem("ATTENDANCE"))
         .body("data.quietHoursStart", nullValue())
         // The school's window is still reported, so the client can render it without a second call.
-        .body("data.effectiveQuietHoursStart", equalTo("21:00:00"))
+        .body("data.effectiveQuietHoursStart", equalTo("23:00:00"))
         .body("data.respectQuietHours", equalTo(false));
   }
 
@@ -117,6 +60,9 @@ class NotificationPreferenceControllerTest extends AbstractIntegrationTest {
         .statusCode(200)
         .body("data.respectQuietHours", equalTo(true))
         .body("data.effectiveQuietHoursStart", equalTo("22:00:00"));
+
+    assertThat(jdbc.queryForObject("select count(*) from notification_preferences", Long.class))
+        .isEqualTo(1L);
 
     given()
         .header("Authorization", "Bearer " + token)

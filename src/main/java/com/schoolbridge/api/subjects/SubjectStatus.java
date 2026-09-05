@@ -4,4 +4,3 @@ public enum SubjectStatus {
   ACTIVE,
   INACTIVE
 }
-

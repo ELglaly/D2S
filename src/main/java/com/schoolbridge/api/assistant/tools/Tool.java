@@ -1,8 +1,7 @@
 package com.schoolbridge.api.assistant.tools;
 
-import com.schoolbridge.api.common.security.authz.Permission;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.schoolbridge.api.common.security.authz.Permission;
 import java.util.Set;
 
 /**
@@ -38,4 +37,3 @@ public interface Tool {
     return ToolDomain.fromPackage(getClass());
   }
 }
-

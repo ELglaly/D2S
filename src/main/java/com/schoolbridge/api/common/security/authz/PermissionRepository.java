@@ -9,4 +9,3 @@ public interface PermissionRepository extends JpaRepository<PermissionEntity, UU
 
   Optional<PermissionEntity> findByName(String name);
 }
-

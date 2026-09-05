@@ -11,4 +11,3 @@ public record IngestDocumentRequest(
     @NotBlank @Size(max = 300) String title,
     @Size(max = 8) String lang,
     @NotBlank @Size(max = 200_000) String content) {}
-

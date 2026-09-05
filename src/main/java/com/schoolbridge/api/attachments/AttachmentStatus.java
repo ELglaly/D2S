@@ -43,4 +43,3 @@ public enum AttachmentStatus {
     return this == CLEAN || this == REJECTED || this == INFECTED;
   }
 }
-

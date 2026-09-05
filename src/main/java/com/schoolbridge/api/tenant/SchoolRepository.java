@@ -9,4 +9,3 @@ public interface SchoolRepository extends JpaRepository<School, UUID> {
 
   Page<School> findByStatus(SchoolStatus status, Pageable pageable);
 }
-

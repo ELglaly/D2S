@@ -130,4 +130,3 @@ public class HomeworkItem extends TenantEntity {
     return reminderSentAt;
   }
 }
-

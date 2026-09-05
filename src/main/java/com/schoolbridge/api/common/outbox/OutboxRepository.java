@@ -38,7 +38,8 @@ public interface OutboxRepository extends JpaRepository<OutboxEvent, UUID> {
           + "order by e.nextAttemptAt asc")
   List<OutboxEvent> claimDue(@Param("now") Instant now, Pageable pageable);
 
-  /** Backs the {@code outbox_dead} gauge â€” a non-zero value means delivery was permanently lost. */
+  /**
+   * Backs the {@code outbox_dead} gauge â€” a non-zero value means delivery was permanently lost.
+   */
   long countByStatus(OutboxStatus status);
 }
-

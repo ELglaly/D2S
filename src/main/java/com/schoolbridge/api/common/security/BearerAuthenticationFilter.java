@@ -109,4 +109,3 @@ public class BearerAuthenticationFilter extends OncePerRequestFilter {
         List.of(new SimpleGrantedAuthority("ROLE_PARENT")));
   }
 }
-

@@ -46,4 +46,3 @@ public interface TeacherSubjectAssignmentRepository
           + " where e.studentId = :studentId")
   List<Object[]> findSubjectsWithTeacherForStudent(@Param("studentId") UUID studentId);
 }
-

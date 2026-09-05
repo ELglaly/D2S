@@ -27,4 +27,3 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
   boolean existsByExternalId(String externalId);
 }
-

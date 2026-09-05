@@ -61,4 +61,3 @@ public class SchoolClass extends TenantEntity {
     return homeroomTeacherId;
   }
 }
-

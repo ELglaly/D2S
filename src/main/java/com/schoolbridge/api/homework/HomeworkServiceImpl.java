@@ -287,4 +287,3 @@ public class HomeworkServiceImpl implements HomeworkService {
             "recipientCount", String.valueOf(recipientCount)));
   }
 }
-
